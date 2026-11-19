@@ -1,0 +1,14 @@
+name = "salon-base"
+compatibility_date = "2026-11-18"
+
+[assets]
+directory = "."
+
+[[r2_buckets]]
+binding = "IMAGES_BUCKET"
+bucket_name = "salon-base-images"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "salon-base-db"
+database_id = "906e93d4-0ea2-4849-aede-71a414e109df"
