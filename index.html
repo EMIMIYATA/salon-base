@@ -632,7 +632,18 @@
                                     <input type="tel" required placeholder="例：090-1234-5678" 
                                            class="w-full px-4 py-3 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-sm bg-base-bg/50">
                                 </div>
-                            </div>
+                            </div><div>
+    <label for="owner-salon-image" class="block text-xs font-bold text-base-charcoal mb-1.5">
+        サロン写真（任意・掲載ページ作成サポート用）
+    </label>
+    <input type="file" id="owner-salon-image" accept="image/*" onchange="previewOwnerImage(this)"
+           class="w-full px-4 py-2.5 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-xs sm:text-sm bg-base-bg/50 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-base-terraLight file:text-base-terraDark hover:file:bg-base-terra hover:file:text-white">
+    <div id="owner-image-preview-wrap" class="hidden mt-3">
+        <img id="owner-image-preview" src="" alt="選択中のサロン写真プレビュー"
+             class="w-full max-h-52 object-cover rounded-2xl border border-base-border">
+    </div>
+</div>
+
 
                             <button type="submit" 
                                     class="w-full py-4 rounded-full bg-base-terra hover:bg-base-terraDark text-white font-bold text-base shadow-md transition mt-2">
@@ -1297,22 +1308,90 @@
         }
 
         // 7. 初期オーナー無料掲載エントリーフォーム送信
-        function handleOwnerSubmit(e) {
-            e.preventDefault();
-            const salonName = document.getElementById('owner-salon-name').value;
-            const personName = document.getElementById('owner-person-name').value;
+    function previewOwnerImage(input) {
+    const wrap = document.getElementById('owner-image-preview-wrap');
+    const img = document.getElementById('owner-image-preview');
+    const file = input.files && input.files[0];
 
-            document.getElementById('complete-owner-text').textContent = 
-                `${salonName} ${personName}様、初期掲載オーナーへのエントリーありがとうございます。1営業日以内に担当者よりご連絡し、無料ページ作成サポートのご案内をお送りいたします。`;
+    if (!file) {
+        wrap.classList.add('hidden');
+        img.src = '';
+        return;
+    }
 
-            document.getElementById('entry-form-body').classList.add('hidden');
-            document.getElementById('entry-form-complete').classList.remove('hidden');
+    const reader = new FileReader();
+    reader.onload = function (ev) {
+        img.src = ev.target.result;
+        wrap.classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+}
+
+async function handleOwnerSubmit(e) {
+    e.preventDefault();
+    const salonName = document.getElementById('owner-salon-name').value.trim();
+    const personName = document.getElementById('owner-person-name').value.trim();
+    const fileInput = document.getElementById('owner-salon-image');
+    const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+
+    let uploadedKey = '';
+
+    try {
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = '送信中...';
         }
 
-        function resetEntryForm() {
-            document.getElementById('entry-form-body').reset();
-            document.getElementById('entry-form-complete').classList.add('hidden');
-            document.getElementById('entry-form-body').classList.remove('hidden');
+        if (file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('salon_id', salonName);
+
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok || data.ok === false) {
+                throw new Error(data.error || '画像のアップロードに失敗しました。');
+            }
+            uploadedKey = data.key || '';
+        }
+
+        const imageNote = uploadedKey
+            ? `\n（アップロード済み画像キー: ${uploadedKey}）`
+            : '';
+
+        document.getElementById('complete-owner-text').innerText =
+            `${salonName} ${personName}様、初期掲載オーナーへのエントリーありがとうございます。1営業日以内に担当者よりご連絡し、無料ページ作成サポートのご案内をお送りいたします。${imageNote}`;
+
+        document.getElementById('entry-form-body').classList.add('hidden');
+        document.getElementById('entry-form-complete').classList.remove('hidden');
+    } catch (err) {
+        openNotifModal(
+            '送信エラー',
+            err.message || '通信中にエラーが発生しました。時間をおいて再度お試しください。'
+        );
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '無料で掲載エントリーを送信する';
+        }
+    }
+}
+
+function resetEntryForm() {
+    document.getElementById('entry-form-body').reset();
+    document.getElementById('owner-image-preview-wrap').classList.add('hidden');
+    document.getElementById('owner-image-preview').src = '';
+    document.getElementById('entry-form-complete').classList.add('hidden');
+    document.getElementById('entry-form-body').classList.remove('hidden');
+}
+
+            
+            const salonName = document.getElemconst personName = document.getElementByI
         }
 
         // 8. 完了通知モーダル＆トースト制御
