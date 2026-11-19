@@ -47,6 +47,36 @@ export default {
         )
           .bind(new Date().toISOString(), salon, s(b.area, 200), s(b.space_type, 50), person, email, phone, s(b.image_key, 200))
           .run();
+
+        try {
+          if (env.RESEND_API_KEY && env.NOTIFY_EMAIL) {
+            const text = [
+              "新しい掲載エントリーが届きました。",
+              "",
+              `サロン名: ${salon}`,
+              `担当者: ${person}`,
+              `エリア: ${s(b.area, 200)}`,
+              `スペース: ${s(b.space_type, 50)}`,
+              `メール: ${email}`,
+              `電話: ${phone}`,
+              `写真キー: ${s(b.image_key, 200) || "なし"}`,
+            ].join("\n");
+            await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${env.RESEND_API_KEY}`,
+                "content-type": "application/json",
+              },
+              body: JSON.stringify({
+                from: "SalonBase <onboarding@resend.dev>",
+                to: [env.NOTIFY_EMAIL],
+                subject: `【SalonBase】新規エントリー: ${salon}`,
+                text,
+              }),
+            });
+          }
+        } catch (e) {}
+
         return json({ ok: true });
       } catch (e) {
         return json({ ok: false, error: "保存に失敗しました" }, 500);
