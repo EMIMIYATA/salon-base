@@ -1359,6 +1359,23 @@ async function handleOwnerSubmit(e) {
             }
             uploadedKey = data.key || '';
         }
+        const entryRes = await fetch('/api/entry', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+                salon_name: salonName,
+                person_name: personName,
+                area: document.getElementById('owner-area').value,
+                email: document.getElementById('owner-email').value,
+                phone: document.getElementById('owner-phone').value,
+                space_type: (document.querySelector('input[name="space_type"]:checked') || {}).value || '',
+                image_key: uploadedKey
+            })
+        });
+        const entryData = await entryRes.json().catch(() => ({}));
+        if (!entryRes.ok || entryData.ok === false) {
+            throw new Error(entryData.error || '送信に失敗しました。');
+        }
 
         const imageNote = uploadedKey
             ? `\n（アップロード済み画像キー: ${uploadedKey}）`
