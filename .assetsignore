@@ -1,5 +1,4 @@
 .git
-wrangler.jsonc
-
+wrangler.toml
 functions
 src
