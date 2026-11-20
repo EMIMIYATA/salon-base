@@ -48,38 +48,80 @@ export default {
           .bind(new Date().toISOString(), salon, s(b.area, 200), s(b.space_type, 50), person, email, phone, s(b.image_key, 200))
           .run();
 
-        try {
-          console.log("mail check", !!env.RESEND_API_KEY, !!env.NOTIFY_EMAIL);
-          if (env.RESEND_API_KEY && env.NOTIFY_EMAIL) {
-            const text = [
-              "新しい掲載エントリーが届きました。",
-              "",
-              `サロン名: ${salon}`,
-              `担当者: ${person}`,
-              `エリア: ${s(b.area, 200)}`,
-              `スペース: ${s(b.space_type, 50)}`,
-              `メール: ${email}`,
-              `電話: ${phone}`,
-              `写真キー: ${s(b.image_key, 200) || "なし"}`,
-            ].join("\n");
-                        const r = await fetch("https://api.resend.com/emails", {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${env.RESEND_API_KEY}`,
-                "content-type": "application/json",
-              },
-              body: JSON.stringify({
-                from: "SalonBase <noreply@weblavo-tokyo.com>",
-                to: [env.NOTIFY_EMAIL],
-                subject: `【SalonBase】新規エントリー: ${salon}`,
-                text,
-              }),
-            });
-            if (!r.ok) console.log("resend error", r.status, await r.text());
+           try {
+      console.log("mail check", !!env.RESEND_API_KEY, !!env.NOTIFY_EMAIL);
+      if (env.RESEND_API_KEY && env.NOTIFY_EMAIL) {
+        // 1. 管理者（自分）への通知メール
+        const adminText = [
+          "新しい掲載エントリーが届きました。",
+          "",
+          `サロン名: ${salon}`,
+          `担当者: ${person}`,
+          `エリア: ${s(b.area, 200)}`,
+          `スペース: ${s(b.space_type, 50)}`,
+          `メール: ${email}`,
+          `電話: ${phone}`,
+          `写真キー: ${s(b.image_key, 200) || "なし"}`,
+        ].join("\n");
 
-                
-          }
-        } catch (e) {}
+        const r1 = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${env.RESEND_API_KEY}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            from: "SalonBase <noreply@weblavo-tokyo.com>",
+            to: [env.NOTIFY_EMAIL],
+            subject: `【SalonBase】新規エントリー: ${salon}`,
+            text: adminText,
+          }),
+        });
+        if (!r1.ok) console.log("resend admin error", r1.status, await r1.text());
+
+        // 2. 応募者本人への自動返信メール
+        const userText = [
+          `${person} 様`,
+          "",
+          "この度はSalonBaseへ掲載エントリーをいただき、誠にありがとうございます。",
+          "以下の内容で受け付けいたしました。",
+          "",
+          "────────────────────",
+          `サロン名: ${salon}`,
+          `ご担当者名: ${person}`,
+          `エリア: ${s(b.area, 200)}`,
+          `スペース種別: ${s(b.space_type, 50)}`,
+          `メールアドレス: ${email}`,
+          `お電話番号: ${phone}`,
+          "────────────────────",
+          "",
+          "内容を確認のうえ、担当者より順次ご連絡いたします。",
+          "今しばらくお待ちくださいませ。",
+          "",
+          "────────────────────",
+          "SalonBase 運営事務局",
+          "https://weblavo-tokyo.com",
+          "────────────────────",
+        ].join("\n");
+
+        const r2 = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${env.RESEND_API_KEY}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            from: "SalonBase <noreply@weblavo-tokyo.com>",
+            to: [email],
+            reply_to: env.NOTIFY_EMAIL,
+            subject: "【SalonBase】掲載エントリーを受け付けました",
+            text: userText,
+          }),
+        });
+        if (!r2.ok) console.log("resend user error", r2.status, await r2.text());
+      }
+    } catch (e) {}
+
 
         return json({ ok: true });
       } catch (e) {
