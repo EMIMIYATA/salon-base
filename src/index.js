@@ -69,7 +69,7 @@ export default {
                 "content-type": "application/json",
               },
               body: JSON.stringify({
-                from: "SalonBase <noreply@send.weblavo-tokyo.com>",
+                from: "SalonBase <noreply@weblavo-tokyo.com>",
                 to: [env.NOTIFY_EMAIL],
                 subject: `【SalonBase】新規エントリー: ${salon}`,
                 text,
