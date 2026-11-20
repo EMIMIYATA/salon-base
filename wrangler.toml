@@ -14,3 +14,5 @@ bucket_name = "salon-base-images"
 binding = "DB"
 database_name = "salon-base-db"
 database_id = "906e93d4-0ea2-4849-aede-71a414e109df"
+[observability]
+enabled = true
