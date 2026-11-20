@@ -49,6 +49,7 @@ export default {
           .run();
 
         try {
+          console.log("mail check", !!env.RESEND_API_KEY, !!env.NOTIFY_EMAIL);
           if (env.RESEND_API_KEY && env.NOTIFY_EMAIL) {
             const text = [
               "新しい掲載エントリーが届きました。",
