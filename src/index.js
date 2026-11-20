@@ -61,19 +61,22 @@ export default {
               `電話: ${phone}`,
               `写真キー: ${s(b.image_key, 200) || "なし"}`,
             ].join("\n");
-            await fetch("https://api.resend.com/emails", {
+                        const r = await fetch("https://api.resend.com/emails", {
               method: "POST",
               headers: {
                 Authorization: `Bearer ${env.RESEND_API_KEY}`,
                 "content-type": "application/json",
               },
               body: JSON.stringify({
-              from: "SalonBase <noreply@send.weblavo-tokyo.com>",
+                from: "SalonBase <noreply@send.weblavo-tokyo.com>",
                 to: [env.NOTIFY_EMAIL],
                 subject: `【SalonBase】新規エントリー: ${salon}`,
                 text,
               }),
             });
+            if (!r.ok) console.log("resend error", r.status, await r.text());
+
+                
           }
         } catch (e) {}
 
