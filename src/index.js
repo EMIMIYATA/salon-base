@@ -215,6 +215,11 @@ function safeJsonArray(str, fallback = []) {
     return fallback;
   }
 }
+function verifyAdminPassword(password, env) {
+  const input = String(password || "");
+  const expected = String((env && env.ADMIN_PASSWORD) || "salonbase2026");
+  return input.length > 0 && input === expected;
+}
 
 export default {
   async fetch(request, env) {
