@@ -873,9 +873,11 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
                 to: [env.NOTIFY_EMAIL],
                 subject: `【SalonBase】新規エントリー: ${salon}`,
                 text: adminText,
-                        const r1 = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
+                        text: adminText,
+        }),
+      });
+      if (!r1.ok) {
+
             Authorization: `Bearer ${env.RESEND_API_KEY}`,
             "content-type": "application/json",
           },
