@@ -872,3 +872,205 @@ export default {
 
             const r2 = await fetch("https://api.resend.com/emails", {
               method: "POST",
+                  // 追加：オーナーログイン認証
+    if (url.pathname === "/api/auth/login" && request.method === "POST") {
+      try {
+        const body = await request.json().catch(() => ({}));
+        const password = String(body.password || "");
+        if (!password || password !== getAdminPassword(env)) {
+          return json({ ok: false, error: "パスワードが正しくありません" }, 401);
+        }
+        const token = await signAdminToken(getAdminSecret(env));
+        return json({ ok: true, token });
+      } catch {
+        return json({ ok: false, error: "ログイン処理に失敗しました" }, 500);
+      }
+    }
+
+    // 追加：アップロード済み画像配信（/api/images/<key>）
+    if (url.pathname.startsWith("/api/images/") && request.method === "GET") {
+      try {
+        const key = decodeURIComponent(url.pathname.replace(/^\/api\/images\//, ""));
+        if (!key || key.includes("..")) {
+          return json({ ok: false, error: "不正なキーです" }, 400);
+        }
+        const obj = await env.IMAGES_BUCKET.get(key);
+        if (!obj) {
+          return json({ ok: false, error: "画像が見つかりません" }, 404);
+        }
+        const headers = new Headers();
+        if (obj.httpMetadata?.contentType) {
+          headers.set("Content-Type", obj.httpMetadata.contentType);
+        }
+        headers.set("Cache-Control", "public, max-age=3600");
+        return new Response(obj.body, { status: 200, headers });
+      } catch {
+        return json({ ok: false, error: "画像取得に失敗しました" }, 500);
+      }
+    }
+
+    // 追加：サロン一覧取得（親画面用）
+    if (url.pathname === "/api/salons" && request.method === "GET") {
+      try {
+        const rows = await env.DB.prepare(
+          `SELECT * FROM published_salons ORDER BY id DESC`
+        ).all();
+
+        const salons = (rows.results || []).map((r) => ({
+          id: `db_${r.id}`,
+          name: r.name,
+          area: r.area,
+          station: r.station,
+          pricePerHour: Number(r.price_per_hour || 1500),
+          rating: Number(r.rating || 4.9),
+          reviewCount: Number(r.review_count || 1),
+          availabilityBadge: r.availability_badge || "本日空きあり",
+          genres: safeJsonArray(r.genres_json, ["エステ・リラク"]),
+          equipment: safeJsonArray(r.equipment_json, ["完全個室"]),
+          image: r.image_url || (r.image_key ? `/api/images/${encodeURIComponent(r.image_key)}` : ""),
+          image_key: r.image_key || "",
+          description: r.description || "",
+          freeAmenities: safeJsonArray(r.free_amenities_json, []),
+          entryRules: r.entry_rules || "",
+          bookedHours: safeJsonArray(r.booked_hours_json, []),
+        }));
+
+        return json({ ok: true, salons });
+      } catch (e) {
+        return json({ ok: false, error: "サロン一覧の取得に失敗しました" }, 500);
+      }
+    }
+
+    // 追加：サロン登録（ログイン必須）
+    if (url.pathname === "/api/salons" && request.method === "POST") {
+      try {
+        const authed = await verifyAdminToken(request, env);
+        if (!authed) {
+          return json({ ok: false, error: "認証が必要です。再ログインしてください。" }, 401);
+        }
+
+        const b = await request.json();
+        const name = s(b.name, 120);
+        const area = s(b.area, 80);
+        const station = s(b.station, 120);
+        const pricePerHour = Number(b.pricePerHour);
+
+        if (!name || !area || !station || !Number.isFinite(pricePerHour) || pricePerHour <= 0) {
+          return json({ ok: false, error: "サロン名・エリア・最寄り駅・1時間料金は必須です" }, 400);
+        }
+
+        const genres = Array.isArray(b.genres) && b.genres.length ? b.genres.map((x) => s(x, 50)) : ["エステ・リラク"];
+        const equipment = Array.isArray(b.equipment) ? b.equipment.map((x) => s(x, 50)) : [];
+        const freeAmenities = Array.isArray(b.freeAmenities) && b.freeAmenities.length
+          ? b.freeAmenities.map((x) => s(x, 120))
+          : ["施術スペース設備完備"];
+        const bookedHours = Array.isArray(b.bookedHours) ? b.bookedHours.map((x) => s(x, 20)) : [];
+
+        const imageKey = s(b.image_key, 250);
+        const rawImage = s(b.image, 500);
+        const imageUrl = rawImage || (imageKey ? `/api/images/${encodeURIComponent(imageKey)}` : "");
+
+        const nowIso = new Date().toISOString();
+        const ins = await env.DB.prepare(
+          `INSERT INTO published_salons (
+            name, area, station, price_per_hour, rating, review_count,
+            availability_badge, genres_json, equipment_json, image_url, image_key,
+            description, free_amenities_json, entry_rules, booked_hours_json,
+            created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        )
+          .bind(
+            name,
+            area,
+            station,
+            Math.round(pricePerHour),
+            Number(b.rating) || 4.9,
+            Number(b.reviewCount) || 1,
+            s(b.availabilityBadge, 40) || "本日空きあり",
+            JSON.stringify(genres),
+            JSON.stringify(equipment),
+            imageUrl,
+            imageKey,
+            s(b.description, 1000) || "プライベートサロン空間です。",
+            JSON.stringify(freeAmenities),
+            s(b.entryRules, 1000) || "ご予約時間に合わせてご入室・ご退室ください。",
+            JSON.stringify(bookedHours),
+            nowIso,
+            nowIso
+          )
+          .run();
+
+        return json({ ok: true, id: ins.meta?.last_row_id, imageUrl }, 201);
+      } catch (e) {
+        return json({ ok: false, error: "サロン情報の保存に失敗しました" }, 500);
+      }
+    }
+// --- オーナー管理認証＆公開サロンAPI ヘルパー ---
+function getAdminSecret(env) {
+  return String(env.ADMIN_TOKEN_SECRET || env.ADMIN_PASSWORD || "salonbase-dev-secret");
+}
+
+function getAdminPassword(env) {
+  return String(env.ADMIN_PASSWORD || "salonbase2026");
+}
+
+async function signAdminToken(secret) {
+  const payload = btoa(JSON.stringify({ role: "admin", iat: Date.now() }));
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const sigBuf = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
+  const sigHex = Array.from(new Uint8Array(sigBuf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return `${payload}.${sigHex}`;
+}
+
+async function verifyAdminToken(request, env) {
+  const auth = request.headers.get("Authorization") || "";
+  const match = auth.match(/^Bearer\s+(.+)$/i);
+  if (!match) return false;
+  const token = match[1].trim();
+  const parts = token.split(".");
+  if (parts.length !== 2) return false;
+  const [payload, sigHex] = parts;
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(getAdminSecret(env)),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["verify"]
+  );
+  const sigBytes = new Uint8Array(
+    (sigHex.match(/.{1,2}/g) || []).map((byte) => parseInt(byte, 16))
+  );
+  const valid = await crypto.subtle.verify(
+    "HMAC",
+    key,
+    sigBytes,
+    new TextEncoder().encode(payload)
+  );
+  if (!valid) return false;
+
+  try {
+    const data = JSON.parse(atob(payload));
+    return data?.role === "admin";
+  } catch {
+    return false;
+  }
+}
+
+function safeJsonArray(str, fallback = []) {
+  try {
+    const parsed = JSON.parse(str || "[]");
+    return Array.isArray(parsed) ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
