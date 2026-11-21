@@ -39,6 +39,25 @@ async function decryptBytes(key, cipherBuffer, ivBase64) {
     cipherBuffer
   );
 }
+const FEE_RATE_BPS = {
+  attended: 2000,        // 在室あり: 20%
+  unattended_card: 2500, // 不在 / クレジット決済: 25%
+};
+
+function makeId(prefix) {
+  return `${prefix}_${crypto.randomUUID()}`;
+}
+
+function makeBookingCode() {
+  const now = new Date();
+  const ymd = now.toISOString().slice(0, 10).replace(/-/g, '');
+  const rand = Math.floor(1000 + Math.random() * 9000);
+  return `SB-${ymd}-${rand}`;
+}
+
+function calcFeeJpy(amountJpy, rateBps) {
+  return Math.floor((amountJpy * rateBps) / 10000);
+}
 
 export default {
   async fetch(request, env) {
