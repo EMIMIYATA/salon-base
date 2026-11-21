@@ -81,42 +81,41 @@
 
     if (photoInput) {
       photoInput.addEventListener("change", async () => {
-        const file = photoInput.files && photoInput.files[0];
-        if (!file) return;
+         const file = photoInput.files && photoInput.files[0];
+      if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = () => {
-          previewImg.src = reader.result;
-          previewBox.style.display = "block";
-        };
-        reader.readAsDataURL(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        previewImg.src = reader.result;
+        previewBox.style.display = "block";
+      };
+      reader.readAsDataURL(file);
 
-        uploadMeta.textContent = "アップロード中...";
-        try {
-          const formData = new FormData();
-          formData.append("file", file);
-          const res = await fetch(`${API_BASE}/api/upload`, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-            },
-            body: formData,
-          });
-          const data = await res.json();
-          if (!res.ok || !data.ok) {
-            throw new Error(data.error || "画像アップロードに失敗しました");
-          }
-          uploadedImageKey = data.key || "";
-          uploadedImageUrl = data.url || "";
-          if (uploadedImageUrl) {
-            document.getElementById("imageUrl").value = uploadedImageUrl;
-          }
-          uploadMeta.textContent = `アップロード完了: ${uploadedImageUrl || uploadedImageKey}`;
-        } catch (err) {
-          uploadMeta.textContent = `アップロード失敗（URL手入力でも登録可能）: ${err.message}`;
+      uploadMeta.textContent = "アップロード中...";
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetch(`${API_BASE}/api/upload`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+          },
+          body: formData,
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "画像アップロードに失敗しました");
         }
-      });
-    }
+        uploadedImageKey = data.key || "";
+        uploadedImageUrl = data.url || "";
+        if (uploadedImageUrl) {
+          document.getElementById("imageUrl").value = uploadedImageUrl;
+        }
+        uploadMeta.textContent = `アップロード完了: ${uploadedImageUrl || uploadedImageKey}`;
+      } catch (err) {
+        uploadMeta.textContent = `アップロード失敗（URL手入力でも登録可能）: ${err.message}`;
+      }
+    });
 
     salonForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -163,3 +162,6 @@
 
     updateViewByAuth();
   </script>
+</body>
+</html>
+     
