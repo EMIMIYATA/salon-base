@@ -1196,3 +1196,71 @@ export default {
         return json({ ok: false, error: "サロン情報の保存に失敗しました" }, 500);
       }
     }
+// --- オーナー管理認証＆公開サロンAPI ヘルパー ---
+function getAdminSecret(env) {
+  return String(env.ADMIN_TOKEN_SECRET || env.ADMIN_PASSWORD || "salonbase-dev-secret");
+}
+
+function getAdminPassword(env) {
+  return String(env.ADMIN_PASSWORD || "salonbase2026");
+}
+
+async function signAdminToken(secret) {
+  const payload = btoa(JSON.stringify({ role: "admin", iat: Date.now() }));
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const sigBuf = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
+  const sigHex = Array.from(new Uint8Array(sigBuf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return `${payload}.${sigHex}`;
+}
+
+async function verifyAdminToken(request, env) {
+  const auth = request.headers.get("Authorization") || "";
+  const match = auth.match(/^Bearer\s+(.+)$/i);
+  if (!match) return false;
+  const token = match[1].trim();
+  const parts = token.split(".");
+  if (parts.length !== 2) return false;
+  const [payload, sigHex] = parts;
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(getAdminSecret(env)),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["verify"]
+  );
+  const sigBytes = new Uint8Array(
+    (sigHex.match(/.{1,2}/g) || []).map((byte) => parseInt(byte, 16))
+  );
+  const valid = await crypto.subtle.verify(
+    "HMAC",
+    key,
+    sigBytes,
+    new TextEncoder().encode(payload)
+  );
+  if (!valid) return false;
+
+  try {
+    const data = JSON.parse(atob(payload));
+    return data?.role === "admin";
+  } catch {
+    return false;
+  }
+}
+
+function safeJsonArray(str, fallback = []) {
+  try {
+    const parsed = JSON.parse(str || "[]");
+    return Array.isArray(parsed) ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+}
