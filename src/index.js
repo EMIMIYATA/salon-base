@@ -477,10 +477,254 @@ export default {
           policy_applied: policyApplied,
           refund_amount_jpy: refundAmount,
           penalty_amount_jpy: penaltyAmount,
-          cancel_log_id: logId,
+          cancel_log_id: 
+        // 4. オンライン領収書の発行（都度 per_booking / 半月 half_month / 毎月 monthly）
+      if (request.method === "POST" && url.pathname === "/api/receipts/issue") {
+        const body = await request.json();
+        const {
+          target_user_id,
+          target_role = "guest",
+          billing_cycle,
+          booking_id = null,
+          anchor_date = null,
+          recipient_name = "",
+          issuer_name = "salon-base",
+        } = body;
+
+        if (
+          !target_user_id ||
+          !["guest", "host"].includes(target_role) ||
+          !["per_booking", "half_month", "monthly"].includes(billing_cycle)
+        ) {
+          return json({ ok: false, error: "必須項目またはパラメータが不正です" }, 400);
+        }
+
+        const user = await env.DB.prepare(
+          `SELECT id, name, email FROM users WHERE id = ?`
+        ).bind(target_user_id).first();
+
+        if (!user) {
+          return json({ ok: false, error: "対象ユーザーが見つかりません" }, 404);
+        }
+
+        let effectiveAnchorDate = anchor_date;
+        let targetBooking = null;
+
+        if (billing_cycle === "per_booking") {
+          if (!booking_id) {
+            return json({ ok: false, error: "都度発行（per_booking）には booking_id が必要です" }, 400);
+          }
+          targetBooking = await env.DB.prepare(
+            `SELECT * FROM bookings WHERE id = ?`
+          ).bind(booking_id).first();
+
+          if (!targetBooking) {
+            return json({ ok: false, error: "対象予約が見つかりません" }, 404);
+          }
+
+          const baseIso = targetBooking.paid_at || targetBooking.start_at || targetBooking.created_at;
+          effectiveAnchorDate = effectiveAnchorDate || String(baseIso).slice(0, 10);
+        } else {
+          effectiveAnchorDate = effectiveAnchorDate || new Date().toISOString().slice(0, 10);
+        }
+
+        const period = resolveReceiptPeriod(billing_cycle, effectiveAnchorDate);
+        if (!period) {
+          return json({ ok: false, error: "対象期間の日付（YYYY-MM-DD）が不正です" }, 400);
+        }
+
+        const { periodStartDate, periodEndDate } = period;
+
+        // すでに発行済みの領収書があれば重複作成せず返す
+        const existing = await env.DB.prepare(
+          `SELECT * FROM receipts
+           WHERE target_user_id = ?
+             AND target_role = ?
+             AND billing_cycle = ?
+             AND period_start_date = ?
+             AND period_end_date = ?
+             AND status = 'issued'
+           ORDER BY created_at DESC
+           LIMIT 1`
+        ).bind(
+          target_user_id,
+          target_role,
+          billing_cycle,
+          periodStartDate,
+          periodEndDate
+        ).first();
+
+        if (existing) {
+          const existingItems = await env.DB.prepare(
+            `SELECT id, booking_id, booking_payment_id, description, amount_jpy, sort_order
+             FROM receipt_items
+             WHERE receipt_id = ?
+             ORDER BY sort_order ASC`
+          ).bind(existing.id).all();
+
+          return json({
+            ok: true,
+            already_issued: true,
+            receipt: existing,
+            items: existingItems.results || [],
+          }, 200);
+        }
+
+        // 対象期間（UTC日付範囲）の成功決済を集計
+        const rangeStartIso = `${periodStartDate}T00:00:00.000Z`;
+        const rangeEndIso = `${periodEndDate}T23:59:59.999Z`;
+
+        const userCol = target_role === "host" ? "b.host_user_id" : "b.guest_user_id";
+        let sql = `
+          SELECT bp.id AS payment_id, bp.booking_id, bp.tx_type, bp.amount_jpy, bp.created_at,
+                 b.booking_code
+          FROM booking_payments bp
+          JOIN bookings b ON b.id = bp.booking_id
+          WHERE bp.status = 'succeeded'
+            AND ${userCol} = ?
+            AND bp.created_at >= ?
+            AND bp.created_at <= ?
+        `;
+        const binds = [target_user_id, rangeStartIso, rangeEndIso];
+
+        if (billing_cycle === "per_booking" && booking_id) {
+          sql += ` AND bp.booking_id = ?`;
+          binds.push(booking_id);
+        }
+
+        sql += ` ORDER BY bp.created_at ASC`;
+
+        const paymentRows = await env.DB.prepare(sql).bind(...binds).all();
+        const rows = paymentRows.results || [];
+
+        if (rows.length === 0) {
+          return json({
+            ok: false,
+            error: "指定期間・条件に該当する決済明細がありません",
+            period_start_date: periodStartDate,
+            period_end_date: periodEndDate,
+          }, 404);
+        }
+
+        const formattedItems = rows.map((row, idx) => {
+          const itemInfo = formatReceiptItemRow(row);
+          return {
+            id: makeId("ritm"),
+            booking_id: row.booking_id,
+            booking_payment_id: row.payment_id,
+            description: itemInfo.description,
+            amount_jpy: itemInfo.signedAmountJpy,
+            sort_order: idx + 1,
+          };
         });
+
+        const totalJpy = formattedItems.reduce((sum, it) => sum + Number(it.amount_jpy), 0);
+        if (totalJpy <= 0) {
+          return json({
+            ok: false,
+            error: "集計合計が0円以下のため領収書を発行できません",
+            total_jpy: totalJpy,
+          }, 400);
+        }
+
+        const receiptId = makeId("rcp");
+        const receiptNo = makeReceiptNo();
+        const finalRecipientName =
+          String(recipient_name || "").trim() ||
+          user.name ||
+          user.email ||
+          target_user_id;
+
+        const nowIso = new Date().toISOString();
+
+        await env.DB.prepare(
+          `INSERT INTO receipts (
+            id, receipt_no, target_user_id, target_role, billing_cycle,
+            period_start_date, period_end_date, recipient_name, issuer_name,
+            currency, subtotal_jpy, tax_jpy, total_jpy, status, issued_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'JPY', ?, 0, ?, 'issued', ?)`
+        ).bind(
+          receiptId,
+          receiptNo,
+          target_user_id,
+          target_role,
+          billing_cycle,
+          periodStartDate,
+          periodEndDate,
+          finalRecipientName,
+          String(issuer_name || "salon-base").trim() || "salon-base",
+          totalJpy,
+          totalJpy,
+          nowIso
+        ).run();
+
+        for (const item of formattedItems) {
+          await env.DB.prepare(
+            `INSERT INTO receipt_items (
+              id, receipt_id, booking_id, booking_payment_id, description, amount_jpy, sort_order
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)`
+          ).bind(
+            item.id,
+            receiptId,
+            item.booking_id,
+            item.booking_payment_id,
+            item.description,
+            item.amount_jpy,
+            item.sort_order
+          ).run();
+        }
+
+        return json({
+          ok: true,
+          already_issued: false,
+          receipt: {
+            id: receiptId,
+            receipt_no: receiptNo,
+            target_user_id,
+            target_role,
+            billing_cycle,
+            period_start_date: periodStartDate,
+            period_end_date: periodEndDate,
+            recipient_name: finalRecipientName,
+            issuer_name: String(issuer_name || "salon-base").trim() || "salon-base",
+            currency: "JPY",
+            subtotal_jpy: totalJpy,
+            tax_jpy: 0,
+            total_jpy: totalJpy,
+            status: "issued",
+            issued_at: nowIso,
+          },
+          items: formattedItems,
+        }, 201);
       }
 
+      // 5. 領収書取得
+      const receiptMatch = url.pathname.match(/^\/api\/receipts\/([^/]+)$/);
+      if (request.method === "GET" && receiptMatch) {
+        const receiptId = receiptMatch[1];
+
+        const receipt = await env.DB.prepare(
+          `SELECT * FROM receipts WHERE id = ?`
+        ).bind(receiptId).first();
+
+        if (!receipt) {
+          return json({ ok: false, error: "領収書が見つかりません" }, 404);
+        }
+
+        const items = await env.DB.prepare(
+          `SELECT id, booking_id, booking_payment_id, description, amount_jpy, sort_order
+           FROM receipt_items
+           WHERE receipt_id = ?
+           ORDER BY sort_order ASC`
+        ).bind(receiptId).all();
+
+        return json({
+          ok: true,
+          receipt,
+          items: items.results || [],
+        });
+      }
+          
     // 既存：サロン掲載エントリー＋メール通知
     if (url.pathname === "/api/entry" && request.method === "POST") {
       try {
