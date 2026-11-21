@@ -1,48 +1,14 @@
 const json = (obj, status = 200) =>
   new Response(JSON.stringify(obj), {
     status,
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json; charset=UTF-8" },
   });
 
 const s = (v, n = 300) => String(v || "").trim().slice(0, n);
 
-async function importAesKey(base64Key) {
-  const raw = Uint8Array.from(atob(base64Key), (c) => c.charCodeAt(0));
-  if (raw.byteLength !== 32) {
-    throw new Error("EKYC_ENCRYPTION_KEY must be 32 bytes (256-bit) in Base64");
-  }
-  return crypto.subtle.importKey(
-    "raw",
-    raw,
-    { name: "AES-GCM" },
-    false,
-    ["encrypt", "decrypt"]
-  );
-}
-
-async function encryptBytes(key, plainBytes) {
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const cipherBuffer = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv },
-    key,
-    plainBytes
-  );
-  const ivBase64 = btoa(String.fromCharCode(...iv));
-  return { cipherBuffer, ivBase64 };
-}
-
-async function decryptBytes(key, cipherBuffer, ivBase64) {
-  const iv = Uint8Array.from(atob(ivBase64), (c) => c.charCodeAt(0));
-  return crypto.subtle.decrypt(
-    { name: "AES-GCM", iv },
-    key,
-    cipherBuffer
-  );
-}
-
 const FEE_RATE_BPS = {
-  attended: 2000,        // 在室あり: 20%
-  unattended_card: 2500, // 不在 / クレジット決済: 25%
+  attended: 2000,
+  unattended_card: 2500,
 };
 
 function makeId(prefix) {
@@ -50,164 +16,72 @@ function makeId(prefix) {
 }
 
 function makeBookingCode() {
-  const now = new Date();
-  const ymd = now.toISOString().slice(0, 10).replace(/-/g, '');
+  const ymd = new Date().toISOString().slice(0, 10).replace(/-/g, "");
   const rand = Math.floor(1000 + Math.random() * 9000);
   return `SB-${ymd}-${rand}`;
+}
+
+function makeReceiptNo() {
+  const ymd = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const rand = Math.floor(1000 + Math.random() * 9000);
+  return `RCP-${ymd}-${rand}`;
 }
 
 function calcFeeJpy(amountJpy, rateBps) {
   return Math.floor((amountJpy * rateBps) / 10000);
 }
 
-function makeReceiptNo() {
-  const now = new Date();
-  const ymd = now.toISOString().slice(0, 10).replace(/-/g, "");
-  const rand = Math.floor(1000 + Math.random() * 9000);
-  return `RCP-${ymd}-${rand}`;
-}
-
-// 基準日（YYYY-MM-DD）から対象期間の開始日・終了日を算出
 function resolveReceiptPeriod(billingCycle, anchorDateStr) {
   const m = String(anchorDateStr || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!m) return null;
-
   const year = Number(m[1]);
-  const month = Number(m[2]); // 1-12
-  const day = Number(m[3]);   // 1-31
-
-  const checkDate = new Date(Date.UTC(year, month - 1, day));
+  const month = Number(m[2]);
+  const day = Number(m[3]);
+  const check = new Date(Date.UTC(year, month - 1, day));
   if (
-    checkDate.getUTCFullYear() !== year ||
-    checkDate.getUTCMonth() !== month - 1 ||
-    checkDate.getUTCDate() !== day
+    check.getUTCFullYear() !== year ||
+    check.getUTCMonth() !== month - 1 ||
+    check.getUTCDate() !== day
   ) {
     return null;
   }
-
   const mm = String(month).padStart(2, "0");
   const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const ddLast = String(lastDay).padStart(2, "0");
 
   if (billingCycle === "per_booking") {
     const dd = String(day).padStart(2, "0");
-    const dateStr = `${year}-${mm}-${dd}`;
-    return { periodStartDate: dateStr, periodEndDate: dateStr };
+    const d = `${year}-${mm}-${dd}`;
+    return { periodStartDate: d, periodEndDate: d };
   }
-
   if (billingCycle === "half_month") {
     if (day <= 15) {
-      return {
-        periodStartDate: `${year}-${mm}-01`,
-        periodEndDate: `${year}-${mm}-15`,
-      };
+      return { periodStartDate: `${year}-${mm}-01`, periodEndDate: `${year}-${mm}-15` };
     }
-    return {
-      periodStartDate: `${year}-${mm}-16`,
-      periodEndDate: `${year}-${mm}-${ddLast}`,
-    };
+    return { periodStartDate: `${year}-${mm}-16`, periodEndDate: `${year}-${mm}-${ddLast}` };
   }
-
   if (billingCycle === "monthly") {
-    return {
-      periodStartDate: `${year}-${mm}-01`,
-      periodEndDate: `${year}-${mm}-${ddLast}`,
-    };
+    return { periodStartDate: `${year}-${mm}-01`, periodEndDate: `${year}-${mm}-${ddLast}` };
   }
-
   return null;
 }
 
-// 決済種別に応じた明細文言と符号（返金はマイナス）
 function formatReceiptItemRow(row) {
   const baseAmount = Number(row.amount_jpy || 0);
   const code = row.booking_code || row.booking_id || "";
-
   if (row.tx_type === "prepay_fee") {
-    return {
-      signedAmountJpy: Math.abs(baseAmount),
-      description: `予約先払い手数料（${code}）`,
-    };
+    return { signedAmountJpy: Math.abs(baseAmount), description: `予約先払い手数料（${code}）` };
   }
   if (row.tx_type === "penalty_capture") {
-    return {
-      signedAmountJpy: Math.abs(baseAmount),
-      description: `キャンセル料・ペナルティ（${code}）`,
-    };
+    return { signedAmountJpy: Math.abs(baseAmount), description: `キャンセル料・ペナルティ（${code}）` };
   }
   if (row.tx_type === "refund") {
-    return {
-      signedAmountJpy: -Math.abs(baseAmount),
-      description: `返金調整（${code}）`,
-    };
+    return { signedAmountJpy: -Math.abs(baseAmount), description: `返金調整（${code}）` };
   }
   return {
     signedAmountJpy: baseAmount,
     description: `利用明細（${row.tx_type || "payment"} / ${code}）`,
   };
-}
-
-// --- オーナー管理認証＆公開サロンAPI ヘルパー ---
-function getAdminSecret(env) {
-  return String(env.ADMIN_TOKEN_SECRET || env.ADMIN_PASSWORD || "salonbase-dev-secret");
-}
-
-function getAdminPassword(env) {
-  return String(env.ADMIN_PASSWORD || "salonbase2026");
-}
-
-async function signAdminToken(secret) {
-  const payload = btoa(JSON.stringify({ role: "admin", iat: Date.now() }));
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-  const sigBuf = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
-  const sigHex = Array.from(new Uint8Array(sigBuf))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-  return `${payload}.${sigHex}`;
-}
-async function createAdminToken(env) {
-  return await signAdminToken(getAdminSecret(env));
-}
-
-async function verifyAdminToken(request, env) {
-  const auth = request.headers.get("Authorization") || "";
-  const match = auth.match(/^Bearer\s+(.+)$/i);
-  if (!match) return false;
-  const token = match[1].trim();
-  const parts = token.split(".");
-  if (parts.length !== 2) return false;
-  const [payload, sigHex] = parts;
-
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(getAdminSecret(env)),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["verify"]
-  );
-  const sigBytes = new Uint8Array(
-    (sigHex.match(/.{1,2}/g) || []).map((byte) => parseInt(byte, 16))
-  );
-  const valid = await crypto.subtle.verify(
-    "HMAC",
-    key,
-    sigBytes,
-    new TextEncoder().encode(payload)
-  );
-  if (!valid) return false;
-
-  try {
-    const data = JSON.parse(atob(payload));
-    return data?.role === "admin";
-  } catch {
-    return false;
-  }
 }
 
 function safeJsonArray(str, fallback = []) {
@@ -218,49 +92,119 @@ function safeJsonArray(str, fallback = []) {
     return fallback;
   }
 }
+
+// ---- 管理者認証（パスワードと秘密鍵はCloudflareの変数のみ） ----
+function getAdminSecret(env) {
+  return String(env.ADMIN_TOKEN_SECRET || "");
+}
+
 function verifyAdminPassword(password, env) {
   const input = String(password || "");
-  const expected = String((env && env.ADMIN_PASSWORD) || "salonbase2026");
-  return input.length > 0 && input === expected;
+  const expected = String(env.ADMIN_PASSWORD || "");
+  if (!expected || !input) return false;
+  if (input.length !== expected.length) return false;
+  let diff = 0;
+  for (let i = 0; i < input.length; i++) {
+    diff |= input.charCodeAt(i) ^ expected.charCodeAt(i);
+  }
+  return diff === 0;
+}
+
+async function hmacKey(secret, usage) {
+  return crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    [usage]
+  );
+}
+
+async function createAdminToken(env) {
+  const secret = getAdminSecret(env);
+  if (!secret) throw new Error("ADMIN_TOKEN_SECRET が未設定です");
+  const now = Date.now();
+  const payload = btoa(
+    JSON.stringify({ role: "admin", iat: now, exp: now + 24 * 60 * 60 * 1000 })
+  );
+  const key = await hmacKey(secret, "sign");
+  const sigBuf = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
+  const sigHex = Array.from(new Uint8Array(sigBuf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return `${payload}.${sigHex}`;
+}
+
+async function verifyAdminToken(request, env) {
+  try {
+    const secret = getAdminSecret(env);
+    if (!secret) return false;
+    const auth = request.headers.get("Authorization") || "";
+    const match = auth.match(/^Bearer\s+(.+)$/i);
+    if (!match) return false;
+    const parts = match[1].trim().split(".");
+    if (parts.length !== 2) return false;
+    const [payload, sigHex] = parts;
+
+    const key = await hmacKey(secret, "verify");
+    const sigBytes = new Uint8Array(
+      (sigHex.match(/.{1,2}/g) || []).map((h) => parseInt(h, 16))
+    );
+    const valid = await crypto.subtle.verify(
+      "HMAC",
+      key,
+      sigBytes,
+      new TextEncoder().encode(payload)
+    );
+    if (!valid) return false;
+
+    const data = JSON.parse(atob(payload));
+    return data?.role === "admin" && Number(data.exp) > Date.now();
+  } catch {
+    return false;
+  }
+}
+
+async function sendMail(env, to, subject, text) {
+  const r = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      from: "SalonBase <noreply@weblavo-tokyo.com>",
+      to: [to],
+      subject,
+      text,
+    }),
+  });
+  if (!r.ok) console.log("resend error", r.status, await r.text());
+  return r.ok;
 }
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-if (url.pathname === "/api/auth/login" && request.method === "POST") {
-  try {
-    const body = await request.json().catch(() => ({}));
-    if (!verifyAdminPassword(body.password, env)) {
-      return new Response(
-        JSON.stringify({ ok: false, error: "パスワードが正しくありません" }),
-        {
-          status: 401,
-          headers: { "content-type": "application/json; charset=UTF-8" },
+    const path = url.pathname;
+    const method = request.method;
+
+    // ---- ログイン ----
+    if (path === "/api/auth/login" && method === "POST") {
+      try {
+        const body = await request.json().catch(() => ({}));
+        if (!verifyAdminPassword(body.password, env)) {
+          return json({ ok: false, error: "パスワードが正しくありません" }, 401);
         }
-      );
+        const token = await createAdminToken(env);
+        return json({ ok: true, token });
+      } catch (err) {
+        return json({ ok: false, error: "ログイン処理に失敗しました" }, 500);
+      }
     }
 
-    const token = await createAdminToken(env);
-    return new Response(
-      JSON.stringify({ ok: true, token }),
-      {
-        status: 200,
-        headers: { "content-type": "application/json; charset=UTF-8" },
-      }
-    );
-  } catch (err) {
-    return new Response(
-      JSON.stringify({ ok: false, error: err.message || "ログイン処理エラー" }),
-      {
-        status: 500,
-        headers: { "content-type": "application/json; charset=UTF-8" },
-      }
-    );
-  }
-}
-
-    // 既存：サロン掲載用 画像アップロード
-    if (url.pathname === "/api/upload" && request.method === "POST") {
+    // ---- 画像アップロード ----
+    if (path === "/api/upload" && method === "POST") {
       try {
         const form = await request.formData();
         const file = form.get("file");
@@ -283,8 +227,202 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
       }
     }
 
-    // 1. 予約作成（手数料先払い待ち: pending_payment）
-    if (request.method === "POST" && url.pathname === "/api/bookings") {
+    // ---- 画像配信 ----
+    if (path.startsWith("/api/images/") && method === "GET") {
+      try {
+        const key = decodeURIComponent(path.replace(/^\/api\/images\//, ""));
+        if (!key || key.includes("..")) {
+          return json({ ok: false, error: "不正なキーです" }, 400);
+        }
+        const obj = await env.IMAGES_BUCKET.get(key);
+        if (!obj) return json({ ok: false, error: "画像が見つかりません" }, 404);
+        const headers = new Headers();
+        if (obj.httpMetadata?.contentType) {
+          headers.set("Content-Type", obj.httpMetadata.contentType);
+        }
+        headers.set("Cache-Control", "public, max-age=3600");
+        return new Response(obj.body, { status: 200, headers });
+      } catch {
+        return json({ ok: false, error: "画像取得に失敗しました" }, 500);
+      }
+    }
+
+    // ---- サロン一覧 ----
+    if (path === "/api/salons" && method === "GET") {
+      try {
+        const rows = await env.DB.prepare(
+          `SELECT * FROM published_salons ORDER BY id DESC`
+        ).all();
+        const salons = (rows.results || []).map((r) => ({
+          id: `db_${r.id}`,
+          name: r.name,
+          area: r.area,
+          station: r.station,
+          pricePerHour: Number(r.price_per_hour || 1500),
+          rating: Number(r.rating || 4.9),
+          reviewCount: Number(r.review_count || 1),
+          availabilityBadge: r.availability_badge || "本日空きあり",
+          genres: safeJsonArray(r.genres_json, ["エステ・リラク"]),
+          equipment: safeJsonArray(r.equipment_json, ["完全個室"]),
+          image:
+            r.image_url ||
+            (r.image_key ? `/api/images/${encodeURIComponent(r.image_key)}` : ""),
+          image_key: r.image_key || "",
+          description: r.description || "",
+          freeAmenities: safeJsonArray(r.free_amenities_json, []),
+          entryRules: r.entry_rules || "",
+          bookedHours: safeJsonArray(r.booked_hours_json, []),
+        }));
+        return json({ ok: true, salons });
+      } catch (e) {
+        return json({ ok: false, error: "サロン一覧の取得に失敗しました" }, 500);
+      }
+    }
+
+    // ---- サロン登録（ログイン必須） ----
+    if (path === "/api/salons" && method === "POST") {
+      try {
+        if (!(await verifyAdminToken(request, env))) {
+          return json({ ok: false, error: "認証が必要です。再ログインしてください。" }, 401);
+        }
+        const b = await request.json();
+        const name = s(b.name, 120);
+        const area = s(b.area, 80);
+        const station = s(b.station, 120);
+        const pricePerHour = Number(b.pricePerHour);
+        if (!name || !area || !station || !Number.isFinite(pricePerHour) || pricePerHour <= 0) {
+          return json({ ok: false, error: "サロン名・エリア・最寄り駅・1時間料金は必須です" }, 400);
+        }
+        const genres =
+          Array.isArray(b.genres) && b.genres.length
+            ? b.genres.map((x) => s(x, 50))
+            : ["エステ・リラク"];
+        const equipment = Array.isArray(b.equipment) ? b.equipment.map((x) => s(x, 50)) : [];
+        const freeAmenities =
+          Array.isArray(b.freeAmenities) && b.freeAmenities.length
+            ? b.freeAmenities.map((x) => s(x, 120))
+            : ["施術スペース設備完備"];
+        const bookedHours = Array.isArray(b.bookedHours)
+          ? b.bookedHours.map((x) => s(x, 20))
+          : [];
+        const imageKey = s(b.image_key, 250);
+        const rawImage = s(b.image, 500);
+        const imageUrl =
+          rawImage || (imageKey ? `/api/images/${encodeURIComponent(imageKey)}` : "");
+        const nowIso = new Date().toISOString();
+
+        const ins = await env.DB.prepare(
+          `INSERT INTO published_salons (
+            name, area, station, price_per_hour, rating, review_count,
+            availability_badge, genres_json, equipment_json, image_url, image_key,
+            description, free_amenities_json, entry_rules, booked_hours_json,
+            created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        )
+          .bind(
+            name,
+            area,
+            station,
+            Math.round(pricePerHour),
+            Number(b.rating) || 4.9,
+            Number(b.reviewCount) || 1,
+            s(b.availabilityBadge, 40) || "本日空きあり",
+            JSON.stringify(genres),
+            JSON.stringify(equipment),
+            imageUrl,
+            imageKey,
+            s(b.description, 1000) || "プライベートサロン空間です。",
+            JSON.stringify(freeAmenities),
+            s(b.entryRules, 1000) || "ご予約時間に合わせてご入室・ご退室ください。",
+            JSON.stringify(bookedHours),
+            nowIso,
+            nowIso
+          )
+          .run();
+
+        return json({ ok: true, id: ins.meta?.last_row_id, imageUrl }, 201);
+      } catch (e) {
+        return json({ ok: false, error: "サロン情報の保存に失敗しました" }, 500);
+      }
+    }
+
+    // ---- 掲載エントリー＋メール通知 ----
+    if (path === "/api/entry" && method === "POST") {
+      try {
+        const b = await request.json();
+        const salon = s(b.salon_name, 100);
+        const person = s(b.person_name, 100);
+        const email = s(b.email, 200);
+        const phone = s(b.phone, 50);
+        if (!salon || !person || !email || !phone) {
+          return json({ ok: false, error: "必須項目が未入力です" }, 400);
+        }
+        await env.DB.prepare(
+          "INSERT INTO owner_entries (created_at, salon_name, area, space_type, person_name, email, phone, image_key) VALUES (?,?,?,?,?,?,?,?)"
+        )
+          .bind(
+            new Date().toISOString(),
+            salon,
+            s(b.area, 200),
+            s(b.space_type, 50),
+            person,
+            email,
+            phone,
+            s(b.image_key, 200)
+          )
+          .run();
+
+        try {
+          if (env.RESEND_API_KEY) {
+            if (env.NOTIFY_EMAIL) {
+              const adminText = [
+                "新しい掲載エントリーが届きました。",
+                "",
+                `サロン名: ${salon}`,
+                `担当者: ${person}`,
+                `エリア: ${s(b.area, 200)}`,
+                `スペース: ${s(b.space_type, 50)}`,
+                `メール: ${email}`,
+                `電話: ${phone}`,
+                `写真キー: ${s(b.image_key, 200) || "なし"}`,
+              ].join("\n");
+              await sendMail(env, env.NOTIFY_EMAIL, `【SalonBase】新規エントリー: ${salon}`, adminText);
+            }
+            const userText = [
+              `${person} 様`,
+              "",
+              "この度はSalonBaseへ掲載エントリーをいただき、誠にありがとうございます。",
+              "以下の内容で受け付けいたしました。",
+              "",
+              "────────────────────",
+              `サロン名: ${salon}`,
+              `ご担当者名: ${person}`,
+              `エリア: ${s(b.area, 200)}`,
+              `スペース種別: ${s(b.space_type, 50)}`,
+              `メールアドレス: ${email}`,
+              `お電話番号: ${phone}`,
+              "────────────────────",
+              "",
+              "内容を確認のうえ、担当者より順次ご連絡いたします。",
+              "今しばらくお待ちくださいませ。",
+              "",
+              "SalonBase 運営事務局",
+              "https://weblavo-tokyo.com",
+            ].join("\n");
+            await sendMail(env, email, "【SalonBase】掲載エントリーを受け付けました", userText);
+          }
+        } catch (mailErr) {
+          console.log("mail error", String(mailErr));
+        }
+
+        return json({ ok: true });
+      } catch (err) {
+        return json({ ok: false, error: "保存に失敗しました" }, 500);
+      }
+    }
+
+    // ---- 1. 予約作成 ----
+    if (method === "POST" && path === "/api/bookings") {
       const body = await request.json();
       const {
         space_id,
@@ -299,7 +437,6 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
       if (!space_id || !guest_user_id || !start_at || !end_at || !FEE_RATE_BPS[fee_mode]) {
         return json({ ok: false, error: "必須項目または fee_mode が不正です" }, 400);
       }
-
       const startMs = Date.parse(start_at);
       const endMs = Date.parse(end_at);
       if (Number.isNaN(startMs) || Number.isNaN(endMs) || endMs <= startMs) {
@@ -342,7 +479,9 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
 
       const bookingId = makeId("bkg");
       const bookingCode = makeBookingCode();
-      const paymentDueAt = new Date(Date.now() + Number(payment_due_minutes) * 60 * 1000).toISOString();
+      const paymentDueAt = new Date(
+        Date.now() + Number(payment_due_minutes) * 60 * 1000
+      ).toISOString();
 
       await env.DB.prepare(
         `INSERT INTO bookings (
@@ -383,9 +522,9 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
       }, 201);
     }
 
-    // 2. 手数料先払い完了 → 予約確定（confirmed）
-    const payMatch = url.pathname.match(/^\/api\/bookings\/([^/]+)\/pay-fee$/);
-    if (request.method === "POST" && payMatch) {
+    // ---- 2. 手数料先払い完了 ----
+    const payMatch = path.match(/^\/api\/bookings\/([^/]+)\/pay-fee$/);
+    if (method === "POST" && payMatch) {
       const bookingId = payMatch[1];
       const body = await request.json().catch(() => ({}));
       const provider = body.provider || "manual_or_gateway";
@@ -395,14 +534,11 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
         `SELECT * FROM bookings WHERE id = ?`
       ).bind(bookingId).first();
 
-      if (!booking) {
-        return json({ ok: false, error: "予約が見つかりません" }, 404);
-      }
+      if (!booking) return json({ ok: false, error: "予約が見つかりません" }, 404);
 
       if (booking.status === "confirmed" && booking.fee_payment_status === "paid") {
         return json({ ok: true, message: "すでに先払い完了・確定済みです", booking_id: bookingId });
       }
-
       if (booking.status !== "pending_payment") {
         return json({ ok: false, error: `現在のステータス（${booking.status}）では先払い確定できません` }, 409);
       }
@@ -415,10 +551,7 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
       const nowIso = now.toISOString();
       const updated = await env.DB.prepare(
         `UPDATE bookings
-         SET status = 'confirmed',
-             fee_payment_status = 'paid',
-             paid_at = ?,
-             updated_at = ?
+         SET status = 'confirmed', fee_payment_status = 'paid', paid_at = ?, updated_at = ?
          WHERE id = ? AND status = 'pending_payment'`
       ).bind(nowIso, nowIso, bookingId).run();
 
@@ -451,9 +584,9 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
       });
     }
 
-    // 3. キャンセル制御
-    const cancelMatch = url.pathname.match(/^\/api\/bookings\/([^/]+)\/cancel$/);
-    if (request.method === "POST" && cancelMatch) {
+    // ---- 3. キャンセル ----
+    const cancelMatch = path.match(/^\/api\/bookings\/([^/]+)\/cancel$/);
+    if (method === "POST" && cancelMatch) {
       const bookingId = cancelMatch[1];
       const body = await request.json().catch(() => ({}));
       const actorUserId = body.actor_user_id || null;
@@ -469,9 +602,7 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
          WHERE b.id = ?`
       ).bind(bookingId).first();
 
-      if (!booking) {
-        return json({ ok: false, error: "予約が見つかりません" }, 404);
-      }
+      if (!booking) return json({ ok: false, error: "予約が見つかりません" }, 404);
 
       if (!["pending_payment", "confirmed"].includes(booking.status)) {
         return json({ ok: false, error: `現在のステータス（${booking.status}）はキャンセルできません` }, 409);
@@ -493,18 +624,14 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
       let policyApplied = "unpaid_cancel";
 
       if (!isPaid) {
-        refundAmount = 0;
-        penaltyAmount = 0;
         nextFeePaymentStatus = "unpaid";
         policyApplied = "unpaid_pending_cancel";
       } else if (actorRole === "host" || actorRole === "admin") {
         refundAmount = prepaidAmount;
-        penaltyAmount = 0;
         nextFeePaymentStatus = "refunded";
         policyApplied = "host_or_admin_full_refund";
       } else if (minutesBeforeStart >= freeBeforeMin) {
         refundAmount = prepaidAmount;
-        penaltyAmount = 0;
         nextFeePaymentStatus = "refunded";
         policyApplied = "within_free_cancel_window";
       } else if (minutesBeforeStart > 0) {
@@ -565,17 +692,14 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
 
       if (refundAmount > 0) {
         await env.DB.prepare(
-          `INSERT INTO booking_payments (
-            id, booking_id, tx_type, amount_jpy, provider, status
-          ) VALUES (?, ?, 'refund', ?, 'manual_or_gateway', 'succeeded')`
+          `INSERT INTO booking_payments (id, booking_id, tx_type, amount_jpy, provider, status)
+           VALUES (?, ?, 'refund', ?, 'manual_or_gateway', 'succeeded')`
         ).bind(makeId("pay"), bookingId, refundAmount).run();
       }
-
       if (penaltyAmount > 0) {
         await env.DB.prepare(
-          `INSERT INTO booking_payments (
-            id, booking_id, tx_type, amount_jpy, provider, status
-          ) VALUES (?, ?, 'penalty_capture', ?, 'manual_or_gateway', 'succeeded')`
+          `INSERT INTO booking_payments (id, booking_id, tx_type, amount_jpy, provider, status)
+           VALUES (?, ?, 'penalty_capture', ?, 'manual_or_gateway', 'succeeded')`
         ).bind(makeId("pay"), bookingId, penaltyAmount).run();
       }
 
@@ -592,8 +716,8 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
       });
     }
 
-    // 4. オンライン領収書の発行（都度 per_booking / 半月 half_month / 毎月 monthly）
-    if (request.method === "POST" && url.pathname === "/api/receipts/issue") {
+    // ---- 4. 領収書発行 ----
+    if (method === "POST" && path === "/api/receipts/issue") {
       const body = await request.json();
       const {
         target_user_id,
@@ -616,26 +740,17 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
       const user = await env.DB.prepare(
         `SELECT id, name, email FROM users WHERE id = ?`
       ).bind(target_user_id).first();
-
-      if (!user) {
-        return json({ ok: false, error: "対象ユーザーが見つかりません" }, 404);
-      }
+      if (!user) return json({ ok: false, error: "対象ユーザーが見つかりません" }, 404);
 
       let effectiveAnchorDate = anchor_date;
-      let targetBooking = null;
-
       if (billing_cycle === "per_booking") {
         if (!booking_id) {
           return json({ ok: false, error: "都度発行（per_booking）には booking_id が必要です" }, 400);
         }
-        targetBooking = await env.DB.prepare(
+        const targetBooking = await env.DB.prepare(
           `SELECT * FROM bookings WHERE id = ?`
         ).bind(booking_id).first();
-
-        if (!targetBooking) {
-          return json({ ok: false, error: "対象予約が見つかりません" }, 404);
-        }
-
+        if (!targetBooking) return json({ ok: false, error: "対象予約が見つかりません" }, 404);
         const baseIso = targetBooking.paid_at || targetBooking.start_at || targetBooking.created_at;
         effectiveAnchorDate = effectiveAnchorDate || String(baseIso).slice(0, 10);
       } else {
@@ -646,36 +761,20 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
       if (!period) {
         return json({ ok: false, error: "対象期間の日付（YYYY-MM-DD）が不正です" }, 400);
       }
-
       const { periodStartDate, periodEndDate } = period;
 
-      // すでに発行済みの領収書があれば重複作成せず返す
       const existing = await env.DB.prepare(
         `SELECT * FROM receipts
-         WHERE target_user_id = ?
-           AND target_role = ?
-           AND billing_cycle = ?
-           AND period_start_date = ?
-           AND period_end_date = ?
-           AND status = 'issued'
-         ORDER BY created_at DESC
-         LIMIT 1`
-      ).bind(
-        target_user_id,
-        target_role,
-        billing_cycle,
-        periodStartDate,
-        periodEndDate
-      ).first();
+         WHERE target_user_id = ? AND target_role = ? AND billing_cycle = ?
+           AND period_start_date = ? AND period_end_date = ? AND status = 'issued'
+         ORDER BY created_at DESC LIMIT 1`
+      ).bind(target_user_id, target_role, billing_cycle, periodStartDate, periodEndDate).first();
 
       if (existing) {
         const existingItems = await env.DB.prepare(
           `SELECT id, booking_id, booking_payment_id, description, amount_jpy, sort_order
-           FROM receipt_items
-           WHERE receipt_id = ?
-           ORDER BY sort_order ASC`
+           FROM receipt_items WHERE receipt_id = ? ORDER BY sort_order ASC`
         ).bind(existing.id).all();
-
         return json({
           ok: true,
           already_issued: true,
@@ -684,10 +783,8 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
         }, 200);
       }
 
-      // 対象期間（UTC日付範囲）の成功決済を集計
       const rangeStartIso = `${periodStartDate}T00:00:00.000Z`;
       const rangeEndIso = `${periodEndDate}T23:59:59.999Z`;
-
       const userCol = target_role === "host" ? "b.host_user_id" : "b.guest_user_id";
       let sql = `
         SELECT bp.id AS payment_id, bp.booking_id, bp.tx_type, bp.amount_jpy, bp.created_at,
@@ -700,17 +797,14 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
           AND bp.created_at <= ?
       `;
       const binds = [target_user_id, rangeStartIso, rangeEndIso];
-
       if (billing_cycle === "per_booking" && booking_id) {
         sql += ` AND bp.booking_id = ?`;
         binds.push(booking_id);
       }
-
       sql += ` ORDER BY bp.created_at ASC`;
 
       const paymentRows = await env.DB.prepare(sql).bind(...binds).all();
       const rows = paymentRows.results || [];
-
       if (rows.length === 0) {
         return json({
           ok: false,
@@ -721,13 +815,13 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
       }
 
       const formattedItems = rows.map((row, idx) => {
-        const itemInfo = formatReceiptItemRow(row);
+        const info = formatReceiptItemRow(row);
         return {
           id: makeId("ritm"),
           booking_id: row.booking_id,
           booking_payment_id: row.payment_id,
-          description: itemInfo.description,
-          amount_jpy: itemInfo.signedAmountJpy,
+          description: info.description,
+          amount_jpy: info.signedAmountJpy,
           sort_order: idx + 1,
         };
       });
@@ -744,11 +838,8 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
       const receiptId = makeId("rcp");
       const receiptNo = makeReceiptNo();
       const finalRecipientName =
-        String(recipient_name || "").trim() ||
-        user.name ||
-        user.email ||
-        target_user_id;
-
+        String(recipient_name || "").trim() || user.name || user.email || target_user_id;
+      const finalIssuer = String(issuer_name || "salon-base").trim() || "salon-base";
       const nowIso = new Date().toISOString();
 
       await env.DB.prepare(
@@ -766,7 +857,7 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
         periodStartDate,
         periodEndDate,
         finalRecipientName,
-        String(issuer_name || "salon-base").trim() || "salon-base",
+        finalIssuer,
         totalJpy,
         totalJpy,
         nowIso
@@ -800,7 +891,7 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
           period_start_date: periodStartDate,
           period_end_date: periodEndDate,
           recipient_name: finalRecipientName,
-          issuer_name: String(issuer_name || "salon-base").trim() || "salon-base",
+          issuer_name: finalIssuer,
           currency: "JPY",
           subtotal_jpy: totalJpy,
           tax_jpy: 0,
@@ -812,328 +903,25 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
       }, 201);
     }
 
-    // 5. 領収書取得
-    const receiptMatch = url.pathname.match(/^\/api\/receipts\/([^/]+)$/);
-    if (request.method === "GET" && receiptMatch) {
+    // ---- 5. 領収書取得 ----
+    const receiptMatch = path.match(/^\/api\/receipts\/([^/]+)$/);
+    if (method === "GET" && receiptMatch) {
       const receiptId = receiptMatch[1];
-
       const receipt = await env.DB.prepare(
         `SELECT * FROM receipts WHERE id = ?`
       ).bind(receiptId).first();
-
-      if (!receipt) {
-        return json({ ok: false, error: "領収書が見つかりません" }, 404);
-      }
-
+      if (!receipt) return json({ ok: false, error: "領収書が見つかりません" }, 404);
       const items = await env.DB.prepare(
         `SELECT id, booking_id, booking_payment_id, description, amount_jpy, sort_order
-         FROM receipt_items
-         WHERE receipt_id = ?
-         ORDER BY sort_order ASC`
+         FROM receipt_items WHERE receipt_id = ? ORDER BY sort_order ASC`
       ).bind(receiptId).all();
-
-      return json({
-        ok: true,
-        receipt,
-        items: items.results || [],
-      });
+      return json({ ok: true, receipt, items: items.results || [] });
     }
 
-    // 既存：サロン掲載エントリー＋メール通知
-    if (url.pathname === "/api/entry" && request.method === "POST") {
-      try {
-        const b = await request.json();
-        const salon = s(b.salon_name, 100);
-        const person = s(b.person_name, 100);
-        const email = s(b.email, 200);
-        const phone = s(b.phone, 50);
-        if (!salon || !person || !email || !phone)
-          return json({ ok: false, error: "必須項目が未入力です" }, 400);
-        await env.DB.prepare(
-          "INSERT INTO owner_entries (created_at, salon_name, area, space_type, person_name, email, phone, image_key) VALUES (?,?,?,?,?,?,?,?)"
-        )
-          .bind(new Date().toISOString(), salon, s(b.area, 200), s(b.space_type, 50), person, email, phone, s(b.image_key, 200))
-          .run();
-
-        try {
-          console.log("mail check", !!env.RESEND_API_KEY, !!env.NOTIFY_EMAIL);
-          if (env.RESEND_API_KEY && env.NOTIFY_EMAIL) {
-            const adminText = [
-              "新しい掲載エントリーが届きました。",
-              "",
-              `サロン名: ${salon}`,
-              `担当者: ${person}`,
-              `エリア: ${s(b.area, 200)}`,
-              `スペース: ${s(b.space_type, 50)}`,
-              `メール: ${email}`,
-              `電話: ${phone}`,
-              `写真キー: ${s(b.image_key, 200) || "なし"}`,
-            ].join("\n");
-
-            const r1 = await fetch("https://api.resend.com/emails", {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${env.RESEND_API_KEY}`,
-                "content-type": "application/json",
-              },
-              body: JSON.stringify({
-                from: "SalonBase <noreply@weblavo-tokyo.com>",
-                to: [env.NOTIFY_EMAIL],
-                subject: `【SalonBase】新規エントリー: ${salon}`,
-                      text: adminText,
-    }),
-  });
-          if (!r1.ok) {
-          console.error("mail send failed:", await r1.text());
-        }
-      }
-    } catch (mailErr) {
-      console.error("mail error:", mailErr);
+    // ---- それ以外は画面（HTMLなど）を返す ----
+    if (path.startsWith("/api/")) {
+      return json({ ok: false, error: "Not Found" }, 404);
     }
-
-    return json({ ok: true });
-  } catch (err) {
-    return json({ ok: false, error: err.message || "サーバーエラーが発生しました" }, 500);
-  }
-}
-
-return json({ ok: false, error: "Not Found" }, 404);
-    
-
-    
-
-
-            
-
-
-
-            const userText = [
-              `${person} 様`,
-              "",
-              "この度はSalonBaseへ掲載エントリーをいただき、誠にありがとうございます。",
-              "以下の内容で受け付けいたしました。",
-              "",
-              "────────────────────",
-              `サロン名: ${salon}`,
-              `ご担当者名: ${person}`,
-              `エリア: ${s(b.area, 200)}`,
-              `スペース種別: ${s(b.space_type, 50)}`,
-              `メールアドレス: ${email}`,
-              `お電話番号: ${phone}`,
-              "────────────────────",
-              "",
-              "内容を確認のうえ、担当者より順次ご連絡いたします。",
-              "今しばらくお待ちくださいませ。",
-              "",
-              "────────────────────",
-              "SalonBase 運営事務局",
-              "https://weblavo-tokyo.com",
-              "────────────────────",
-            ].join("\n");
-
-            
-            
-                  // 追加：オーナーログイン認証
-    if (url.pathname === "/api/auth/login" && request.method === "POST") {
-      try {
-        const body = await request.json().catch(() => ({}));
-        const password = String(body.password || "");
-        if (!password || password !== getAdminPassword(env)) {
-          return json({ ok: false, error: "パスワードが正しくありません" }, 401);
-        }
-        const token = await signAdminToken(getAdminSecret(env));
-        return json({ ok: true, token });
-      } catch {
-        return json({ ok: false, error: "ログイン処理に失敗しました" }, 500);
-      }
-    }
-
-    // 追加：アップロード済み画像配信（/api/images/<key>）
-    if (url.pathname.startsWith("/api/images/") && request.method === "GET") {
-      try {
-        const key = decodeURIComponent(url.pathname.replace(/^\/api\/images\//, ""));
-        if (!key || key.includes("..")) {
-          return json({ ok: false, error: "不正なキーです" }, 400);
-        }
-        const obj = await env.IMAGES_BUCKET.get(key);
-        if (!obj) {
-          return json({ ok: false, error: "画像が見つかりません" }, 404);
-        }
-        const headers = new Headers();
-        if (obj.httpMetadata?.contentType) {
-          headers.set("Content-Type", obj.httpMetadata.contentType);
-        }
-        headers.set("Cache-Control", "public, max-age=3600");
-        return new Response(obj.body, { status: 200, headers });
-      } catch {
-        return json({ ok: false, error: "画像取得に失敗しました" }, 500);
-      }
-    }
-
-    // 追加：サロン一覧取得（親画面用）
-    if (url.pathname === "/api/salons" && request.method === "GET") {
-      try {
-        const rows = await env.DB.prepare(
-          `SELECT * FROM published_salons ORDER BY id DESC`
-        ).all();
-
-        const salons = (rows.results || []).map((r) => ({
-          id: `db_${r.id}`,
-          name: r.name,
-          area: r.area,
-          station: r.station,
-          pricePerHour: Number(r.price_per_hour || 1500),
-          rating: Number(r.rating || 4.9),
-          reviewCount: Number(r.review_count || 1),
-          availabilityBadge: r.availability_badge || "本日空きあり",
-          genres: safeJsonArray(r.genres_json, ["エステ・リラク"]),
-          equipment: safeJsonArray(r.equipment_json, ["完全個室"]),
-          image: r.image_url || (r.image_key ? `/api/images/${encodeURIComponent(r.image_key)}` : ""),
-          image_key: r.image_key || "",
-          description: r.description || "",
-          freeAmenities: safeJsonArray(r.free_amenities_json, []),
-          entryRules: r.entry_rules || "",
-          bookedHours: safeJsonArray(r.booked_hours_json, []),
-        }));
-
-        return json({ ok: true, salons });
-      } catch (e) {
-        return json({ ok: false, error: "サロン一覧の取得に失敗しました" }, 500);
-      }
-    }
-
-    // 追加：サロン登録（ログイン必須）
-    if (url.pathname === "/api/salons" && request.method === "POST") {
-      try {
-        const authed = await verifyAdminToken(request, env);
-        if (!authed) {
-          return json({ ok: false, error: "認証が必要です。再ログインしてください。" }, 401);
-        }
-
-        const b = await request.json();
-        const name = s(b.name, 120);
-        const area = s(b.area, 80);
-        const station = s(b.station, 120);
-        const pricePerHour = Number(b.pricePerHour);
-
-        if (!name || !area || !station || !Number.isFinite(pricePerHour) || pricePerHour <= 0) {
-          return json({ ok: false, error: "サロン名・エリア・最寄り駅・1時間料金は必須です" }, 400);
-        }
-
-        const genres = Array.isArray(b.genres) && b.genres.length ? b.genres.map((x) => s(x, 50)) : ["エステ・リラク"];
-        const equipment = Array.isArray(b.equipment) ? b.equipment.map((x) => s(x, 50)) : [];
-        const freeAmenities = Array.isArray(b.freeAmenities) && b.freeAmenities.length
-          ? b.freeAmenities.map((x) => s(x, 120))
-          : ["施術スペース設備完備"];
-        const bookedHours = Array.isArray(b.bookedHours) ? b.bookedHours.map((x) => s(x, 20)) : [];
-
-        const imageKey = s(b.image_key, 250);
-        const rawImage = s(b.image, 500);
-        const imageUrl = rawImage || (imageKey ? `/api/images/${encodeURIComponent(imageKey)}` : "");
-
-        const nowIso = new Date().toISOString();
-        const ins = await env.DB.prepare(
-          `INSERT INTO published_salons (
-            name, area, station, price_per_hour, rating, review_count,
-            availability_badge, genres_json, equipment_json, image_url, image_key,
-            description, free_amenities_json, entry_rules, booked_hours_json,
-            created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-        )
-          .bind(
-            name,
-            area,
-            station,
-            Math.round(pricePerHour),
-            Number(b.rating) || 4.9,
-            Number(b.reviewCount) || 1,
-            s(b.availabilityBadge, 40) || "本日空きあり",
-            JSON.stringify(genres),
-            JSON.stringify(equipment),
-            imageUrl,
-            imageKey,
-            s(b.description, 1000) || "プライベートサロン空間です。",
-            JSON.stringify(freeAmenities),
-            s(b.entryRules, 1000) || "ご予約時間に合わせてご入室・ご退室ください。",
-            JSON.stringify(bookedHours),
-            nowIso,
-            nowIso
-          )
-          .run();
-
-        return json({ ok: true, id: ins.meta?.last_row_id, imageUrl }, 201);
-      } catch (e) {
-        return json({ ok: false, error: "サロン情報の保存に失敗しました" }, 500);
-      }
-    }
-// --- オーナー管理認証＆公開サロンAPI ヘルパー ---
-function getAdminSecret(env) {
-  return String(env.ADMIN_TOKEN_SECRET || env.ADMIN_PASSWORD || "salonbase-dev-secret");
-}
-
-function getAdminPassword(env) {
-  return String(env.ADMIN_PASSWORD || "salonbase2026");
-}
-
-async function signAdminToken(secret) {
-  const payload = btoa(JSON.stringify({ role: "admin", iat: Date.now() }));
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-  const sigBuf = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
-  const sigHex = Array.from(new Uint8Array(sigBuf))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-  return `${payload}.${sigHex}`;
-}
-
-async function verifyAdminToken(request, env) {
-  const auth = request.headers.get("Authorization") || "";
-  const match = auth.match(/^Bearer\s+(.+)$/i);
-  if (!match) return false;
-  const token = match[1].trim();
-  const parts = token.split(".");
-  if (parts.length !== 2) return false;
-  const [payload, sigHex] = parts;
-
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(getAdminSecret(env)),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["verify"]
-  );
-  const sigBytes = new Uint8Array(
-    (sigHex.match(/.{1,2}/g) || []).map((byte) => parseInt(byte, 16))
-  );
-  const valid = await crypto.subtle.verify(
-    "HMAC",
-    key,
-    sigBytes,
-    new TextEncoder().encode(payload)
-  );
-  if (!valid) return false;
-
-  try {
-    const data = JSON.parse(atob(payload));
-    return data?.role === "admin";
-  } catch {
-    return false;
-  }
-}
-
-function safeJsonArray(str, fallback = []) {
-  try {
-    const parsed = JSON.parse(str || "[]");
-    return Array.isArray(parsed) ? parsed : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-  }
- }          
+    return env.ASSETS.fetch(request);
+  },
+};
