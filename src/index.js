@@ -171,6 +171,9 @@ async function signAdminToken(secret) {
     .join("");
   return `${payload}.${sigHex}`;
 }
+async function createAdminToken(env) {
+  return await signAdminToken(getAdminSecret(env));
+}
 
 async function verifyAdminToken(request, env) {
   const auth = request.headers.get("Authorization") || "";
