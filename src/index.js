@@ -86,6 +86,314 @@ export default {
         return json({ ok: false, error: "保存に失敗しました" }, 500);
       }
     }
+      // 1. 予約作成（手数料先払い待ち: pending_payment）
+      if (request.method === "POST" && url.pathname === "/api/bookings") {
+        const body = await request.json();
+        const {
+          space_id,
+          guest_user_id,
+          start_at,
+          end_at,
+          fee_mode,
+          prepay_room = false,
+          payment_due_minutes = 15,
+        } = body;
+
+        if (!space_id || !guest_user_id || !start_at || !end_at || !FEE_RATE_BPS[fee_mode]) {
+          return json({ ok: false, error: "必須項目または fee_mode が不正です" }, 400);
+        }
+
+        const startMs = Date.parse(start_at);
+        const endMs = Date.parse(end_at);
+        if (Number.isNaN(startMs) || Number.isNaN(endMs) || endMs <= startMs) {
+          return json({ ok: false, error: "start_at / end_at の日時が不正です" }, 400);
+        }
+
+        const space = await env.DB.prepare(
+          `SELECT id, salon_id, title, base_price_jpy, is_active
+           FROM salon_spaces WHERE id = ?`
+        ).bind(space_id).first();
+
+        if (!space || Number(space.is_active) !== 1) {
+          return json({ ok: false, error: "利用可能な枠が見つかりません" }, 404);
+        }
+
+        const salon = await env.DB.prepare(
+          `SELECT id, owner_user_id FROM salons WHERE id = ?`
+        ).bind(space.salon_id).first();
+
+        const nowIso = new Date().toISOString();
+        const conflict = await env.DB.prepare(
+          `SELECT id FROM bookings
+           WHERE space_id = ?
+             AND (
+               status IN ('confirmed', 'completed')
+               OR (status = 'pending_payment' AND (payment_due_at IS NULL OR payment_due_at > ?))
+             )
+             AND NOT (end_at <= ? OR start_at >= ?)
+           LIMIT 1`
+        ).bind(space_id, nowIso, start_at, end_at).first();
+
+        if (conflict) {
+          return json({ ok: false, error: "指定の時間帯はすでに予約または仮押さえされています" }, 409);
+        }
+
+        const feeRateBps = FEE_RATE_BPS[fee_mode];
+        const roomAmountJpy = Number(space.base_price_jpy);
+        const platformFeeJpy = calcFeeJpy(roomAmountJpy, feeRateBps);
+        const totalPrepaidJpy = prepay_room ? roomAmountJpy + platformFeeJpy : platformFeeJpy;
+
+        const bookingId = makeId("bkg");
+        const bookingCode = makeBookingCode();
+        const paymentDueAt = new Date(Date.now() + Number(payment_due_minutes) * 60 * 1000).toISOString();
+
+        await env.DB.prepare(
+          `INSERT INTO bookings (
+            id, booking_code, space_id, salon_id, guest_user_id, host_user_id,
+            start_at, end_at, fee_mode, fee_rate_bps,
+            room_amount_jpy, platform_fee_jpy, total_prepaid_jpy,
+            status, fee_payment_status, payment_due_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending_payment', 'unpaid', ?)`
+        ).bind(
+          bookingId,
+          bookingCode,
+          space_id,
+          space.salon_id,
+          guest_user_id,
+          salon?.owner_user_id ?? null,
+          start_at,
+          end_at,
+          fee_mode,
+          feeRateBps,
+          roomAmountJpy,
+          platformFeeJpy,
+          totalPrepaidJpy,
+          paymentDueAt
+        ).run();
+
+        return json({
+          ok: true,
+          booking_id: bookingId,
+          booking_code: bookingCode,
+          status: "pending_payment",
+          fee_payment_status: "unpaid",
+          fee_mode,
+          fee_rate_percent: feeRateBps / 100,
+          room_amount_jpy: roomAmountJpy,
+          platform_fee_jpy: platformFeeJpy,
+          total_prepaid_jpy: totalPrepaidJpy,
+          payment_due_at: paymentDueAt,
+        }, 201);
+      }
+
+      // 2. 手数料先払い完了 → 予約確定（confirmed）
+      const payMatch = url.pathname.match(/^\/api\/bookings\/([^/]+)\/pay-fee$/);
+      if (request.method === "POST" && payMatch) {
+        const bookingId = payMatch[1];
+        const body = await request.json().catch(() => ({}));
+        const provider = body.provider || "manual_or_gateway";
+        const providerTxId = body.provider_tx_id || null;
+
+        const booking = await env.DB.prepare(
+          `SELECT * FROM bookings WHERE id = ?`
+        ).bind(bookingId).first();
+
+        if (!booking) {
+          return json({ ok: false, error: "予約が見つかりません" }, 404);
+        }
+
+        if (booking.status === "confirmed" && booking.fee_payment_status === "paid") {
+          return json({ ok: true, message: "すでに先払い完了・確定済みです", booking_id: bookingId });
+        }
+
+        if (booking.status !== "pending_payment") {
+          return json({ ok: false, error: `現在のステータス（${booking.status}）では先払い確定できません` }, 409);
+        }
+
+        const now = new Date();
+        if (booking.payment_due_at && Date.parse(booking.payment_due_at) < now.getTime()) {
+          return json({ ok: false, error: "先払い期限を過ぎています。予約をやり直してください" }, 410);
+        }
+
+        const nowIso = now.toISOString();
+        const updated = await env.DB.prepare(
+          `UPDATE bookings
+           SET status = 'confirmed',
+               fee_payment_status = 'paid',
+               paid_at = ?,
+               updated_at = ?
+           WHERE id = ? AND status = 'pending_payment'`
+        ).bind(nowIso, nowIso, bookingId).run();
+
+        if (!updated.meta?.changes) {
+          return json({ ok: false, error: "予約状態が変更されたため確定できませんでした" }, 409);
+        }
+
+        const paymentId = makeId("pay");
+        await env.DB.prepare(
+          `INSERT INTO booking_payments (
+            id, booking_id, tx_type, amount_jpy, provider, provider_tx_id, status
+          ) VALUES (?, ?, 'prepay_fee', ?, ?, ?, 'succeeded')`
+        ).bind(
+          paymentId,
+          bookingId,
+          Number(booking.total_prepaid_jpy),
+          provider,
+          providerTxId
+        ).run();
+
+        return json({
+          ok: true,
+          booking_id: bookingId,
+          booking_code: booking.booking_code,
+          status: "confirmed",
+          fee_payment_status: "paid",
+          paid_amount_jpy: Number(booking.total_prepaid_jpy),
+          payment_id: paymentId,
+          paid_at: nowIso,
+        });
+      }
+
+      // 3. キャンセル制御
+      const cancelMatch = url.pathname.match(/^\/api\/bookings\/([^/]+)\/cancel$/);
+      if (request.method === "POST" && cancelMatch) {
+        const bookingId = cancelMatch[1];
+        const body = await request.json().catch(() => ({}));
+        const actorUserId = body.actor_user_id || null;
+        const actorRole = ["guest", "host", "admin", "system"].includes(body.actor_role)
+          ? body.actor_role
+          : "guest";
+        const reason = body.reason || "";
+
+        const booking = await env.DB.prepare(
+          `SELECT b.*, s.free_cancel_before_minutes, s.late_cancel_penalty_bps, s.noshow_penalty_bps
+           FROM bookings b
+           JOIN salon_spaces s ON s.id = b.space_id
+           WHERE b.id = ?`
+        ).bind(bookingId).first();
+
+        if (!booking) {
+          return json({ ok: false, error: "予約が見つかりません" }, 404);
+        }
+
+        if (!["pending_payment", "confirmed"].includes(booking.status)) {
+          return json({ ok: false, error: `現在のステータス（${booking.status}）はキャンセルできません` }, 409);
+        }
+
+        const now = new Date();
+        const nowIso = now.toISOString();
+        const minutesBeforeStart = Math.floor((Date.parse(booking.start_at) - now.getTime()) / 60000);
+        const freeBeforeMin = Number(booking.free_cancel_before_minutes ?? 1440);
+        const latePenaltyBps = Number(booking.late_cancel_penalty_bps ?? 5000);
+        const noshowPenaltyBps = Number(booking.noshow_penalty_bps ?? 10000);
+
+        const prepaidAmount = Number(booking.total_prepaid_jpy || 0);
+        const isPaid = booking.fee_payment_status === "paid" && prepaidAmount > 0;
+
+        let refundAmount = 0;
+        let penaltyAmount = 0;
+        let nextFeePaymentStatus = booking.fee_payment_status;
+        let policyApplied = "unpaid_cancel";
+
+        if (!isPaid) {
+          refundAmount = 0;
+          penaltyAmount = 0;
+          nextFeePaymentStatus = "unpaid";
+          policyApplied = "unpaid_pending_cancel";
+        } else if (actorRole === "host" || actorRole === "admin") {
+          refundAmount = prepaidAmount;
+          penaltyAmount = 0;
+          nextFeePaymentStatus = "refunded";
+          policyApplied = "host_or_admin_full_refund";
+        } else if (minutesBeforeStart >= freeBeforeMin) {
+          refundAmount = prepaidAmount;
+          penaltyAmount = 0;
+          nextFeePaymentStatus = "refunded";
+          policyApplied = "within_free_cancel_window";
+        } else if (minutesBeforeStart > 0) {
+          penaltyAmount = Math.min(prepaidAmount, calcFeeJpy(prepaidAmount, latePenaltyBps));
+          refundAmount = Math.max(0, prepaidAmount - penaltyAmount);
+          nextFeePaymentStatus = refundAmount === 0 ? "forfeited" : "partially_refunded";
+          policyApplied = "late_cancel_penalty";
+        } else {
+          penaltyAmount = Math.min(prepaidAmount, calcFeeJpy(prepaidAmount, noshowPenaltyBps));
+          refundAmount = Math.max(0, prepaidAmount - penaltyAmount);
+          nextFeePaymentStatus = refundAmount === 0 ? "forfeited" : "partially_refunded";
+          policyApplied = "past_start_time_penalty";
+        }
+
+        const updated = await env.DB.prepare(
+          `UPDATE bookings
+           SET status = 'cancelled',
+               fee_payment_status = ?,
+               cancelled_at = ?,
+               cancelled_by_role = ?,
+               cancel_reason = ?,
+               refund_amount_jpy = ?,
+               penalty_amount_jpy = ?,
+               updated_at = ?
+           WHERE id = ? AND status IN ('pending_payment', 'confirmed')`
+        ).bind(
+          nextFeePaymentStatus,
+          nowIso,
+          actorRole,
+          reason,
+          refundAmount,
+          penaltyAmount,
+          nowIso,
+          bookingId
+        ).run();
+
+        if (!updated.meta?.changes) {
+          return json({ ok: false, error: "キャンセル処理が競合しました" }, 409);
+        }
+
+        const logId = makeId("clog");
+        await env.DB.prepare(
+          `INSERT INTO booking_cancel_logs (
+            id, booking_id, actor_user_id, actor_role, minutes_before_start,
+            policy_applied, calculated_refund_jpy, calculated_penalty_jpy, note
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ).bind(
+          logId,
+          bookingId,
+          actorUserId,
+          actorRole,
+          minutesBeforeStart,
+          policyApplied,
+          refundAmount,
+          penaltyAmount,
+          reason
+        ).run();
+
+        if (refundAmount > 0) {
+          await env.DB.prepare(
+            `INSERT INTO booking_payments (
+              id, booking_id, tx_type, amount_jpy, provider, status
+            ) VALUES (?, ?, 'refund', ?, 'manual_or_gateway', 'succeeded')`
+          ).bind(makeId("pay"), bookingId, refundAmount).run();
+        }
+
+        if (penaltyAmount > 0) {
+          await env.DB.prepare(
+            `INSERT INTO booking_payments (
+              id, booking_id, tx_type, amount_jpy, provider, status
+            ) VALUES (?, ?, 'penalty_capture', ?, 'manual_or_gateway', 'succeeded')`
+          ).bind(makeId("pay"), bookingId, penaltyAmount).run();
+        }
+
+        return json({
+          ok: true,
+          booking_id: bookingId,
+          status: "cancelled",
+          fee_payment_status: nextFeePaymentStatus,
+          minutes_before_start: minutesBeforeStart,
+          policy_applied: policyApplied,
+          refund_amount_jpy: refundAmount,
+          penalty_amount_jpy: penaltyAmount,
+          cancel_log_id: logId,
+        });
+      }
 
     // 既存：サロン掲載エントリー＋メール通知
     if (url.pathname === "/api/entry" && request.method === "POST") {
