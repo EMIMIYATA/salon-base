@@ -923,8 +923,8 @@ return json({ ok: false, error: "Not Found" }, 404);
               "────────────────────",
             ].join("\n");
 
-            const r2 = await fetch("https://api.resend.com/emails", {
-              method: "POST",
+            
+            
                   // 追加：オーナーログイン認証
     if (url.pathname === "/api/auth/login" && request.method === "POST") {
       try {
