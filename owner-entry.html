@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SalonBase | サロン・スペース掲載エントリー</title>
+  <style>
+    :root {
+      --bg: #f6f3ee;
+      --card: #ffffff;
+      --text: #22201d;
+      --muted: #6c665d;
+      --line: #e4ded3;
+      --accent: #2c2722;
+      --accent-text: #ffffff;
+      --req-bg: #efe8dc;
+      --req-text: #6e4e2e;
+      --ok-bg: #edf5f0;
+      --ok-text: #1e5233;
+      --err-bg: #fdf0ef;
+      --err-text: #8e271e;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 36px 16px 72px;
+    }
+
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .brand-name {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--text);
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .lead {
+      margin: 0;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(34, 32, 29, 0.04);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    .grid-2 .field {
+      margin-bottom: 0;
+    }
+
+    .label-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .badge-req {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 999px;
+      background: var(--req-bg);
+      color: var(--req-text);
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    select {
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 15px;
+      color: var(--text);
+      background: #fbfaf8;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      outline: none;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+      background: #ffffff;
+    }
+
+    .upload-box {
+      border: 1.5px dashed #d3cbbd;
+      background: #faf8f4;
+      border-radius: 12px;
+      padding: 18px;
+      text-align: center;
+    }
+
+    .upload-hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .preview {
+      margin-top: 14px;
+      display: none;
+      text-align: left;
+    }
+
+    .preview img {
+      max-width: 100%;
+      max-height: 240px;
+      border-radius: 10px;
+      display: block;
+      object-fit: cover;
+      border: 1px solid var(--line);
+    }
+
+    .meta {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      word-break: break-all;
+    }
+
+    .submit-wrap {
+      margin-top: 24px;
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      padding: 15px 20px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent-text);
+      background: var(--accent);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+    }
+
+    button[type="submit"]:hover:not(:disabled) {
+      opacity: 0.92;
+    }
+
+    button[type="submit"]:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .msg {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .msg.ok {
+      display: block;
+      background: var(--ok-bg);
+      color: var(--ok-text);
+    }
+
+    .msg.err {
+      display: block;
+      background: var(--err-bg);
+      color: var(--err-text);
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 28px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        padding: 20px;
+      }
+      .grid-2 {
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">
+      <div class="brand-name">SalonBase</div>
+      <div class="brand-sub">OWNER ENTRY</div>
+    </div>
+
+    <div class="hero">
+      <h1>サロン・スペース掲載エントリー</h1>
+      <p class="lead">必要事項をご入力のうえ送信してください。掲載写真もこちらからアップロードできます。</p>
+    </div>
+
+    <form class="card" id="entryForm">
+      <div class="field grid-2">
+        <div class="field">
+          <div class="label-row">
+            <label for="salon_name">サロン名</label>
+            <span class="badge-req">必須</span>
+          </div>
+          <input id="salon_name" name="salon_name" type="text" required placeholder="例：SalonBase 表参道" />
+        </div>
+
+        <div class="field">
+          <div class="label-row">
+            <label for="person_name">ご担当者名</label>
+            <span class="badge-req">必須</span>
+          </div>
+          <input id="person_name" name="person_name" type="text" required placeholder="例：山田 花子" />
+        </div>
+      </div>
+
+      <div class="field grid-2">
+        <div class="field">
+          <div class="label-row">
+            <label for="email">メールアドレス</label>
+            <span class="badge-req">必須</span>
+          </div>
+          <input id="email" name="email" type="email" required placeholder="例：owner@example.com" />
+        </div>
+
+        <div class="field">
+          <div class="label-row">
+            <label for="phone">お電話番号</label>
+            <span class="badge-req">必須</span>
+          </div>
+          <input id="phone" name="phone" type="tel" required placeholder="例：090-1234-5678" />
+        </div>
+      </div>
+
+      <div class="field grid-2">
+        <div class="field">
+          <div class="label-row">
+            <label for="area">エリア</label>
+          </div>
+          <input id="area" name="area" type="text" placeholder="例：東京都港区・葛西エリアなど" />
+        </div>
+
+        <div class="field">
+          <div class="label-row">
+            <label for="space_type">スペース種別</label>
+          </div>
+          <select id="space_type" name="space_type">
+            <option value="">選択してください</option>
+            <option value="esthetic_nail">エステ・ネイル・美容スペース</option>
+            <option value="hair_salon">ヘアサロン・シェア面</option>
+            <option value="treatment_room">施術室・レンタルルーム</option>
+            <option value="other">その他</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="label-row">
+          <label for="photo">掲載写真（任意・10MB以下）</label>
+        </div>
+        <div class="upload-box">
+          <input id="photo" type="file" accept="image/*" />
+          <div class="upload-hint">JPEG / PNG / WebP などの画像ファイルを選択すると自動でアップロードされます</div>
+          <div class="preview" id="previewBox">
+            <img id="previewImg" alt="掲載写真プレビュー" />
+            <div class="meta" id="uploadMeta"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="submit-wrap">
+        <button type="submit" id="submitBtn">掲載エントリーを送信する</button>
+      </div>
+
+      <div class="msg" id="msgBox" role="alert"></div>
+    </form>
+
+    <footer>© 2026 SalonBase</footer>
+  </div>
+
+  <script>
+    const API_BASE = "";
+    let uploadedImageKey = "";
+
+    const photoInput = document.getElementById("photo");
+    const previewBox = document.getElementById("previewBox");
+    const previewImg = document.getElementById("previewImg");
+    const uploadMeta = document.getElementById("uploadMeta");
+    const submitBtn = document.getElementById("submitBtn");
+    const msgBox = document.getElementById("msgBox");
+    const form = document.getElementById("entryForm");
+
+    function showMsg(type, text) {
+      msgBox.className = `msg ${type}`;
+      msgBox.textContent = text;
+    }
+
+    photoInput.addEventListener("change", async () => {
+      const file = photoInput.files?.[0];
+      if (!file) return;
+
+      previewImg.src = URL.createObjectURL(file);
+      previewBox.style.display = "block";
+      uploadMeta.textContent = "画像をアップロード中...";
+      submitBtn.disabled = true;
+      msgBox.className = "msg";
+
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("salon_id", document.getElementById("salon_name").value.trim() || "entry");
+
+        const res = await fetch(`${API_BASE}/api/upload`, {
+          method: "POST",
+          body: fd,
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "画像アップロードに失敗しました");
+        }
+        uploadedImageKey = data.key;
+        uploadMeta.textContent = `アップロード完了（保存キー: ${data.key}）`;
+      } catch (err) {
+        uploadedImageKey = "";
+        uploadMeta.textContent = err.message;
+        showMsg("err", err.message);
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      msgBox.className = "msg";
+
+      const payload = {
+        salon_name: document.getElementById("salon_name").value.trim(),
+        person_name: document.getElementById("person_name").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        phone: document.getElementById("phone").value.trim(),
+        area: document.getElementById("area").value.trim(),
+        space_type: document.getElementById("space_type").value,
+        image_key: uploadedImageKey,
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/api/entry`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "送信に失敗しました");
+        }
+        showMsg("ok", "掲載エントリーを受け付けました！ご入力ありがとうございます。");
+        form.reset();
+        previewBox.style.display = "none";
+        uploadedImageKey = "";
+      } catch (err) {
+        showMsg("err", err.message);
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
