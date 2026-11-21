@@ -475,9 +475,14 @@ export default {
           fee_payment_status: nextFeePaymentStatus,
           minutes_before_start: minutesBeforeStart,
           policy_applied: policyApplied,
-          refund_amount_jpy: refundAmount,
-          penalty_amount_jpy: penaltyAmount,
-          cancel_log_id: 
+                 refund_amount_jpy: refundAmount,
+       penalty_amount_jpy: penaltyAmount,
+       cancel_log_id: logId,
+     });
+   }
+
+     // 4. オンライン領収書の発行（都度 per_booking / 半月 half_month / 毎月 monthly）
+
         // 4. オンライン領収書の発行（都度 per_booking / 半月 half_month / 毎月 monthly）
       if (request.method === "POST" && url.pathname === "/api/receipts/issue") {
         const body = await request.json();
