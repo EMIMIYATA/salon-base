@@ -219,6 +219,37 @@ function safeJsonArray(str, fallback = []) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+if (url.pathname === "/api/auth/login" && request.method === "POST") {
+  try {
+    const body = await request.json().catch(() => ({}));
+    if (!verifyAdminPassword(body.password, env)) {
+      return new Response(
+        JSON.stringify({ ok: false, error: "パスワードが正しくありません" }),
+        {
+          status: 401,
+          headers: { "content-type": "application/json; charset=UTF-8" },
+        }
+      );
+    }
+
+    const token = await createAdminToken(env);
+    return new Response(
+      JSON.stringify({ ok: true, token }),
+      {
+        status: 200,
+        headers: { "content-type": "application/json; charset=UTF-8" },
+      }
+    );
+  } catch (err) {
+    return new Response(
+      JSON.stringify({ ok: false, error: err.message || "ログイン処理エラー" }),
+      {
+        status: 500,
+        headers: { "content-type": "application/json; charset=UTF-8" },
+      }
+    );
+  }
+}
 
     // 既存：サロン掲載用 画像アップロード
     if (url.pathname === "/api/upload" && request.method === "POST") {
