@@ -890,12 +890,14 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
 }
 
 return json({ ok: false, error: "Not Found" }, 404);
-  },
-};
+    
 
-              }),
-            });
-            if (!r1.ok) console.log("resend admin error", r1.status, await r1.text());
+    
+
+
+            
+
+
 
             const userText = [
               `${person} 様`,
