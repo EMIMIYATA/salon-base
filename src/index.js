@@ -873,6 +873,37 @@ if (url.pathname === "/api/auth/login" && request.method === "POST") {
                 to: [env.NOTIFY_EMAIL],
                 subject: `【SalonBase】新規エントリー: ${salon}`,
                 text: adminText,
+                        const r1 = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${env.RESEND_API_KEY}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            from: "SalonBase <noreply@weblavo-tokyo.com>",
+            to: [env.NOTIFY_EMAIL],
+            subject: `【SalonBase】新規エントリー: ${salon}`,
+            text: adminText,
+          }),
+        });
+        if (!r1.ok) {
+          console.error("mail send failed:", await r1.text());
+        }
+      }
+    } catch (mailErr) {
+      console.error("mail error:", mailErr);
+    }
+
+    return json({ ok: true });
+  } catch (err) {
+    return json({ ok: false, error: err.message || "サーバーエラーが発生しました" }, 500);
+  }
+}
+
+return json({ ok: false, error: "Not Found" }, 404);
+  },
+};
+
               }),
             });
             if (!r1.ok) console.log("resend admin error", r1.status, await r1.text());
