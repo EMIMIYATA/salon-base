@@ -294,36 +294,18 @@ export default {
         ],
         max_tokens: 400,
       });
-const rawText =
-  result?.response ??
-  result?.output_text ??
-  result?.result?.response ??
-  result?.choices?.[0]?.message?.content ??
-  "";
-
-const text = String(rawText).trim();
-if (!text) {
-  return json({ ok: false, error: "文章を生成できませんでした。" }, 500);
-}
-
-      const rawText =
+            const rawText =
         result?.response ??
         result?.output_text ??
         result?.result?.response ??
         result?.choices?.[0]?.message?.content ??
         "";
+
       const text = String(rawText).trim();
       if (!text) {
-        return json(
-          {
-            ok: false,
-            error: "文章を生成できませんでした。",
-            debugKeys: result && typeof result === "object" ? Object.keys(result) : typeof result,
-          },
-          500
-        );
+        return json({ ok: false, error: "文章を生成できませんでした。" }, 500);
       }
-              content:
+  content:
                 "あなたはレンタルサロンの魅力的な案内文を作成するアシスタントです。余計な前置きや説明は省き、本文のみ出力してください。",
             },
             { role: "user", content: prompt },
@@ -343,7 +325,6 @@ if (!text) {
           500
         );
       }
- }
 
     // ---- 画像配信 ----
     if (path.startsWith("/api/images/") && method === "GET") {
