@@ -287,7 +287,7 @@ export default {
 - 誤字脱字や不自然な言い回し、表記ゆれを直し、読みやすく上品で自然な日本語に整えること。
 - 「承知しました」「校正結果は以下の通りです」などの前置きや解説は一切省き、校正後の本文のみを出力すること。`;
 
-      const result = await env.AI.run("@cf/google/gemma-4-26b-a4b-it", {
+      const result = await env.AI.run("@cf/meta/llama-3.1-8b-instruct-fp8-fast", {
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: prompt },
