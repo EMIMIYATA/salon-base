@@ -109,8 +109,7 @@ function verifyAdminPassword(password, env) {
   }
   return diff === 0;
 }
-
-async function hmacKey(secret, usage) {
+async function createAdminToken(env, role = "admin", extra = {}) {
   return crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(secret),
@@ -125,7 +124,7 @@ async function createAdminToken(env) {
   if (!secret) throw new Error("ADMIN_TOKEN_SECRET が未設定です");
   const now = Date.now();
   const payload = btoa(
-    JSON.stringify({ role: "admin", iat: now, exp: now + 24 * 60 * 60 * 1000 })
+        JSON.stringify({ role, ...extra, iat: now, exp: now + 24 * 60 * 60 * 1000 })
   );
   const key = await hmacKey(secret, "sign");
   const sigBuf = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
