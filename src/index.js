@@ -252,27 +252,18 @@ export default {
         return json({ ok: false, error: "保存に失敗しました" }, 500);
       }
     }
-// ---- AI文章生成 ----
+    // ---- AI文章生成 ----
     if (path === "/api/ai/generate-copy" && method === "POST") {
-  const authHeader = request.headers.get("Authorization") || "";
-if (!authHeader.startsWith("Bearer ") || authHeader.slice(7).trim() === "") {
-  return json({ ok: false, error: "認証が必要です" }, 401);
-}
-
-  return json({ ok: false, error: "認証が必要です" }, 401);
-}
-
+      try {
         if (!env.AI) {
           return json(
-            { ok: false, error: "Workers AI（env.AI）が設定されていません。wrangler.toml を確認してください。" },
+            { ok: false, error: "Workers AI (env.AI) が設定されていません。wrangler.toml を確認してください。" },
             500
           );
         }
-
         const body = await request.json().catch(() => ({}));
         const target = body.target === "rules" ? "rules" : "description";
         const salon = body.salon || {};
-
         const prompt =
           target === "rules"
             ? `レンタルサロンの「入室方法・ご利用ルール」を日本語で簡潔に作成してください。
