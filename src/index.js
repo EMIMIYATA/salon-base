@@ -253,6 +253,14 @@ export default {
         const rows = await env.DB.prepare(
           `SELECT * FROM published_salons ORDER BY id DESC`
         ).all();
+                const photoRows = await env.DB.prepare(
+          `SELECT salon_id, image_key FROM salon_photos ORDER BY salon_id, sort_order ASC`
+        ).all();
+        const photoMap = {};
+        for (const p of photoRows.results || []) {
+          (photoMap[p.salon_id] ||= []).push(`/api/images/${encodeURIComponent(p.image_key)}`);
+        }
+
         const salons = (rows.results || []).map((r) => ({
           id: `db_${r.id}`,
           name: r.name,
@@ -268,6 +276,7 @@ export default {
             r.image_url ||
             (r.image_key ? `/api/images/${encodeURIComponent(r.image_key)}` : ""),
           image_key: r.image_key || "",
+                    images: photoMap[r.id] || (r.image_key ? [`/api/images/${encodeURIComponent(r.image_key)}`] : []),
           description: r.description || "",
           freeAmenities: safeJsonArray(r.free_amenities_json, []),
           entryRules: r.entry_rules || "",
