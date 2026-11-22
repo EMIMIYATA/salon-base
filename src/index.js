@@ -254,7 +254,11 @@ export default {
     }
 // ---- AI文章生成 ----
     if (path === "/api/ai/generate-copy" && method === "POST") {
-      try {if (!(await verifyAdminToken(request, env))) {
+  const authHeader = request.headers.get("Authorization") || "";
+if (!authHeader.startsWith("Bearer ") || authHeader.slice(7).trim() === "") {
+  return json({ ok: false, error: "認証が必要です" }, 401);
+}
+
   return json({ ok: false, error: "認証が必要です" }, 401);
 }
 
