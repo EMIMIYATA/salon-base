@@ -290,6 +290,8 @@ export default {
   result?.result?.response ??
   ""
 ).trim();
+    const result = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
+      messages: [
 
           messages: [
             {
