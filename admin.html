@@ -3,76 +3,339 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SalonBase Owner Console</title>
+  <title>SalonBase Owner Console｜オーナー管理画面</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            base: {
+              bg: '#FAF7F2',
+              surface: '#FFFFFF',
+              sand: '#F3ECE1',
+              border: '#E6DDD0',
+              sage: '#5C7A6B',
+              sageLight: '#EBF2EE',
+              terra: '#C4826E',
+              terraDark: '#B06F5B',
+              terraLight: '#F9EFEA',
+              charcoal: '#3D352E',
+              muted: '#7A6F66',
+            }
+          },
+          fontFamily: {
+            sans: ['"Noto Sans JP"', 'sans-serif'],
+            serif: ['"Noto Serif JP"', 'serif'],
+            en: ['"Cormorant Garamond"', 'serif'],
+          },
+          boxShadow: {
+            soft: '0 12px 32px -6px rgba(61, 53, 46, 0.08)',
+            card: '0 4px 20px -2px rgba(61, 53, 46, 0.05)',
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background-color: #FAF7F2;
+      color: #3D352E;
+      font-family: 'Noto Sans JP', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .fade-in {
+      animation: fadeIn 0.25s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
-<body class="bg-[#FAF7F2] text-[#2D2A26] min-h-screen flex items-center justify-center p-4">
-  <div id="login-box" class="w-full max-w-md bg-white rounded-2xl shadow p-6 border border-[#EAE3D9]">
-    <h1 class="text-xl font-bold mb-2">SalonBase Owner Console</h1>
-    <p class="text-sm text-[#6E675F] mb-5">オーナー管理画面にログインしてください。</p>
-    <form id="admin-login-form" class="space-y-4">
-      <div>
-        <label class="block text-xs font-bold mb-1">メールアドレス または 割り当て番号</label>
-        <input id="login-id" type="text" required placeholder="例: SB-2026-9482"
-          class="w-full px-3 py-2.5 rounded-xl border border-[#DDD5C9] text-sm" />
-      </div>
-      <div>
-        <label class="block text-xs font-bold mb-1">パスワード</label>
-        <input id="login-password" type="password" required
-          class="w-full px-3 py-2.5 rounded-xl border border-[#DDD5C9] text-sm" />
-      </div>
-      <p id="login-error" class="text-xs text-red-600 hidden"></p>
-      <button type="submit"
-        class="w-full py-3 rounded-full bg-[#B87A63] text-white text-sm font-bold">
-        ログインする
-      </button>
-    </form>
-  </div>
+<body class="min-h-screen flex flex-col">
 
-  <div id="admin-dashboard" class="w-full max-w-4xl bg-white rounded-2xl shadow p-6 border border-[#EAE3D9] hidden">
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-xl font-bold">オーナー管理画面</h1>
-      <button id="logout-btn" class="px-4 py-1.5 rounded-full border text-xs">ログアウト</button>
+  <!-- ヘッダー -->
+  <header class="bg-white/95 backdrop-blur-md border-b border-base-border sticky top-0 z-30">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <a href="/" class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-base-terra flex items-center justify-center text-white text-sm shadow-xs">
+          <i class="fa-solid fa-spa"></i>
+        </div>
+        <div>
+          <span class="font-en text-xl font-bold tracking-wider text-base-charcoal">SalonBase</span>
+          <span class="text-xs text-base-muted ml-1.5 hidden sm:inline">Owner Console</span>
+        </div>
+      </a>
+
+      <div class="flex items-center gap-3">
+        <a href="/" class="text-xs text-base-muted hover:text-base-terra font-medium transition">
+          <i class="fa-solid fa-arrow-left mr-1"></i>トップへ戻る
+        </a>
+        <button id="header-logout-btn" type="button" onclick="handleLogout()"
+          class="hidden px-3.5 py-1.5 rounded-full border border-base-border text-xs font-medium text-base-charcoal hover:bg-base-sand transition">
+          ログアウト
+        </button>
+      </div>
     </div>
-    <p class="text-sm text-[#6E675F]">ログインが完了しました。ここにエントリー情報や掲載設定を表示します。</p>
-  </div>
+  </header>
+
+  <!-- メイン -->
+  <main class="flex-grow flex items-center justify-center px-4 py-10">
+
+    <!-- ログインカード -->
+    <section id="login-section" class="w-full max-w-md bg-white rounded-3xl border border-base-border shadow-soft p-6 sm:p-8 fade-in">
+      <div class="text-center mb-6">
+        <span class="inline-block px-3 py-1 rounded-full bg-base-terraLight text-base-terraDark text-xs font-semibold mb-2">
+          OWNER AUTHENTICATION
+        </span>
+        <h1 class="font-serif text-2xl font-bold text-base-charcoal">SalonBase Owner Console</h1>
+        <p class="text-xs sm:text-sm text-base-muted mt-1.5">
+          エントリー時に発行された割り当て番号とパスワードでログインしてください。
+        </p>
+      </div>
+
+      <form id="owner-login-form" class="space-y-4">
+        <div>
+          <label for="owner-code-input" class="block text-xs font-bold text-base-charcoal mb-1.5">
+            割り当て番号 <span class="text-base-terra">*</span>
+          </label>
+          <input
+            id="owner-code-input"
+            type="text"
+            required
+            autocomplete="username"
+            placeholder="例：SB-2026-9482"
+            class="w-full px-4 py-3 rounded-xl border border-base-border bg-base-bg/60 focus:bg-white focus:outline-none focus:border-base-terra text-sm uppercase"
+          />
+        </div>
+
+        <div>
+          <label for="owner-password-input" class="block text-xs font-bold text-base-charcoal mb-1.5">
+            パスワード <span class="text-base-terra">*</span>
+          </label>
+          <div class="relative">
+            <input
+              id="owner-password-input"
+              type="password"
+              required
+              autocomplete="current-password"
+              placeholder="設定したパスワードを入力"
+              class="w-full px-4 py-3 pr-11 rounded-xl border border-base-border bg-base-bg/60 focus:bg-white focus:outline-none focus:border-base-terra text-sm"
+            />
+            <button
+              id="toggle-pw-btn"
+              type="button"
+              aria-label="パスワード表示切り替え"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-base-muted hover:text-base-charcoal p-1"
+            >
+              <i id="toggle-pw-icon" class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="login-error-box" class="hidden rounded-xl bg-red-50 border border-red-200 px-3.5 py-2.5 text-xs text-red-700 flex items-start gap-2">
+          <i class="fa-solid fa-circle-exclamation mt-0.5 shrink-0"></i>
+          <span id="login-error-text"></span>
+        </div>
+
+        <button
+          id="login-submit-btn"
+          type="submit"
+          class="w-full py-3.5 rounded-full bg-base-terra hover:bg-base-terraDark disabled:opacity-60 text-white font-bold text-sm shadow-sm transition flex items-center justify-center gap-2"
+        >
+          <span>ログインする</span>
+          <i class="fa-solid fa-arrow-right text-xs"></i>
+        </button>
+      </form>
+    </section>
+
+    <!-- ログイン後ダッシュボード -->
+    <section id="dashboard-section" class="hidden w-full max-w-4xl space-y-6 fade-in self-start">
+      <!-- ウェルカムカード -->
+      <div class="bg-white rounded-3xl border border-base-border shadow-card p-6 sm:p-8">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-base-border">
+          <div>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-base-sageLight text-base-sage text-xs font-semibold mb-2">
+              <i class="fa-solid fa-circle-check"></i>
+              <span>認証済みオーナー</span>
+            </span>
+            <h1 id="dash-salon-name" class="font-serif text-2xl sm:text-3xl font-bold text-base-charcoal"></h1>
+            <p class="text-xs sm:text-sm text-base-muted mt-1">
+              ご担当者：<span id="dash-person-name" class="font-medium text-base-charcoal"></span>
+            </p>
+          </div>
+          <div class="bg-base-sand px-4 py-3 rounded-2xl border border-base-border text-left sm:text-right">
+            <span class="block text-[11px] text-base-muted">割り当て番号</span>
+            <span id="dash-owner-code" class="font-mono text-base font-bold text-base-terraDark"></span>
+          </div>
+        </div>
+
+        <!-- オーナー情報一覧 -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6">
+          <div class="bg-base-bg rounded-2xl p-4 border border-base-border/80">
+            <span class="block text-[11px] text-base-muted mb-1">オーナーID</span>
+            <span id="dash-owner-id" class="font-mono text-sm font-bold text-base-charcoal"></span>
+          </div>
+          <div class="bg-base-bg rounded-2xl p-4 border border-base-border/80">
+            <span class="block text-[11px] text-base-muted mb-1">ステータス</span>
+            <span class="text-sm font-bold text-base-sage">エントリー受付済み</span>
+          </div>
+          <div class="bg-base-bg rounded-2xl p-4 border border-base-border/80">
+            <span class="block text-[11px] text-base-muted mb-1">次のステップ</span>
+            <span class="text-sm font-bold text-base-charcoal">掲載ページ準備・相談</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 案内＆クイックアクション -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-3xl border border-base-border shadow-card p-6">
+          <h2 class="font-serif text-lg font-bold text-base-charcoal mb-2 flex items-center gap-2">
+            <i class="fa-solid fa-bullhorn text-base-terra"></i>
+            <span>掲載準備のご案内</span>
+          </h2>
+          <p class="text-xs sm:text-sm text-base-muted leading-relaxed mb-4">
+            ご登録ありがとうございます。初期掲載オーナー様向けの無料ページ作成サポートや空き枠設定については、担当スタッフより順次ご案内いたします。
+          </p>
+          <a href="/#owner-entry-form" class="inline-flex items-center gap-1.5 text-xs font-bold text-base-terraDark hover:underline">
+            <span>エントリーフォームへ戻る</span>
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-base-border shadow-card p-6">
+          <h2 class="font-serif text-lg font-bold text-base-charcoal mb-2 flex items-center gap-2">
+            <i class="fa-solid fa-store text-base-terra"></i>
+            <span>公開スペースの確認</span>
+          </h2>
+          <p class="text-xs sm:text-sm text-base-muted leading-relaxed mb-4">
+            借り手向け検索ページでは、エリア・設備タグ・時間枠ごとの見え方を確認できます。
+          </p>
+          <a href="/" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-base-terra hover:bg-base-terraDark text-white text-xs font-bold transition">
+            <span>レンタルサロン一覧を見る</span>
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="py-6 text-center text-xs text-base-muted border-t border-base-border bg-white/60">
+    &copy; 2026 SalonBase Inc. All Rights Reserved.
+  </footer>
 
   <script>
-    const loginForm = document.getElementById('admin-login-form');
-    const loginBox = document.getElementById('login-box');
-    const dashboard = document.getElementById('admin-dashboard');
-    const errorEl = document.getElementById('login-error');
+    const STORAGE_KEY = 'salonbase_owner_session';
+
+    const loginSection = document.getElementById('login-section');
+    const dashboardSection = document.getElementById('dashboard-section');
+    const headerLogoutBtn = document.getElementById('header-logout-btn');
+    const loginForm = document.getElementById('owner-login-form');
+    const codeInput = document.getElementById('owner-code-input');
+    const passwordInput = document.getElementById('owner-password-input');
+    const submitBtn = document.getElementById('login-submit-btn');
+    const errorBox = document.getElementById('login-error-box');
+    const errorText = document.getElementById('login-error-text');
+    const togglePwBtn = document.getElementById('toggle-pw-btn');
+    const togglePwIcon = document.getElementById('toggle-pw-icon');
+
+    function showError(msg) {
+      errorText.textContent = msg;
+      errorBox.classList.remove('hidden');
+    }
+
+    function hideError() {
+      errorText.textContent = '';
+      errorBox.classList.add('hidden');
+    }
+
+    function renderDashboard(owner) {
+      document.getElementById('dash-salon-name').textContent = owner.salon_name || 'サロン名未設定';
+      document.getElementById('dash-person-name').textContent = owner.person_name || '担当者未設定';
+      document.getElementById('dash-owner-code').textContent = owner.owner_code || '-';
+      document.getElementById('dash-owner-id').textContent = owner.id ?? '-';
+
+      loginSection.classList.add('hidden');
+      dashboardSection.classList.remove('hidden');
+      headerLogoutBtn.classList.remove('hidden');
+    }
+
+    function handleLogout() {
+      sessionStorage.removeItem(STORAGE_KEY);
+      dashboardSection.classList.add('hidden');
+      headerLogoutBtn.classList.add('hidden');
+      loginSection.classList.remove('hidden');
+      loginForm.reset();
+      hideError();
+    }
+
+    togglePwBtn.addEventListener('click', () => {
+      const isPassword = passwordInput.type === 'password';
+      passwordInput.type = isPassword ? 'text' : 'password';
+      togglePwIcon.className = isPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+    });
 
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      errorEl.classList.add('hidden');
+      hideError();
 
-      const identifier = document.getElementById('login-id').value.trim();
-      const password = document.getElementById('login-password').value;
+      const ownerCode = codeInput.value.trim().toUpperCase();
+      const password = passwordInput.value;
+
+      if (!ownerCode || !password) {
+        showError('割り当て番号とパスワードを入力してください。');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      const originalBtnHtml = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>認証中...</span>';
 
       try {
-        // 認証用APIがある場合は /api/admin/login などに接続してください
-        const res = await fetch('/api/admin/login', {
+        const res = await fetch('/api/owner/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ identifier, password })
+          body: JSON.stringify({
+            owner_code: ownerCode,
+            password: password,
+          }),
         });
+
         const data = await res.json().catch(() => ({}));
-        if (!res.ok || data.ok === false) {
-          throw new Error(data.error || 'ログイン情報を確認してください。');
+
+        if (!res.ok || data.ok === false || !data.owner) {
+          throw new Error(data.error || '割り当て番号またはパスワードが正しくありません。');
         }
-        loginBox.classList.add('hidden');
-        dashboard.classList.remove('hidden');
+
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data.owner));
+        renderDashboard(data.owner);
       } catch (err) {
-        errorEl.textContent = err.message;
-        errorEl.classList.remove('hidden');
+        showError(err.message || 'ログイン処理中にエラーが発生しました。');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnHtml;
       }
     });
 
-    document.getElementById('logout-btn').addEventListener('click', () => {
-      dashboard.classList.add('hidden');
-      loginBox.classList.remove('hidden');
-      loginForm.reset();
+    // セッション復元（同じタブ内での再読み込み時）
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        const saved = sessionStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const owner = JSON.parse(saved);
+          if (owner && owner.owner_code) {
+            renderDashboard(owner);
+          }
+        }
+      } catch {
+        sessionStorage.removeItem(STORAGE_KEY);
+      }
     });
   </script>
 </body>
