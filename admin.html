@@ -192,6 +192,120 @@
         </div>
       </div>
 
+      <!-- サロン掲載・写真アップロード＆明るさ調節・AI文章作成 -->
+      <div class="bg-white rounded-3xl border border-base-border shadow-card p-6 sm:p-8">
+        <div class="mb-6 pb-4 border-b border-base-border">
+          <span class="font-en text-base-terra text-xs font-bold tracking-widest uppercase">Salon Publishing</span>
+          <h2 class="font-serif text-xl sm:text-2xl font-bold text-base-charcoal mt-0.5">サロン掲載情報の作成・公開</h2>
+          <p class="text-xs text-base-muted mt-1">入力・調整した内容はそのまま公開ページ（SalonBase一覧・詳細）に反映されます。</p>
+        </div>
+
+        <form id="salon-publish-form" class="space-y-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="pub-name" class="block text-xs font-bold text-base-charcoal mb-1.5">サロン名 *</label>
+              <input id="pub-name" type="text" required placeholder="例：LUPUNA 白金プライベートサロン"
+                class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
+            </div>
+            <div>
+              <label for="pub-area" class="block text-xs font-bold text-base-charcoal mb-1.5">エリア *</label>
+              <input id="pub-area" type="text" required placeholder="例：白金台・港区"
+                class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label for="pub-station" class="block text-xs font-bold text-base-charcoal mb-1.5">最寄駅・徒歩</label>
+              <input id="pub-station" type="text" placeholder="例：白金台駅 徒歩4分"
+                class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
+            </div>
+            <div>
+              <label for="pub-price" class="block text-xs font-bold text-base-charcoal mb-1.5">1時間料金（円） *</label>
+              <input id="pub-price" type="number" min="500" step="100" required placeholder="例：2200"
+                class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
+            </div>
+            <div>
+              <label for="pub-genre" class="block text-xs font-bold text-base-charcoal mb-1.5">主な対応ジャンル</label>
+              <input id="pub-genre" type="text" placeholder="例：アロマ・エステ・フェイシャル"
+                class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
+            </div>
+          </div>
+
+          <div>
+            <label for="pub-amenities" class="block text-xs font-bold text-base-charcoal mb-1.5">設備・備品（カンマ区切り）</label>
+            <input id="pub-amenities" type="text" placeholder="例：施術ベッド, ホットストーン, タオルウォーマー, 調光照明"
+              class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
+          </div>
+
+          <!-- 写真選択＆プレビュー＆【①】明るさ調節 -->
+          <div class="space-y-3">
+            <label for="pub-photos" class="block text-xs font-bold text-base-charcoal">サロン写真（複数選択可）</label>
+            <input id="pub-photos" type="file" accept="image/*" multiple onchange="handlePhotoSelection(event)"
+              class="block w-full text-xs text-base-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-base-terraLight file:text-base-terraDark hover:file:bg-base-sand cursor-pointer" />
+
+            <!-- ① 明るさ調節UI（写真プレビュー欄の近くに配置） -->
+            <div class="bg-base-bg/80 rounded-2xl p-4 border border-base-border space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <label for="pub-photo-brightness" class="font-bold text-base-charcoal">
+                  写真の明るさ調節
+                </label>
+                <div class="flex items-center gap-3">
+                  <span id="pub-photo-brightness-val" class="font-bold text-base-terraDark">100%</span>
+                  <button type="button" onclick="resetPhotoBrightness()"
+                    class="text-[11px] text-base-muted hover:text-base-charcoal underline">
+                    リセット
+                  </button>
+                </div>
+              </div>
+              <input id="pub-photo-brightness" type="range" min="70" max="140" value="100" step="5"
+                oninput="updatePhotoBrightnessPreview()"
+                class="w-full accent-base-terra cursor-pointer">
+            </div>
+
+            <div id="pub-photo-preview" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+          </div>
+
+          <!-- サロン空間の紹介文 + AI作成ボタン -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="pub-description" class="block text-xs font-bold text-base-charcoal">サロン空間の紹介文</label>
+              <button type="button" onclick="requestAiCopy('description', this)"
+                class="px-3 py-1 rounded-full bg-base-terraLight hover:bg-base-sand text-base-terraDark text-xs font-bold transition">
+                ✨ AIで作成
+              </button>
+            </div>
+            <textarea id="pub-description" rows="4" placeholder="お部屋の雰囲気や施術のしやすさ、こだわりポイントを入力してください。"
+              class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm"></textarea>
+          </div>
+
+          <!-- 入室方法・ご利用ルール + AI作成ボタン -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="pub-rules" class="block text-xs font-bold text-base-charcoal">入室方法・ご利用ルール</label>
+              <button type="button" onclick="requestAiCopy('rules', this)"
+                class="px-3 py-1 rounded-full bg-base-terraLight hover:bg-base-sand text-base-terraDark text-xs font-bold transition">
+                ✨ AIで作成
+              </button>
+            </div>
+            <textarea id="pub-rules" rows="3" placeholder="入室時間・退室時の片付け・禁煙や音・香りに関するルールなど。"
+              class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm"></textarea>
+          </div>
+
+          <div id="publish-status-msg" class="hidden text-xs font-medium rounded-xl px-4 py-2.5"></div>
+
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+            <a href="/" class="text-xs font-bold text-base-muted hover:text-base-terra transition">
+              公開ページで表示を確認する →
+            </a>
+            <button type="submit" id="publish-submit-btn"
+              class="px-6 py-3 rounded-full bg-base-terra hover:bg-base-terraDark text-white text-sm font-bold shadow-sm transition">
+              この内容で掲載する
+            </button>
+          </div>
+        </form>
+      </div>
+
       <!-- 案内＆クイックアクション -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-white rounded-3xl border border-base-border shadow-card p-6">
@@ -245,6 +359,20 @@
     const togglePwBtn = document.getElementById('toggle-pw-btn');
     const togglePwIcon = document.getElementById('toggle-pw-icon');
 
+    let selectedPhotoFiles = [];
+    let currentPhotoBrightness = 100;
+
+    function getAuthHeaders() {
+      try {
+        const raw = sessionStorage.getItem(STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : null;
+        const token = parsed?.token;
+        return token ? { 'Authorization': `Bearer ${token}` } : {};
+      } catch {
+        return {};
+      }
+    }
+
     function showError(msg) {
       errorText.textContent = msg;
       errorBox.classList.remove('hidden');
@@ -261,6 +389,11 @@
       document.getElementById('dash-owner-code').textContent = owner.owner_code || '-';
       document.getElementById('dash-owner-id').textContent = owner.id ?? '-';
 
+      const nameInput = document.getElementById('pub-name');
+      if (nameInput && !nameInput.value && owner.salon_name) {
+        nameInput.value = owner.salon_name;
+      }
+
       loginSection.classList.add('hidden');
       dashboardSection.classList.remove('hidden');
       headerLogoutBtn.classList.remove('hidden');
@@ -274,6 +407,155 @@
       loginForm.reset();
       hideError();
     }
+
+    // 【①】明るさプレビュー更新＆リセット＆画像ファイル適用
+    function updatePhotoBrightnessPreview() {
+      const slider = document.getElementById('pub-photo-brightness');
+      const label = document.getElementById('pub-photo-brightness-val');
+      currentPhotoBrightness = Number(slider?.value || 100);
+      if (label) label.textContent = `${currentPhotoBrightness}%`;
+
+      document.querySelectorAll('.salon-preview-img').forEach(img => {
+        img.style.filter = `brightness(${currentPhotoBrightness}%)`;
+      });
+    }
+
+    function resetPhotoBrightness() {
+      const slider = document.getElementById('pub-photo-brightness');
+      if (slider) slider.value = 100;
+      updatePhotoBrightnessPreview();
+    }
+
+    async function applyBrightnessToFile(file, brightnessPercent = 100) {
+      if (!file || Number(brightnessPercent) === 100) return file;
+
+      const imgBitmap = await createImageBitmap(file);
+      const canvas = document.createElement('canvas');
+      canvas.width = imgBitmap.width;
+      canvas.height = imgBitmap.height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.filter = `brightness(${Number(brightnessPercent)}%)`;
+      ctx.drawImage(imgBitmap, 0, 0, canvas.width, canvas.height);
+
+      const mimeType = file.type && file.type.startsWith('image/') ? file.type : 'image/jpeg';
+      const quality = mimeType === 'image/jpeg' ? 0.9 : undefined;
+
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, mimeType, quality));
+      if (!blob) return file;
+
+      return new File([blob], file.name, { type: mimeType, lastModified: Date.now() });
+    }
+
+    function handlePhotoSelection(e) {
+      const files = Array.from(e.target.files || []);
+      selectedPhotoFiles = files.slice(0, 20);
+      const previewEl = document.getElementById('pub-photo-preview');
+      if (!previewEl) return;
+
+      previewEl.innerHTML = '';
+      selectedPhotoFiles.forEach((file) => {
+        const url = URL.createObjectURL(file);
+        const card = document.createElement('div');
+        card.className = 'aspect-[4/3] rounded-xl overflow-hidden border border-base-border bg-base-bg';
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = file.name;
+        img.className = 'salon-preview-img w-full h-full object-cover';
+        img.style.filter = `brightness(${currentPhotoBrightness}%)`;
+        card.appendChild(img);
+        previewEl.appendChild(card);
+      });
+    }
+
+    async function requestAiCopy(target, btn) {
+      const name = document.getElementById('pub-name')?.value.trim() || '';
+      const area = document.getElementById('pub-area')?.value.trim() || '';
+      const station = document.getElementById('pub-station')?.value.trim() || '';
+      const price = document.getElementById('pub-price')?.value.trim() || '';
+      const genre = document.getElementById('pub-genre')?.value.trim() || '';
+      const amenities = document.getElementById('pub-amenities')?.value.trim() || '';
+      const description = document.getElementById('pub-description')?.value.trim() || '';
+      const rules = document.getElementById('pub-rules')?.value.trim() || '';
+
+      const origText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '作成中...';
+
+      try {
+        const res = await fetch('/api/ai/generate-copy', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders(),
+          },
+          body: JSON.stringify({
+            target,
+            salon: { name, area, station, price, genre, amenities, description, rules },
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.ok === false || !data.text) {
+          throw new Error(data.error || 'AI文章の生成に失敗しました');
+        }
+
+        const fieldId = target === 'rules' ? 'pub-rules' : 'pub-description';
+        const fieldEl = document.getElementById(fieldId);
+        if (fieldEl) fieldEl.value = data.text;
+      } catch (err) {
+        alert(err.message || 'AI生成中にエラーが発生しました');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = origText;
+      }
+    }
+
+    document.getElementById('salon-publish-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const statusMsg = document.getElementById('publish-status-msg');
+      const pubBtn = document.getElementById('publish-submit-btn');
+
+      const adjustedFiles = await Promise.all(
+        selectedPhotoFiles.map((file) => applyBrightnessToFile(file, currentPhotoBrightness))
+      );
+
+      const formData = new FormData();
+      formData.append('name', document.getElementById('pub-name').value.trim());
+      formData.append('area', document.getElementById('pub-area').value.trim());
+      formData.append('station', document.getElementById('pub-station').value.trim());
+      formData.append('price', document.getElementById('pub-price').value.trim());
+      formData.append('genre', document.getElementById('pub-genre').value.trim());
+      formData.append('amenities', document.getElementById('pub-amenities').value.trim());
+      formData.append('description', document.getElementById('pub-description').value.trim());
+      formData.append('rules', document.getElementById('pub-rules').value.trim());
+      adjustedFiles.forEach((file) => formData.append('photos', file));
+
+      pubBtn.disabled = true;
+      const origHtml = pubBtn.innerHTML;
+      pubBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>掲載処理中...';
+
+      try {
+        const res = await fetch('/api/salons', {
+          method: 'POST',
+          headers: { ...getAuthHeaders() },
+          body: formData,
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.ok === false) {
+          throw new Error(data.error || '掲載の保存に失敗しました');
+        }
+        statusMsg.className = 'text-xs font-bold rounded-xl px-4 py-2.5 bg-base-sageLight text-base-sage';
+        statusMsg.textContent = 'サロン情報を公開ページへ反映しました！';
+        statusMsg.classList.remove('hidden');
+      } catch (err) {
+        statusMsg.className = 'text-xs font-bold rounded-xl px-4 py-2.5 bg-red-50 text-red-700 border border-red-200';
+        statusMsg.textContent = err.message || '保存中にエラーが発生しました';
+        statusMsg.classList.remove('hidden');
+      } finally {
+        pubBtn.disabled = false;
+        pubBtn.innerHTML = origHtml;
+      }
+    });
 
     togglePwBtn.addEventListener('click', () => {
       const isPassword = passwordInput.type === 'password';
@@ -323,7 +605,6 @@
       }
     });
 
-    // セッション復元（同じタブ内での再読み込み時）
     window.addEventListener('DOMContentLoaded', () => {
       try {
         const saved = sessionStorage.getItem(STORAGE_KEY);
