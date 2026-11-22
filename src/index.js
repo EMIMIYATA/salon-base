@@ -280,7 +280,7 @@ export default {
 既存のメモ: ${salon.description || ""}`;
 
     
-    const result = await env.AI.run("@cf/cloudflare/clef-flash", {
+    const result = await env.AI.run("@cf/google/gemma-4-26b-a4b-it", {
       messages: [
             {
               role: "system",
