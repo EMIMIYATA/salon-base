@@ -252,6 +252,57 @@ export default {
         return json({ ok: false, error: "保存に失敗しました" }, 500);
       }
     }
+// ---- AI文章生成 ----
+    if (path === "/api/ai/generate-copy" && method === "POST") {
+      try {
+        if (!env.AI) {
+          return json(
+            { ok: false, error: "Workers AI（env.AI）が設定されていません。wrangler.toml を確認してください。" },
+            500
+          );
+        }
+
+        const body = await request.json().catch(() => ({}));
+        const target = body.target === "rules" ? "rules" : "description";
+        const salon = body.salon || {};
+
+        const prompt =
+          target === "rules"
+            ? `レンタルサロンの「入室方法・ご利用ルール」を日本語で簡潔に作成してください。
+サロン名: ${salon.name || ""}
+エリア: ${salon.area || ""}
+設備: ${salon.amenities || ""}
+既存のメモ: ${salon.rules || ""}`
+            : `レンタルサロンの「お部屋・空間の紹介文」を、セラピストや利用者が魅力を感じるように日本語で作成してください。
+サロン名: ${salon.name || ""}
+エリア・最寄駅: ${salon.area || ""} ${salon.station || ""}
+1時間料金: ${salon.price || ""}円
+ジャンル: ${salon.genre || ""}
+設備: ${salon.amenities || ""}
+既存のメモ: ${salon.description || ""}`;
+
+        const result = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
+          messages: [
+            {
+              role: "system",
+              content:
+                "あなたはレンタルサロンの魅力的な案内文を作成するアシスタントです。余計な前置きや説明は省き、本文のみ出力してください。",
+            },
+            { role: "user", content: prompt },
+          ],
+          max_tokens: 400,
+        });
+
+        const text = String(result?.response || "").trim();
+        if (!text) {
+          return json({ ok: false, error: "文章を生成できませんでした。" }, 500);
+        }
+
+        return json({ ok: true, text });
+      } catch (err) {
+        return json({ ok: false, error: "AI生成中にエラーが発生しました。" }, 500);
+      }
+    }
 
     // ---- 画像配信 ----
     if (path.startsWith("/api/images/") && method === "GET") {
