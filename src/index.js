@@ -208,21 +208,20 @@ function generateOwnerCode() {
   return `SB-${year}-${rand}`;
 }
 
-
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const path = url.pathname;
     const method = request.method;
 
-    // ---- ログイン ----
+        // ---- ログイン ----
     if (path === "/api/auth/login" && method === "POST") {
       try {
         const body = await request.json().catch(() => ({}));
         if (!verifyAdminPassword(body.password, env)) {
           return json({ ok: false, error: "パスワードが正しくありません" }, 401);
         }
-    const token = await createAdminToken(env);
+        const token = await createAdminToken(env);
         return json({ ok: true, token });
       } catch (err) {
         return json({ ok: false, error: "ログイン処理に失敗しました" }, 500);
