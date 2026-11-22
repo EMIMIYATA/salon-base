@@ -314,7 +314,10 @@ export default {
         const bookedHours = Array.isArray(b.bookedHours)
           ? b.bookedHours.map((x) => s(x, 20))
           : [];
-        const imageKey = s(b.image_key, 250);
+                const imageKeys = Array.isArray(b.image_keys)
+          ? b.image_keys.map((x) => s(x, 250)).filter(Boolean).slice(0, 20)
+          : [];
+        const imageKey = s(b.image_key, 250) || imageKeys[0] || "";
         const rawImage = s(b.image, 500);
         const imageUrl =
           rawImage || (imageKey ? `/api/images/${encodeURIComponent(imageKey)}` : "");
