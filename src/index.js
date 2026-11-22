@@ -294,6 +294,17 @@ export default {
         ],
         max_tokens: 400,
       });
+const rawText =
+  result?.response ??
+  result?.output_text ??
+  result?.result?.response ??
+  result?.choices?.[0]?.message?.content ??
+  "";
+
+const text = String(rawText).trim();
+if (!text) {
+  return json({ ok: false, error: "文章を生成できませんでした。" }, 500);
+}
 
       const rawText =
         result?.response ??
