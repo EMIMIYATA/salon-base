@@ -307,7 +307,7 @@ export default {
       }
   content:
                 "あなたはレンタルサロンの魅力的な案内文を作成するアシスタントです。余計な前置きや説明は省き、本文のみ出力してください。",
-            },
+            
             { role: "user", content: prompt },
           ],
           max_tokens: 400,
