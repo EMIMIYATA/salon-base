@@ -299,10 +299,13 @@ export default {
         }
 
         return json({ ok: true, text });
-      } catch (err) {
-        return json({ ok: false, error: "AI生成中にエラーが発生しました。" }, 500);
+             } catch (err) {
+        return json(
+          { ok: false, error: `AI生成エラー: ${err?.message || String(err)}` },
+          500
+        );
       }
-    }
+ }
 
     // ---- 画像配信 ----
     if (path.startsWith("/api/images/") && method === "GET") {
