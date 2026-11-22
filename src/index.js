@@ -181,7 +181,33 @@ async function sendMail(env, to, subject, text) {
   });
   if (!r.ok) console.log("resend error", r.status, await r.text());
   return r.ok;
+}// パスワードをソルト付きSHA-256でハッシュ化するヘルパー
+async function hashPassword(password, saltHex = null) {
+  const saltBytes = saltHex
+    ? Uint8Array.from(saltHex.match(/.{1,2}/g).map((b) => parseInt(b, 16)))
+    : crypto.getRandomValues(new Uint8Array(16));
+
+  const resolvedSaltHex = Array.from(saltBytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  const enc = new TextEncoder();
+  const data = enc.encode(`${resolvedSaltHex}:${password}`);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  const hashHex = Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  return { saltHex: resolvedSaltHex, hashHex };
 }
+
+// 振り分け番号を生成するヘルパー（例: SB-2026-4821）
+function generateOwnerCode() {
+  const year = new Date().getFullYear();
+  const rand = Math.floor(1000 + Math.random() * 9000);
+  return `SB-${year}-${rand}`;
+}
+
 
 export default {
   async fetch(request, env) {
@@ -366,78 +392,80 @@ export default {
 
     // ---- 掲載エントリー＋メール通知 ----
     if (path === "/api/entry" && method === "POST") {
-      try {
-        const b = await request.json();
-        const salon = s(b.salon_name, 100);
-        const person = s(b.person_name, 100);
-        const email = s(b.email, 200);
-        const phone = s(b.phone, 50);
-        if (!salon || !person || !email || !phone) {
-          return json({ ok: false, error: "必須項目が未入力です" }, 400);
-        }
-        await env.DB.prepare(
-          "INSERT INTO owner_entries (created_at, salon_name, area, space_type, person_name, email, phone, image_key) VALUES (?,?,?,?,?,?,?,?)"
-        )
-          .bind(
-            new Date().toISOString(),
-            salon,
-            s(b.area, 200),
-            s(b.space_type, 50),
-            person,
-            email,
-            phone,
-            s(b.image_key, 200)
-          )
-          .run();
+  try {
+    const b = await request.json();
+    const salon = s(b.salon_name, 100);
+    const person = s(b.person_name, 100);
+    const email = s(b.email, 200);
+    const phone = s(b.phone, 50);
+    const rawPassword = String(b.password || "");
 
-        try {
-          if (env.RESEND_API_KEY) {
-            if (env.NOTIFY_EMAIL) {
-              const adminText = [
-                "新しい掲載エントリーが届きました。",
-                "",
-                `サロン名: ${salon}`,
-                `担当者: ${person}`,
-                `エリア: ${s(b.area, 200)}`,
-                `スペース: ${s(b.space_type, 50)}`,
-                `メール: ${email}`,
-                `電話: ${phone}`,
-                `写真キー: ${s(b.image_key, 200) || "なし"}`,
-              ].join("\n");
-              await sendMail(env, env.NOTIFY_EMAIL, `【SalonBase】新規エントリー: ${salon}`, adminText);
-            }
-            const userText = [
-              `${person} 様`,
-              "",
-              "この度はSalonBaseへ掲載エントリーをいただき、誠にありがとうございます。",
-              "以下の内容で受け付けいたしました。",
-              "",
-              "────────────────────",
-              `サロン名: ${salon}`,
-              `ご担当者名: ${person}`,
-              `エリア: ${s(b.area, 200)}`,
-              `スペース種別: ${s(b.space_type, 50)}`,
-              `メールアドレス: ${email}`,
-              `お電話番号: ${phone}`,
-              "────────────────────",
-              "",
-              "内容を確認のうえ、担当者より順次ご連絡いたします。",
-              "今しばらくお待ちくださいませ。",
-              "",
-              "SalonBase 運営事務局",
-              "https://weblavo-tokyo.com",
-            ].join("\n");
-            await sendMail(env, email, "【SalonBase】掲載エントリーを受け付けました", userText);
-          }
-        } catch (mailErr) {
-          console.log("mail error", String(mailErr));
-        }
-
-        return json({ ok: true });
-      } catch (err) {
-        return json({ ok: false, error: "保存に失敗しました" }, 500);
-      }
+    if (!salon || !person || !email || !phone) {
+      return json({ ok: false, error: "必須項目が未入力です" }, 400);
     }
+    if (rawPassword.length < 6) {
+      return json({ ok: false, error: "ログインパスワードは6文字以上で設定してください" }, 400);
+    }
+
+    const ownerCode = generateOwnerCode();
+    const { saltHex, hashHex } = await hashPassword(rawPassword);
+    const createdAt = new Date().toISOString();
+
+    await env.DB.prepare(
+      `INSERT INTO owner_entries
+        (created_at, salon_name, area, space_type, person_name, email, phone, image_key, owner_code, password_hash, password_salt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+      .bind(
+        createdAt,
+        salon,
+        s(b.area, 200),
+        s(b.space_type, 50),
+        person,
+        email,
+        phone,
+        s(b.image_key, 200),
+        ownerCode,
+        hashHex,
+        saltHex
+      )
+      .run();
+
+    const adminUrl = "https://salon-base.emikurekura.workers.dev/admin";
+
+    // 運営宛て通知メール（パスワードは記載せず、番号と管理画面URLを案内）
+    try {
+      if (env.RESEND_API_KEY && env.NOTIFY_EMAIL) {
+        const adminText = [
+          "新しい掲載エントリーが届きました。",
+          "",
+          `割り当て番号: ${ownerCode}`,
+          `サロン名: ${salon}`,
+          `担当者: ${person}`,
+          `エリア: ${s(b.area, 200)}`,
+          `メール: ${email}`,
+          `電話: ${phone}`,
+          "",
+          "▼ 管理画面（SalonBase Owner Console）",
+          adminUrl
+        ].join("\n");
+
+        await sendMail(env, env.NOTIFY_EMAIL, `【SalonBase】新規エントリー（${ownerCode}）：${salon}`, adminText);
+      }
+    } catch (mailErr) {
+      console.error("Notify mail error:", mailErr);
+    }
+
+    // フロント側へ「割り当て番号」と「管理画面URL」を返して誘導しやすくする
+    return json({
+      ok: true,
+      owner_code: ownerCode,
+      admin_url: adminUrl
+    });
+  } catch (err) {
+    return json({ ok: false, error: String(err?.message || err) }, 500);
+  }
+}
 
     // ---- 1. 予約作成 ----
     if (method === "POST" && path === "/api/bookings") {
