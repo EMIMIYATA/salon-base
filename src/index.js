@@ -284,16 +284,9 @@ export default {
 設備: ${salon.amenities || ""}
 既存のメモ: ${salon.description || ""}`;
 
-        const text = String(
-  result?.response ??
-  result?.choices?.[0]?.message?.content ??
-  result?.result?.response ??
-  ""
-).trim();
+    
     const result = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
       messages: [
-
-          messages: [
             {
               role: "system",
               content:
