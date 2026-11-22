@@ -254,7 +254,10 @@ export default {
     }
 // ---- AI文章生成 ----
     if (path === "/api/ai/generate-copy" && method === "POST") {
-      try {
+      try {if (!(await verifyAdminToken(request, env))) {
+  return json({ ok: false, error: "認証が必要です" }, 401);
+}
+
         if (!env.AI) {
           return json(
             { ok: false, error: "Workers AI（env.AI）が設定されていません。wrangler.toml を確認してください。" },
