@@ -222,7 +222,7 @@ export default {
         if (!verifyAdminPassword(body.password, env)) {
           return json({ ok: false, error: "パスワードが正しくありません" }, 401);
         }
-        const token = await createAdminToken(env);
+    const token = await createAdminToken(env);
         return json({ ok: true, token });
       } catch (err) {
         return json({ ok: false, error: "ログイン処理に失敗しました" }, 500);
