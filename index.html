@@ -1339,9 +1339,15 @@ async function handleOwnerSubmit(e) {
     e.preventDefault();
     const salonName = document.getElementById('owner-salon-name').value.trim();
     const personName = document.getElementById('owner-person-name').value.trim();
+    const password = (document.getElementById('owner-password')?.value || '').trim();
     const fileInput = document.getElementById('owner-salon-image');
     const file = fileInput && fileInput.files ? fileInput.files[0] : null;
     const submitBtn = e.target.querySelector('button[type="submit"]');
+
+    if (password.length < 6) {
+        openNotifModal('送信エラー', 'ログインパスワードは6文字以上で設定してください');
+        return;
+    }
 
     let uploadedKey = '';
 
@@ -1367,6 +1373,7 @@ async function handleOwnerSubmit(e) {
             }
             uploadedKey = data.key || '';
         }
+
         const entryRes = await fetch('/api/entry', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
@@ -1376,6 +1383,7 @@ async function handleOwnerSubmit(e) {
                 area: document.getElementById('owner-area').value,
                 email: document.getElementById('owner-email').value,
                 phone: document.getElementById('owner-phone').value,
+                password: password,
                 space_type: (document.querySelector('input[name="space_type"]:checked') || {}).value || '',
                 image_key: uploadedKey
             })
@@ -1385,12 +1393,15 @@ async function handleOwnerSubmit(e) {
             throw new Error(entryData.error || '送信に失敗しました。');
         }
 
+        const codeNote = entryData.owner_code
+            ? `\n割り当て番号：${entryData.owner_code}`
+            : '';
         const imageNote = uploadedKey
             ? `\n（アップロード済み画像キー: ${uploadedKey}）`
             : '';
 
         document.getElementById('complete-owner-text').innerText =
-            `${salonName} ${personName}様、初期掲載オーナーへのエントリーありがとうございます。1営業日以内に担当者よりご連絡し、無料ページ作成サポートのご案内をお送りいたします。${imageNote}`;
+            `${salonName} ${personName}様、初期掲載オーナーへのエントリーありがとうございます。1営業日以内に担当者よりご連絡し、無料ページ作成サポートのご案内をお送りいたします。${codeNote}${imageNote}`;
 
         document.getElementById('entry-form-body').classList.add('hidden');
         document.getElementById('entry-form-complete').classList.remove('hidden');
