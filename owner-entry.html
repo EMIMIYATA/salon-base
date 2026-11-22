@@ -406,6 +406,8 @@ const photoInput = document.getElementById("photo");
         }
 
         showBoxMsg(adminMsg, "ok", "サロン情報を保存しました！親画面（一覧）を再読み込みして反映をご確認ください。");
+      photos.length = 0; renderPhotos();
+
       } catch (err) {
         showBoxMsg(adminMsg, "err", err.message);
       } finally {
