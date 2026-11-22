@@ -600,8 +600,14 @@
           throw new Error(data.error || '割り当て番号またはパスワードが正しくありません。');
         }
 
-        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data.owner));
-        renderDashboard(data.owner);
+        const sessionPayload = {
+  ...(data.owner || {}),
+  token: data.token || data.owner?.token || '',
+};
+sessionStorage.setItem(STORAGE_KEY, JSON.stringify(sessionPayload));
+renderDashboard(sessionPayload);
+
+    
       } catch (err) {
         showError(err.message || 'ログイン処理中にエラーが発生しました。');
       } finally {
