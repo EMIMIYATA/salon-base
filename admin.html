@@ -242,6 +242,17 @@
           <div class="space-y-3">
             <label for="pub-photos" class="block text-xs font-bold text-base-charcoal">サロン写真（複数選択可）</label>
             <input id="pub-photos" type="file" accept="image/*" multiple onchange="handlePhotoSelection(event)"
+                        <!-- 写真選択＆プレビュー＆明るさ調節 -->
+          <div class="space-y-3">
+            <label for="pub-photos" class="block text-xs font-bold text-base-charcoal">サロン写真（複数選択可）</label>
+            <input id="pub-photos" type="file" accept="image/*" multiple onchange="handlePhotoSelection(event)"
+              class="block w-full text-xs text-base-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-base-terraLight file:text-base-terraDark hover:file:bg-base-sand cursor-pointer" />
+
+            <!-- ★ ここに「写真の明るさ調節」の div を入れる ★ -->
+
+            <div id="pub-photo-preview" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+          </div>
+
               class="block w-full text-xs text-base-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-base-terraLight file:text-base-terraDark hover:file:bg-base-sand cursor-pointer" />
 
             <!-- ① 明るさ調節UI（写真プレビュー欄の近くに配置） -->
