@@ -238,24 +238,12 @@
               class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
           </div>
 
-          <!-- 写真選択＆プレビュー＆【①】明るさ調節 -->
+                    <!-- 写真選択＆プレビュー＆明るさ調節 -->
           <div class="space-y-3">
             <label for="pub-photos" class="block text-xs font-bold text-base-charcoal">サロン写真（複数選択可）</label>
-            <input id="pub-photos" type="file" accept="image/*" multiple onchange="handlePhotoSelection(event)"
-                        <!-- 写真選択＆プレビュー＆明るさ調節 -->
-          <div class="space-y-3">
-            <label for="pub-photos" class="block text-xs font-bold text-base-charcoal">サロン写真（複数選択可）</label>
-            <input id="pub-photos" type="file" accept="image/*" multiple onchange="handlePhotoSelection(event)"
-              class="block w-full text-xs text-base-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-base-terraLight file:text-base-terraDark hover:file:bg-base-sand cursor-pointer" />
+            <input id="pub-photos" type="file" accept="image/*" multiple onchange="handlePhotoSelection(event)" class="block w-full text-xs text-base-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-base-terraLight file:text-base-terraDark hover:file:bg-base-sand cursor-pointer" />
 
-            <!-- ★ ここに「写真の明るさ調節」の div を入れる ★ -->
-
-            <div id="pub-photo-preview" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
-          </div>
-
-              class="block w-full text-xs text-base-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-base-terraLight file:text-base-terraDark hover:file:bg-base-sand cursor-pointer" />
-
-            <!-- ① 明るさ調節UI（写真プレビュー欄の近くに配置） -->
+            <!-- 写真の明るさ調節 -->
             <div class="bg-base-bg/80 rounded-2xl p-4 border border-base-border space-y-2">
               <div class="flex items-center justify-between text-xs">
                 <label for="pub-photo-brightness" class="font-bold text-base-charcoal">
@@ -263,11 +251,17 @@
                 </label>
                 <div class="flex items-center gap-3">
                   <span id="pub-photo-brightness-val" class="font-bold text-base-terraDark">100%</span>
-                  <button type="button" onclick="resetPhotoBrightness()"
-                    class="text-[11px] text-base-muted hover:text-base-charcoal underline">
+                  <button type="button" onclick="resetPhotoBrightness()" class="text-[11px] text-base-muted hover:text-base-charcoal underline">
                     リセット
                   </button>
                 </div>
+              </div>
+              <input id="pub-photo-brightness" type="range" min="70" max="140" value="100" step="5" oninput="updatePhotoBrightnessPreview()" class="w-full accent-base-terra cursor-pointer">
+            </div>
+
+            <div id="pub-photo-preview" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+          </div>
+
               </div>
               <input id="pub-photo-brightness" type="range" min="70" max="140" value="100" step="5"
                 oninput="updatePhotoBrightnessPreview()"
