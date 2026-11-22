@@ -351,6 +351,12 @@ export default {
             nowIso
           )
           .run();
+        const newId = ins.meta?.last_row_id;
+        for (let i = 0; i < imageKeys.length; i++) {
+          await env.DB.prepare(
+            `INSERT INTO salon_photos (salon_id, image_key, sort_order, created_at) VALUES (?, ?, ?, ?)`
+          ).bind(newId, imageKeys[i], i, nowIso).run();
+        }
 
         return json({ ok: true, id: ins.meta?.last_row_id, imageUrl }, 201);
       } catch (e) {
