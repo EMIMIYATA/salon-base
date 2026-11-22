@@ -466,6 +466,44 @@ export default {
     return json({ ok: false, error: String(err?.message || err) }, 500);
   }
 }
+if (path === "/api/owner/login" && method === "POST") {
+  try {
+    const b = await request.json();
+    const ownerCode = String(b.owner_code || "").trim().toUpperCase();
+    const rawPassword = String(b.password || "");
+
+    if (!ownerCode || !rawPassword) {
+      return json({ ok: false, error: "番号とパスワードを入力してください" }, 400);
+    }
+
+    const row = await env.DB.prepare(
+      "SELECT id, owner_code, salon_name, person_name, password_hash, password_salt FROM owner_entries WHERE owner_code = ? LIMIT 1"
+    )
+      .bind(ownerCode)
+      .first();
+
+    if (!row || !row.password_hash || !row.password_salt) {
+      return json({ ok: false, error: "番号またはパスワードが正しくありません" }, 401);
+    }
+
+    const { hashHex } = await hashPassword(rawPassword, row.password_salt);
+    if (hashHex !== row.password_hash) {
+      return json({ ok: false, error: "番号またはパスワードが正しくありません" }, 401);
+    }
+
+    return json({
+      ok: true,
+      owner: {
+        id: row.id,
+        owner_code: row.owner_code,
+        salon_name: row.salon_name,
+        person_name: row.person_name
+      }
+    });
+  } catch (err) {
+    return json({ ok: false, error: String(err?.message || err) }, 500);
+  }
+}
 
     // ---- 1. 予約作成 ----
     if (method === "POST" && path === "/api/bookings") {
