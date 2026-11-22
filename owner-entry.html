@@ -1,421 +1,249 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>オーナーログイン・サロン登録 | SalonBase</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
-      background: #FAF7F2;
-      color: #3D352E;
-      margin: 0;
-      padding: 24px 16px;
-    }
-    .wrap {
-      max-width: 680px;
-      margin: 0 auto;
-    }
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .card {
-      background: #FFFFFF;
-      border: 1px solid #E6DDD0;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 4px 20px rgba(61, 53, 46, 0.05);
-    }
-    h1 {
-      font-size: 1.35rem;
-      margin: 0 0 8px;
-    }
-    p.lead {
-      font-size: 0.9rem;
-      color: #7A6F66;
-      margin: 0 0 20px;
-    }
-    .field {
-      margin-bottom: 14px;
-    }
-    label {
-      display: block;
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-    input[type="password"],
-    input[type="text"],
-    input[type="number"],
-    select,
-    textarea {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 10px 12px;
-      border: 1px solid #D8CEC0;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      background: #FFFDF9;
-    }
-    textarea {
-      min-height: 84px;
-    }
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 10px;
-      border: 1px solid #E6DDD0;
-      border-radius: 999px;
-      font-size: 0.85rem;
-      background: #FAF7F2;
-    }
-    button {
-      padding: 11px 18px;
-      border: none;
-      border-radius: 999px;
-      background: #C4826E;
-      color: #FFFFFF;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #B06F5B;
-    }
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-    .btn-sub {
-      background: #EFE7DC;
-      color: #3D352E;
-      font-size: 0.85rem;
-      padding: 8px 14px;
-    }
-    .msg {
-      margin-top: 12px;
-      padding: 10px 12px;
-      border-radius: 10px;
-      font-size: 0.9rem;
-      display: none;
-    }
-    .msg.err {
-      display: block;
-      background: #FDECEC;
-      color: #9B2C2C;
-      border: 1px solid #F5C2C2;
-    }
-    .msg.ok {
-      display: block;
-      background: #EBF5EE;
-      color: #276749;
-      border: 1px solid #B7E4C7;
-    }
-    .hidden {
-      display: none !important;
-    }
-    #previewBox {
-      display: none;
-      margin-top: 10px;
-    }
-    #previewImg {
-      max-width: 100%;
-      max-height: 220px;
-      border-radius: 10px;
-      border: 1px solid #E6DDD0;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>オーナーログイン・サロン登録 | SalonBase</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;background:#FAF7F2;color:#3D352E;margin:0;padding:24px 16px}
+.wrap{max-width:680px;margin:0 auto}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.card{background:#fff;border:1px solid #E6DDD0;border-radius:16px;padding:24px;box-shadow:0 4px 20px rgba(61,53,46,.05)}
+h1{font-size:1.35rem;margin:0 0 8px}
+p.lead{font-size:.9rem;color:#7A6F66;margin:0 0 20px}
+.field{margin-bottom:14px}
+label{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px}
+input[type=password],input[type=text],input[type=number],select,textarea{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #D8CEC0;border-radius:10px;font-size:.95rem;background:#FFFDF9}
+textarea{min-height:110px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid #E6DDD0;border-radius:999px;font-size:.85rem;background:#FAF7F2;font-weight:400}
+button{padding:11px 18px;border:none;border-radius:999px;background:#C4826E;color:#fff;font-size:.95rem;font-weight:600;cursor:pointer}
+button:disabled{opacity:.6}
+.btn-sub{background:#EFE7DC;color:#3D352E;font-size:.85rem;padding:8px 14px}
+.msg{margin-top:12px;padding:10px 12px;border-radius:10px;font-size:.9rem;display:none}
+.msg.err{display:block;background:#FDECEC;color:#9B2C2C;border:1px solid #F5C2C2}
+.msg.ok{display:block;background:#EBF5EE;color:#276749;border:1px solid #B7E4C7}
+.hidden{display:none!important}
+.ph{border:1px solid #E6DDD0;border-radius:12px;padding:10px;margin-top:10px;background:#FFFDF9}
+.ph img{width:100%;max-height:220px;object-fit:cover;border-radius:8px}
+.ph input[type=range]{width:100%}
+.ph small{color:#7A6F66}
+.ph .row{display:flex;gap:8px;margin-top:6px}
+.aibtn{margin-top:6px}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="topbar">
-      <strong>SalonBase Owner Console</strong>
-      <button type="button" id="logoutBtn" class="btn-sub hidden" onclick="handleLogout()">ログアウト</button>
-    </div>
-
-    <!-- ログイン画面 -->
-    <section id="loginView" class="card">
-      <h1>オーナーログイン</h1>
-      <p class="lead">管理パスワードを入力してログインしてください。</p>
-      <form id="loginForm">
-        <div class="field">
-          <label for="adminPassword">管理パスワード</label>
-          <input type="password" id="adminPassword" required autocomplete="current-password" placeholder="パスワードを入力" />
-        </div>
-        <button type="submit">ログインする</button>
-        <div id="loginMsg" class="msg"></div>
-      </form>
-    </section>
-
-    <!-- ログイン後のサロン登録画面 -->
-    <section id="adminView" class="card hidden">
-      <h1>サロン掲載情報の登録</h1>
-      <p class="lead">公開用のサロン情報を入力して保存します。</p>
-      <form id="salonForm">
-        <div class="field">
-          <label for="name">サロン名</label>
-          <input type="text" id="name" required />
-        </div>
-        <div class="field">
-          <label for="pricePerHour">1時間あたりの料金（円）</label>
-          <input type="number" id="pricePerHour" required min="0" />
-        </div>
-        <div class="field">
-          <label for="area">エリア</label>
-          <input type="text" id="area" required />
-        </div>
-        <div class="field">
-          <label for="station">最寄駅・アクセス</label>
-          <input type="text" id="station" />
-        </div>
-        <div class="field">
-          <label for="availabilityBadge">空き状況バッジ</label>
-          <select id="availabilityBadge">
-            <option value="本日空きあり">本日空きあり</option>
-            <option value="残りわずか">残りわずか</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="rating">評価（例: 4.9）</label>
-          <input type="number" id="rating" step="0.1" min="1" max="5" value="4.9" />
-        </div>
-        <div class="field">
-          <label>対応ジャンル</label>
-          <div id="genreChips" class="chips">
-            <label class="chip"><input type="checkbox" value="エステ・リラク" />エステ・リラク</label>
-            <label class="chip"><input type="checkbox" value="ネイル" />ネイル</label>
-            <label class="chip"><input type="checkbox" value="マツエク" />マツエク</label>
-            <label class="chip"><input type="checkbox" value="整体・ストレッチ" />整体・ストレッチ</label>
-            <label class="chip"><input type="checkbox" value="ヘアメイク" />ヘアメイク</label>
-          </div>
-        </div>
-        <div class="field">
-          <label>設備・特徴</label>
-          <div id="equipChips" class="chips">
-            <label class="chip"><input type="checkbox" value="電動昇降ベッド" />電動昇降ベッド</label>
-            <label class="chip"><input type="checkbox" value="折り畳みベッド" />折り畳みベッド</label>
-            <label class="chip"><input type="checkbox" value="完全個室" />完全個室</label>
-            <label class="chip"><input type="checkbox" value="タオルウォーマー" />タオルウォーマー</label>
-            <label class="chip"><input type="checkbox" value="ドレッサー・三面鏡" />ドレッサー・三面鏡</label>
-            <label class="chip"><input type="checkbox" value="シャワー完備" />シャワー完備</label>
-            <label class="chip"><input type="checkbox" value="リングライト" />リングライト</label>
-            <label class="chip"><input type="checkbox" value="駅徒歩5分以内" />駅徒歩5分以内</label>
-          </div>
-        </div>
-        <div class="field">
-          <label for="freeAmenitiesText">無料備品（改行または読点で区切り）</label>
-          <textarea id="freeAmenitiesText"></textarea>
-        </div>
-        <div class="field">
-          <label for="description">サロン説明</label>
-          <textarea id="description"></textarea>
-        </div>
-        <div class="field">
-          <label for="entryRules">入室方法・利用ルール</label>
-          <textarea id="entryRules"></textarea>
-        </div>
-        <div class="field">
-          <label for="photo">サロン写真アップロード</label>
-          <input type="file" id="photo" accept="image/*" />
-          <div id="previewBox">
-            <img id="previewImg" alt="プレビュー" />
-          </div>
-          <div id="uploadMeta" style="font-size:0.8rem;color:#7A6F66;margin-top:6px;"></div>
-        </div>
-        <div class="field">
-          <label for="imageUrl">画像URL（アップロード時に自動入力・手入力も可）</label>
-          <input type="text" id="imageUrl" />
-        </div>
-        <button type="submit" id="saveBtn">サロン情報を保存する</button>
-        <div id="adminMsg" class="msg"></div>
-      </form>
-    </section>
+<div class="wrap">
+  <div class="topbar">
+    <strong>SalonBase Owner Console</strong>
+    <button type="button" id="logoutBtn" class="btn-sub hidden">ログアウト</button>
   </div>
 
-  <script>
-    const API_BASE = "";
-    const TOKEN_KEY = "salonbase_admin_token";
+  <section id="loginView" class="card">
+    <h1>オーナーログイン</h1>
+    <p class="lead">管理パスワードを入力してログインしてください。</p>
+    <form id="loginForm">
+      <div class="field">
+        <label for="adminPassword">管理パスワード</label>
+        <input type="password" id="adminPassword" required autocomplete="current-password" />
+      </div>
+      <button type="submit">ログインする</button>
+      <div id="loginMsg" class="msg"></div>
+    </form>
+  </section>
 
-    let uploadedImageKey = "";
-    let uploadedImageUrl = "";
+  <section id="adminView" class="card hidden">
+    <h1>サロン掲載情報の登録</h1>
+    <p class="lead">公開用のサロン情報を入力して保存します。</p>
+    <form id="salonForm">
+      <div class="field"><label for="name">サロン名</label><input type="text" id="name" required /></div>
+      <div class="field"><label for="pricePerHour">1時間あたりの料金（円）</label><input type="number" id="pricePerHour" required min="0" /></div>
+      <div class="field"><label for="area">エリア</label><input type="text" id="area" required /></div>
+      <div class="field"><label for="station">最寄駅・アクセス</label><input type="text" id="station" required /></div>
+      <div class="field">
+        <label for="availabilityBadge">空き状況バッジ</label>
+        <select id="availabilityBadge"><option value="本日空きあり">本日空きあり</option><option value="残りわずか">残りわずか</option></select>
+      </div>
+      <div class="field"><label for="rating">評価（例: 4.9）</label><input type="number" id="rating" step="0.1" min="1" max="5" value="4.9" /></div>
+      <div class="field">
+        <label>対応ジャンル</label>
+        <div id="genreChips" class="chips">
+          <label class="chip"><input type="checkbox" value="エステ・リラク" />エステ・リラク</label>
+          <label class="chip"><input type="checkbox" value="ネイル" />ネイル</label>
+          <label class="chip"><input type="checkbox" value="マツエク" />マツエク</label>
+          <label class="chip"><input type="checkbox" value="整体・ストレッチ" />整体・ストレッチ</label>
+          <label class="chip"><input type="checkbox" value="ヘアメイク" />ヘアメイク</label>
+        </div>
+      </div>
+      <div class="field">
+        <label>設備・特徴</label>
+        <div id="equipChips" class="chips">
+          <label class="chip"><input type="checkbox" value="電動昇降ベッド" />電動昇降ベッド</label>
+          <label class="chip"><input type="checkbox" value="折り畳みベッド" />折り畳みベッド</label>
+          <label class="chip"><input type="checkbox" value="完全個室" />完全個室</label>
+          <label class="chip"><input type="checkbox" value="タオルウォーマー" />タオルウォーマー</label>
+          <label class="chip"><input type="checkbox" value="ドレッサー・三面鏡" />ドレッサー・三面鏡</label>
+          <label class="chip"><input type="checkbox" value="シャワー完備" />シャワー完備</label>
+          <label class="chip"><input type="checkbox" value="リングライト" />リングライト</label>
+          <label class="chip"><input type="checkbox" value="駅徒歩5分以内" />駅徒歩5分以内</label>
+        </div>
+      </div>
+      <div class="field"><label for="freeAmenitiesText">無料備品（改行または読点で区切り）</label><textarea id="freeAmenitiesText" style="min-height:84px"></textarea></div>
+      <div class="field">
+        <label for="description">サロン説明</label>
+        <textarea id="description"></textarea>
+        <button type="button" class="btn-sub aibtn" id="aiDesc">✨ AIで作成</button>
+      </div>
+      <div class="field">
+        <label for="entryRules">入室方法・利用ルール</label>
+        <textarea id="entryRules"></textarea>
+        <button type="button" class="btn-sub aibtn" id="aiRules">✨ AIで作成</button>
+      </div>
+      <div class="field">
+        <label>サロン写真（複数選べます・1枚目が代表写真）</label>
+        <input type="file" id="photoInput" accept="image/*" multiple />
+        <div id="photoList"></div>
+      </div>
+      <button type="submit" id="saveBtn">サロン情報を保存する</button>
+      <div id="adminMsg" class="msg"></div>
+    </form>
+  </section>
+</div>
 
-    const loginView = document.getElementById("loginView");
-    const adminView = document.getElementById("adminView");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const loginForm = document.getElementById("loginForm");
-    const loginMsg = document.getElementById("loginMsg");
-    const salonForm = document.getElementById("salonForm");
-    const adminMsg = document.getElementById("adminMsg");
-    const photoInput = document.getElementById("photo");
-    const previewBox = document.getElementById("previewBox");
-    const previewImg = document.getElementById("previewImg");
-    const uploadMeta = document.getElementById("uploadMeta");
-    const saveBtn = document.getElementById("saveBtn");
-const photoInput = document.getElementById("photo");
+<script>
+const TOKEN_KEY = "salonbase_admin_token";
+const $ = (id) => document.getElementById(id);
+const photos = []; // { file, url, b, c }
 
-    function getToken() {
-      return sessionStorage.getItem(TOKEN_KEY) || "";
+function getToken(){ try{return sessionStorage.getItem(TOKEN_KEY)||"";}catch{return "";} }
+function setToken(t){ try{ t?sessionStorage.setItem(TOKEN_KEY,t):sessionStorage.removeItem(TOKEN_KEY);}catch{} }
+function showMsg(el,type,text){ el.className="msg "+type; el.textContent=text; }
+function updateView(){
+  const has=!!getToken();
+  $("loginView").classList.toggle("hidden",has);
+  $("adminView").classList.toggle("hidden",!has);
+  $("logoutBtn").classList.toggle("hidden",!has);
+}
+$("logoutBtn").addEventListener("click",()=>{ setToken(""); updateView(); });
+
+$("loginForm").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  $("loginMsg").className="msg";
+  try{
+    const res=await fetch("/api/auth/login",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({password:$("adminPassword").value})});
+    const data=await res.json();
+    if(!res.ok||!data.ok||!data.token) throw new Error(data.error||"パスワードが正しくありません");
+    setToken(data.token); $("loginForm").reset(); updateView();
+  }catch(err){ showMsg($("loginMsg"),"err",err.message); }
+});
+
+function checked(id){ return Array.from(document.querySelectorAll("#"+id+" input:checked")).map(x=>x.value); }
+function parseList(t){ return String(t||"").split(/[\n、,]+/).map(x=>x.trim()).filter(Boolean); }
+
+// ---- 写真 ----
+$("photoInput").addEventListener("change",()=>{
+  for(const f of Array.from($("photoInput").files||[])){
+    if(photos.length>=10) break;
+    photos.push({file:f,url:URL.createObjectURL(f),b:100,c:100});
+  }
+  $("photoInput").value="";
+  renderPhotos();
+});
+function renderPhotos(){
+  const box=$("photoList"); box.innerHTML="";
+  photos.forEach((p,i)=>{
+    const d=document.createElement("div"); d.className="ph";
+    d.innerHTML=`<img alt=""><small>明るさ</small><input type="range" min="60" max="150" value="${p.b}" data-k="b"><small>コントラスト</small><input type="range" min="60" max="150" value="${p.c}" data-k="c"><div class="row"><button type="button" class="btn-sub" data-a="up">↑</button><button type="button" class="btn-sub" data-a="del">削除</button></div>`;
+    const img=d.querySelector("img"); img.src=p.url;
+    const upd=()=>{ img.style.filter=`brightness(${p.b}%) contrast(${p.c}%)`; };
+    upd();
+    d.querySelectorAll("input[type=range]").forEach(r=>r.addEventListener("input",()=>{ p[r.dataset.k]=Number(r.value); upd(); }));
+    d.querySelector('[data-a="del"]').addEventListener("click",()=>{ photos.splice(i,1); renderPhotos(); });
+    d.querySelector('[data-a="up"]').addEventListener("click",()=>{ if(i>0){ [photos[i-1],photos[i]]=[photos[i],photos[i-1]]; renderPhotos(); } });
+    box.appendChild(d);
+  });
+}
+function loadImage(url){ return new Promise((ok,ng)=>{ const im=new Image(); im.onload=()=>ok(im); im.onerror=ng; im.src=url; }); }
+async function processPhoto(p){
+  const im=await loadImage(p.url);
+  const max=1600, sc=Math.min(1,max/Math.max(im.width,im.height));
+  const w=Math.round(im.width*sc), h=Math.round(im.height*sc);
+  const cv=document.createElement("canvas"); cv.width=w; cv.height=h;
+  const ctx=cv.getContext("2d"); ctx.drawImage(im,0,0,w,h);
+  if(p.b!==100||p.c!==100){
+    const data=ctx.getImageData(0,0,w,h), px=data.data, b=p.b/100, c=p.c/100;
+    for(let i=0;i<px.length;i+=4){
+      for(let k=0;k<3;k++){ let v=(px[i+k]-128)*c+128; v*=b; px[i+k]=v<0?0:v>255?255:v; }
     }
+    ctx.putImageData(data,0,0);
+  }
+  return await new Promise((ok)=>cv.toBlob(ok,"image/jpeg",0.85));
+}
+async function uploadAll(){
+  const keys=[];
+  for(let i=0;i<photos.length;i++){
+    $("adminMsg").className="msg ok"; $("adminMsg").textContent=`写真をアップロード中… (${i+1}/${photos.length})`;
+    const blob=await processPhoto(photos[i]);
+    const fd=new FormData(); fd.append("file",blob,"photo.jpg");
+    const res=await fetch("/api/upload",{method:"POST",headers:{Authorization:"Bearer "+getToken()},body:fd});
+    const data=await res.json();
+    if(!res.ok||!data.ok) throw new Error(data.error||"写真のアップロードに失敗しました");
+    keys.push(data.key);
+  }
+  return keys;
+}
 
-    function setToken(token) {
-      if (token) sessionStorage.setItem(TOKEN_KEY, token);
-      else sessionStorage.removeItem(TOKEN_KEY);
-    }
+// ---- AI ----
+async function runAI(target,btn){
+  const old=btn.textContent; btn.disabled=true; btn.textContent="作成中…";
+  try{
+    const salon={
+      name:$("name").value, area:$("area").value, station:$("station").value,
+      price:$("pricePerHour").value, genre:checked("genreChips").join("、"),
+      amenities:[...checked("equipChips"),...parseList($("freeAmenitiesText").value)].join("、"),
+      description:$("description").value, rules:$("entryRules").value
+    };
+    const res=await fetch("/api/ai/generate-copy",{method:"POST",headers:{"content-type":"application/json",Authorization:"Bearer "+getToken()},body:JSON.stringify({target,salon})});
+    const data=await res.json();
+    if(!res.ok||!data.ok) throw new Error(data.error||"文章を生成できませんでした。");
+    if(target==="rules") $("entryRules").value=data.text; else $("description").value=data.text;
+  }catch(err){ alert(err.message); }
+  finally{ btn.disabled=false; btn.textContent=old; }
+}
+$("aiDesc").addEventListener("click",()=>runAI("description",$("aiDesc")));
+$("aiRules").addEventListener("click",()=>runAI("rules",$("aiRules")));
 
-    function updateViewByAuth() {
-      const hasToken = Boolean(getToken());
-      loginView.classList.toggle("hidden", hasToken);
-      adminView.classList.toggle("hidden", !hasToken);
-      logoutBtn.classList.toggle("hidden", !hasToken);
-    }
+// ---- 保存 ----
+$("salonForm").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  $("adminMsg").className="msg"; $("saveBtn").disabled=true;
+  try{
+    const imageKeys=await uploadAll();
+    const payload={
+      name:$("name").value.trim(),
+      pricePerHour:Number($("pricePerHour").value),
+      area:$("area").value.trim(),
+      station:$("station").value.trim(),
+      availabilityBadge:$("availabilityBadge").value,
+      rating:Number($("rating").value)||4.9,
+      genres:checked("genreChips"),
+      equipment:checked("equipChips"),
+      freeAmenities:parseList($("freeAmenitiesText").value),
+      description:$("description").value.trim(),
+      entryRules:$("entryRules").value.trim(),
+      image_keys:imageKeys
+    };
+    const res=await fetch("/api/salons",{method:"POST",headers:{"content-type":"application/json",Authorization:"Bearer "+getToken()},body:JSON.stringify(payload)});
+    const data=await res.json();
+    if(res.status===401){ setToken(""); updateView(); throw new Error("ログインの有効期限が切れました。再ログインしてください。"); }
+    if(!res.ok||!data.ok) throw new Error(data.error||"サロン情報の保存に失敗しました");
+    showMsg($("adminMsg"),"ok","サロン情報を保存しました！トップページを再読み込みして確認してください。");
+    photos.length=0; renderPhotos();
+  }catch(err){ showMsg($("adminMsg"),"err",err.message); }
+  finally{ $("saveBtn").disabled=false; }
+});
 
-    function showBoxMsg(el, type, text) {
-      el.className = `msg ${type}`;
-      el.textContent = text;
-    }
-
-    function handleLogout() {
-      setToken("");
-      updateViewByAuth();
-    }
-
-    loginForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      loginMsg.className = "msg";
-      const password = document.getElementById("adminPassword").value;
-
-      try {
-        const res = await fetch(`${API_BASE}/api/auth/login`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ password }),
-        });
-        const data = await res.json();
-        if (!res.ok || !data.ok || !data.token) {
-          throw new Error(data.error || "パスワードが正しくありません");
-        }
-        setToken(data.token);
-        loginForm.reset();
-        updateViewByAuth();
-      } catch (err) {
-        showBoxMsg(loginMsg, "err", err.message);
-      }
-    });
-
-    function getCheckedValues(containerId) {
-      return Array.from(document.querySelectorAll(`#${containerId} input[type="checkbox"]:checked`))
-        .map((el) => el.value);
-    }
-
-    function parseListText(text) {
-      return String(text || "")
-        .split(/[\n、,]+/)
-        .map((s) => s.trim())
-        .filter(Boolean);
-    }
-
-    if (photoInput) {
-      photoInput.addEventListener("change", async () => {
-        const file = photoInput.files && photoInput.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = () => {
-          previewImg.src = reader.result;
-          previewBox.style.display = "block";
-        };
-        reader.readAsDataURL(file);
-
-        uploadMeta.textContent = "アップロード中...";
-        try {
-          const formData = new FormData();
-          formData.append("file", file);
-          const res = await fetch(`${API_BASE}/api/upload`, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-            },
-            body: formData,
-          });
-          const data = await res.json();
-          if (!res.ok || !data.ok) {
-            throw new Error(data.error || "画像アップロードに失敗しました");
-          }
-          uploadedImageKey = data.key || "";
-          uploadedImageUrl = data.url || "";
-          if (uploadedImageUrl) {
-            document.getElementById("imageUrl").value = uploadedImageUrl;
-          }
-          uploadMeta.textContent = `アップロード完了: ${uploadedImageUrl || uploadedImageKey}`;
-        } catch (err) {
-          uploadMeta.textContent = `アップロード失敗（URL手入力でも登録可能）: ${err.message}`;
-        }
-      });
-    }
-
-    salonForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      adminMsg.className = "msg";
-      saveBtn.disabled = true;
-
-      try {
-        const payload = {
-        
-  name: document.getElementById("name").value,
-  pricePerHour: ...,
-  area: ...,
-  （ほかの項目はそのまま）
-  image_keys: imageKeys,   // ← この1行を足す
-};
-
-          name: document.getElementById("name").value.trim(),
-          pricePerHour: Number(document.getElementById("pricePerHour").value),
-          area: document.getElementById("area").value.trim(),
-          station: document.getElementById("station").value.trim(),
-          availabilityBadge: document.getElementById("availabilityBadge").value,
-          rating: Number(document.getElementById("rating").value) || 4.9,
-          genres: getCheckedValues("genreChips"),
-          equipment: getCheckedValues("equipChips"),
-          freeAmenities: parseListText(document.getElementById("freeAmenitiesText").value),
-          description: document.getElementById("description").value.trim(),
-          entryRules: document.getElementById("entryRules").value.trim(),
-          image_key: uploadedImageKey,
-          image: document.getElementById("imageUrl").value.trim() || uploadedImageUrl,
-        };
-
-        const res = await fetch(`${API_BASE}/api/salons`, {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-            Authorization: `Bearer ${getToken()}`,
-          },
-          body: JSON.stringify(payload),
-        });
-        const data = await res.json();
-        if (!res.ok || !data.ok) {
-          throw new Error(data.error || "サロン情報の保存に失敗しました");
-        }
-
-        showBoxMsg(adminMsg, "ok", "サロン情報を保存しました！親画面（一覧）を再読み込みして反映をご確認ください。");
-      photos.length = 0; renderPhotos();
-
-      } catch (err) {
-        showBoxMsg(adminMsg, "err", err.message);
-      } finally {
-        saveBtn.disabled = false;
-      }
-    });
-
-    updateViewByAuth();
-  </script>
+updateView();
+</script>
 </body>
 </html>
