@@ -280,10 +280,38 @@ export default {
 既存のメモ: ${salon.description || ""}`;
 
     
-    const result = await env.AI.run("@cf/google/gemma-4-26b-a4b-it", {
-      messages: [
-            {
-              role: "system",
+          const systemPrompt = `あなたは日本語の文章を校正する専門アシスタントです。
+以下の指示に従って、入力された文章やメモを校正してください。
+- 元の文章の意味、意図、事実関係は変えないこと。
+- 勝手に新しい設備や条件、事実を付け足さないこと。
+- 誤字脱字や不自然な言い回し、表記ゆれを直し、読みやすく上品で自然な日本語に整えること。
+- 「承知しました」「校正結果は以下の通りです」などの前置きや解説は一切省き、校正後の本文のみを出力すること。`;
+
+      const result = await env.AI.run("@cf/google/gemma-4-26b-a4b-it", {
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: prompt },
+        ],
+        max_tokens: 400,
+      });
+
+      const rawText =
+        result?.response ??
+        result?.output_text ??
+        result?.result?.response ??
+        result?.choices?.[0]?.message?.content ??
+        "";
+      const text = String(rawText).trim();
+      if (!text) {
+        return json(
+          {
+            ok: false,
+            error: "文章を生成できませんでした。",
+            debugKeys: result && typeof result === "object" ? Object.keys(result) : typeof result,
+          },
+          500
+        );
+      }
               content:
                 "あなたはレンタルサロンの魅力的な案内文を作成するアシスタントです。余計な前置きや説明は省き、本文のみ出力してください。",
             },
