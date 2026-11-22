@@ -252,79 +252,65 @@ export default {
         return json({ ok: false, error: "保存に失敗しました" }, 500);
       }
     }
-    // ---- AI文章生成 ----
+        // ---- AI文章生成 ----
     if (path === "/api/ai/generate-copy" && method === "POST") {
       try {
         if (!env.AI) {
-          return json(
-            { ok: false, error: "Workers AI (env.AI) が設定されていません。wrangler.toml を確認してください。" },
-            500
-          );
+          return json({ ok: false, error: "Workers AI (env.AI) が設定されていません" }, 500);
         }
         const body = await request.json().catch(() => ({}));
         const target = body.target === "rules" ? "rules" : "description";
         const salon = body.salon || {};
+
         const prompt =
           target === "rules"
-            ? `レンタルサロンの「入室方法・ご利用ルール」を日本語で簡潔に作成してください。
+            ? `レンタルサロンの「入室方法・ご利用ルール」を、箇条書き5〜7項目の日本語で作成してください。
 サロン名: ${salon.name || ""}
 エリア: ${salon.area || ""}
 設備: ${salon.amenities || ""}
-既存のメモ: ${salon.rules || ""}`
-            : `レンタルサロンの「お部屋・空間の紹介文」を、セラピストや利用者が魅力を感じるように日本語で作成してください。
+オーナーのメモ: ${salon.rules || ""}`
+            : `レンタルサロンの「お部屋・空間の紹介文」を、上品で信頼感のある日本語で150〜250文字で作成してください。
 サロン名: ${salon.name || ""}
 エリア・最寄駅: ${salon.area || ""} ${salon.station || ""}
 1時間料金: ${salon.price || ""}円
 ジャンル: ${salon.genre || ""}
 設備: ${salon.amenities || ""}
-既存のメモ: ${salon.description || ""}`;
+オーナーのメモ: ${salon.description || ""}`;
 
-    
-          const systemPrompt = `あなたは日本語の文章を校正する専門アシスタントです。
-以下の指示に従って、入力された文章やメモを校正してください。
-- 元の文章の意味、意図、事実関係は変えないこと。
-- 勝手に新しい設備や条件、事実を付け足さないこと。
-- 誤字脱字や不自然な言い回し、表記ゆれを直し、読みやすく上品で自然な日本語に整えること。
-- 「承知しました」「校正結果は以下の通りです」などの前置きや解説は一切省き、校正後の本文のみを出力すること。`;
+        const systemPrompt = `あなたはレンタルサロンの掲載文を書く日本語のライターです。
+- オーナーのメモがある場合は、その意味と事実を変えずに、読みやすく上品な文章に整えてください。
+- 入力にない設備・条件・事実を勝手に付け足さないでください。誇張もしないでください。
+- 前置きや解説は書かず、本文のみを出力してください。`;
 
-      const result = await env.AI.run("@cf/meta/llama-3.1-8b-instruct-fp8-fast", {
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: prompt },
-        ],
-        max_tokens: 400,
-      });
-            const rawText =
-        result?.response ??
-        result?.output_text ??
-        result?.result?.response ??
-        result?.choices?.[0]?.message?.content ??
-        "";
-
-      const text = String(rawText).trim();
-      if (!text) {
-        return json({ ok: false, error: "文章を生成できませんでした。" }, 500);
-      }
-  content:
-                "あなたはレンタルサロンの魅力的な案内文を作成するアシスタントです。余計な前置きや説明は省き、本文のみ出力してください。",
-            
+        const result = await env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", {
+          messages: [
+            { role: "system", content: systemPrompt },
             { role: "user", content: prompt },
-          
-          max_tokens: 400,
+          ],
+          max_tokens: 500,
         });
 
-        const text = String(result?.response || "").trim();
+        const text = String(
+          result?.response ??
+            result?.output_text ??
+            result?.result?.response ??
+            result?.choices?.[0]?.message?.content ??
+            ""
+        ).trim();
+
         if (!text) {
+          console.log("ai raw", JSON.stringify(result));
           return json({ ok: false, error: "文章を生成できませんでした。" }, 500);
         }
-
         return json({ ok: true, text });
-             } catch (err) {
+      } catch (err) {
+        console.log("ai error", String(err));
         return json(
           { ok: false, error: `AI生成エラー: ${err?.message || String(err)}` },
           500
         );
       }
+    }
 
     // ---- 画像配信 ----
     if (path.startsWith("/api/images/") && method === "GET") {
