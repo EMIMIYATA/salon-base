@@ -369,6 +369,14 @@ const photoInput = document.getElementById("photo");
 
       try {
         const payload = {
+        
+  name: document.getElementById("name").value,
+  pricePerHour: ...,
+  area: ...,
+  （ほかの項目はそのまま）
+  image_keys: imageKeys,   // ← この1行を足す
+};
+
           name: document.getElementById("name").value.trim(),
           pricePerHour: Number(document.getElementById("pricePerHour").value),
           area: document.getElementById("area").value.trim(),
