@@ -693,8 +693,13 @@
             renderAdminDateTimeSchedule(dateInput?.value || '', hours, [], []);
         });
 
+                const ADMIN_TOKEN_KEY = 'salonbase_admin_token';
+
         async function loginAdminConsole() {
             const pw = document.getElementById('console-admin-password')?.value || '';
+            const rememberEl = document.getElementById('remember-admin-login');
+            const shouldRemember = rememberEl ? rememberEl.checked : true;
+
             if (!pw) {
                 openNotifModal('入力エラー', '管理者パスワードを入力してください。');
                 return;
@@ -710,8 +715,18 @@
                 return;
             }
             adminConsoleToken = data.token;
+
+            try {
+                if (shouldRemember) {
+                    localStorage.setItem(ADMIN_TOKEN_KEY, data.token);
+                } else {
+                    localStorage.removeItem(ADMIN_TOKEN_KEY);
+                }
+            } catch {}
+
             await refreshAdminConsoleData();
         }
+
 
         async function refreshAdminConsoleData() {
             if (!adminConsoleToken) return;
