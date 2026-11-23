@@ -261,8 +261,6 @@
 
             <div id="pub-photo-preview" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
           </div>
-            <div id="pub-photo-preview" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
-          </div>
 
           <!-- サロン空間の紹介文 + AI作成ボタン -->
           <div>
@@ -424,14 +422,7 @@
       updatePhotoBrightnessPreview();
     }
 
-    async function applyBrightnessToFile(file, brightnessPercent = 100) {
-      if (!file || Number(brightnessPercent) === 100) return file;
-
-      const imgBitmap = await createImageBitmap(file);
-      const canvas = document.createElement('canvas');
-      canvas.width = imgBitmap.width;
-      canvas.height = imgBitmap.height;
-    async function applyBrightnessToFile(file, brightnessPercent = 100) {
+       async function applyBrightnessToFile(file, brightnessPercent = 100) {
       if (!file) return file;
       const bmp = await createImageBitmap(file);
       const scale = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
@@ -461,6 +452,12 @@
       return new File([blob], 'photo.jpg', { type: 'image/jpeg', lastModified: Date.now() });
     }
 
+    function handlePhotoSelection(e) {
+      const files = Array.from(e.target.files || []);
+      selectedPhotoFiles = files.slice(0, 20);
+      const previewEl = document.getElementById('pub-photo-preview');
+      if (!previewEl) return;
+
       previewEl.innerHTML = '';
       selectedPhotoFiles.forEach((file) => {
         const url = URL.createObjectURL(file);
@@ -475,6 +472,7 @@
         previewEl.appendChild(card);
       });
     }
+
 
     async function requestAiCopy(target, btn) {
       const name = document.getElementById('pub-name')?.value.trim() || '';
