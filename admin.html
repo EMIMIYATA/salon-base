@@ -518,52 +518,75 @@
       }
     }
 
-    document.getElementById('salon-publish-form')?.addEventListener('submit', async (e) => {
+      document.getElementById('salon-publish-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const statusMsg = document.getElementById('publish-status-msg');
       const pubBtn = document.getElementById('publish-submit-btn');
+      const origHtml = pubBtn.innerHTML;
 
-      const adjustedFiles = await Promise.all(
-        selectedPhotoFiles.map((file) => applyBrightnessToFile(file, currentPhotoBrightness))
-      );
-
-      const formData = new FormData();
-      formData.append('name', document.getElementById('pub-name').value.trim());
-      formData.append('area', document.getElementById('pub-area').value.trim());
-      formData.append('station', document.getElementById('pub-station').value.trim());
-      formData.append('price', document.getElementById('pub-price').value.trim());
-      formData.append('genre', document.getElementById('pub-genre').value.trim());
-      formData.append('amenities', document.getElementById('pub-amenities').value.trim());
-      formData.append('description', document.getElementById('pub-description').value.trim());
-      formData.append('rules', document.getElementById('pub-rules').value.trim());
-      adjustedFiles.forEach((file) => formData.append('photos', file));
+      const show = (ok, msg) => {
+        statusMsg.className = ok
+          ? 'text-xs font-bold rounded-xl px-4 py-2.5 bg-base-sageLight text-base-sage'
+          : 'text-xs font-bold rounded-xl px-4 py-2.5 bg-red-50 text-red-700 border border-red-200';
+        statusMsg.textContent = msg;
+        statusMsg.classList.remove('hidden');
+      };
+      const v = (id) => document.getElementById(id).value.trim();
+      const splitList = (t) => t.split(/[、,，・]+/).map((x) => x.trim()).filter(Boolean);
 
       pubBtn.disabled = true;
-      const origHtml = pubBtn.innerHTML;
       pubBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>掲載処理中...';
 
       try {
+        const keys = [];
+        for (let i = 0; i < selectedPhotoFiles.length; i++) {
+          show(true, `写真をアップロード中… (${i + 1}/${selectedPhotoFiles.length})`);
+          const adjusted = await applyBrightnessToFile(selectedPhotoFiles[i], currentPhotoBrightness);
+          const fd = new FormData();
+          fd.append('file', adjusted);
+          const up = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { ...getAuthHeaders() },
+            body: fd,
+          });
+          const upData = await up.json().catch(() => ({}));
+          if (!up.ok || !upData.ok) throw new Error(upData.error || '写真のアップロードに失敗しました');
+          keys.push(upData.key);
+        }
+
+        const payload = {
+          name: v('pub-name'),
+          area: v('pub-area'),
+          station: v('pub-station') || v('pub-area'),
+          pricePerHour: Number(v('pub-price')),
+          genres: splitList(v('pub-genre')),
+          equipment: splitList(v('pub-amenities')),
+          description: v('pub-description'),
+          entryRules: v('pub-rules'),
+          image_keys: keys,
+        };
+
         const res = await fetch('/api/salons', {
           method: 'POST',
-          headers: { ...getAuthHeaders() },
-          body: formData,
+          headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+          body: JSON.stringify(payload),
         });
         const data = await res.json().catch(() => ({}));
-        if (!res.ok || data.ok === false) {
-          throw new Error(data.error || '掲載の保存に失敗しました');
+        if (res.status === 401) {
+          handleLogout();
+          showError('ログインの有効期限が切れました。もう一度ログインしてください。');
+          return;
         }
-        statusMsg.className = 'text-xs font-bold rounded-xl px-4 py-2.5 bg-base-sageLight text-base-sage';
-        statusMsg.textContent = 'サロン情報を公開ページへ反映しました！';
-        statusMsg.classList.remove('hidden');
+        if (!res.ok || data.ok === false) throw new Error(data.error || '掲載の保存に失敗しました');
+        show(true, 'サロン情報を公開ページへ反映しました！');
       } catch (err) {
-        statusMsg.className = 'text-xs font-bold rounded-xl px-4 py-2.5 bg-red-50 text-red-700 border border-red-200';
-        statusMsg.textContent = err.message || '保存中にエラーが発生しました';
-        statusMsg.classList.remove('hidden');
+        show(false, err.message || '保存中にエラーが発生しました');
       } finally {
         pubBtn.disabled = false;
         pubBtn.innerHTML = origHtml;
       }
     });
+
 
     togglePwBtn.addEventListener('click', () => {
       const isPassword = passwordInput.type === 'password';
