@@ -261,13 +261,6 @@
 
             <div id="pub-photo-preview" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
           </div>
-
-              </div>
-              <input id="pub-photo-brightness" type="range" min="70" max="140" value="100" step="5"
-                oninput="updatePhotoBrightnessPreview()"
-                class="w-full accent-base-terra cursor-pointer">
-            </div>
-
             <div id="pub-photo-preview" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
           </div>
 
@@ -438,25 +431,35 @@
       const canvas = document.createElement('canvas');
       canvas.width = imgBitmap.width;
       canvas.height = imgBitmap.height;
-
+    async function applyBrightnessToFile(file, brightnessPercent = 100) {
+      if (!file) return file;
+      const bmp = await createImageBitmap(file);
+      const scale = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+      const w = Math.round(bmp.width * scale);
+      const h = Math.round(bmp.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
       const ctx = canvas.getContext('2d');
-      ctx.filter = `brightness(${Number(brightnessPercent)}%)`;
-      ctx.drawImage(imgBitmap, 0, 0, canvas.width, canvas.height);
+      ctx.drawImage(bmp, 0, 0, w, h);
 
-      const mimeType = file.type && file.type.startsWith('image/') ? file.type : 'image/jpeg';
-      const quality = mimeType === 'image/jpeg' ? 0.9 : undefined;
+      const b = Number(brightnessPercent) / 100;
+      if (b !== 1) {
+        const img = ctx.getImageData(0, 0, w, h);
+        const px = img.data;
+        for (let i = 0; i < px.length; i += 4) {
+          for (let k = 0; k < 3; k++) {
+            const v = px[i + k] * b;
+            px[i + k] = v > 255 ? 255 : v;
+          }
+        }
+        ctx.putImageData(img, 0, 0);
+      }
 
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, mimeType, quality));
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.88));
       if (!blob) return file;
-
-      return new File([blob], file.name, { type: mimeType, lastModified: Date.now() });
+      return new File([blob], 'photo.jpg', { type: 'image/jpeg', lastModified: Date.now() });
     }
-
-    function handlePhotoSelection(e) {
-      const files = Array.from(e.target.files || []);
-      selectedPhotoFiles = files.slice(0, 20);
-      const previewEl = document.getElementById('pub-photo-preview');
-      if (!previewEl) return;
 
       previewEl.innerHTML = '';
       selectedPhotoFiles.forEach((file) => {
