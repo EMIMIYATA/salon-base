@@ -677,6 +677,81 @@ if (path === "/api/owner/login" && method === "POST") {
         return json({ ok: false, error: err?.message || "見学予約の処理に失敗しました" }, 500);
       }
     }
+          // ---- 自分のサロン一覧（オーナー用） ----
+    if (path === "/api/my-salons" && method === "GET") {
+      if (!(await verifyAdminToken(request, env))) {
+        return json({ ok: false, error: "認証が必要です" }, 401);
+      }
+      try {
+        const rawTok = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").split(".")[0];
+        const tok = JSON.parse(atob(rawTok));
+        let rows;
+        if (tok.role === "admin") {
+          rows = await env.DB.prepare("SELECT id, name FROM published_salons ORDER BY id DESC LIMIT 100").all();
+        } else {
+          const ow = await env.DB.prepare("SELECT email FROM owner_entries WHERE id = ?").bind(tok.owner_id).first();
+          rows = await env.DB.prepare("SELECT id, name FROM published_salons WHERE owner_email = ? ORDER BY id DESC").bind(ow?.email || "").all();
+        }
+        return json({ ok: true, salons: rows.results || [] });
+      } catch (e) {
+        return json({ ok: false, error: "取得に失敗しました" }, 500);
+      }
+    }
+
+    // ---- 日付ごとの休み：取得（公開） ----
+    if (path === "/api/closures" && method === "GET") {
+      const u = new URL(request.url);
+      const sid = parseInt(String(u.searchParams.get("salon_id") || "").replace(/^db_/, ""), 10);
+      const date = u.searchParams.get("date");
+      if (!sid) return json({ ok: false, error: "salon_id が必要です" }, 400);
+      try {
+        if (date) {
+          const r = await env.DB.prepare("SELECT hours FROM salon_closures WHERE salon_id = ? AND date = ?").bind(sid, date).first();
+          return json({ ok: true, hours: r ? JSON.parse(r.hours || "[]") : [] });
+        }
+        const today = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+        const rows = await env.DB.prepare("SELECT date, hours FROM salon_closures WHERE salon_id = ? AND date >= ? ORDER BY date").bind(sid, today).all();
+        return json({ ok: true, closures: (rows.results || []).map((x) => ({ date: x.date, hours: JSON.parse(x.hours || "[]") })) });
+      } catch (e) {
+        return json({ ok: false, error: "取得に失敗しました" }, 500);
+      }
+    }
+
+    // ---- 日付ごとの休み：保存（ログイン必須） ----
+    if (path === "/api/closures" && method === "POST") {
+      if (!(await verifyAdminToken(request, env))) {
+        return json({ ok: false, error: "認証が必要です" }, 401);
+      }
+      try {
+        const body = await request.json();
+        const sid = parseInt(body.salon_id, 10);
+        const date = String(body.date || "");
+        const hours = Array.isArray(body.hours) ? body.hours.filter((h) => /^\d{2}:\d{2}$/.test(h)) : [];
+        if (!sid || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+          return json({ ok: false, error: "サロンと日付を選んでください" }, 400);
+        }
+        const rawTok = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").split(".")[0];
+        const tok = JSON.parse(atob(rawTok));
+        if (tok.role !== "admin") {
+          const ow = await env.DB.prepare("SELECT email FROM owner_entries WHERE id = ?").bind(tok.owner_id).first();
+          const sal = await env.DB.prepare("SELECT owner_email FROM published_salons WHERE id = ?").bind(sid).first();
+          if (!ow?.email || !sal || sal.owner_email !== ow.email) {
+            return json({ ok: false, error: "このサロンは編集できません" }, 403);
+          }
+        }
+        if (hours.length === 0) {
+          await env.DB.prepare("DELETE FROM salon_closures WHERE salon_id = ? AND date = ?").bind(sid, date).run();
+        } else {
+          await env.DB.prepare("INSERT OR REPLACE INTO salon_closures (salon_id, date, hours) VALUES (?, ?, ?)").bind(sid, date, JSON.stringify(hours)).run();
+        }
+        return json({ ok: true });
+      } catch (e) {
+        return json({ ok: false, error: "保存に失敗しました" }, 500);
+      }
+    }
+
+
+
     // ---- 無料見学リクエスト（お客様・オーナー双方へメール） ----
     if (path === "/api/tours" && method === "POST") {
       try {
