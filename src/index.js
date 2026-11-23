@@ -806,6 +806,45 @@ if (path === "/api/owner/login" && method === "POST") {
         payment_due_at: paymentDueAt,
       }, 201);
     }
+    // ---- 管理者・オーナー向け：予約＆見学一覧の取得 ----
+    if (path === "/api/admin/bookings" && method === "GET") {
+      try {
+        const auth = await verifyAdminToken(request, env);
+        if (!auth) {
+          return json({ ok: false, error: "認証が必要です。再ログインしてください" }, 401);
+        }
+
+        let bookings = [];
+        try {
+          const rows = await env.DB.prepare(
+            `SELECT id, booking_code, space_id, salon_id, guest_user_id, start_at, end_at, status, total_prepaid_jpy, created_at
+             FROM bookings
+             ORDER BY created_at DESC
+             LIMIT 50`
+          ).all();
+          bookings = rows.results || [];
+        } catch (e) {
+          bookings = [];
+        }
+
+        let tours = [];
+        try {
+          const tourRows = await env.DB.prepare(
+            `SELECT id, salon_name, applicant_name, email, phone, tour_date, tour_time, note, status, created_at
+             FROM tour_bookings
+             ORDER BY created_at DESC
+             LIMIT 50`
+          ).all();
+          tours = tourRows.results || [];
+        } catch (e) {
+          tours = [];
+        }
+
+        return json({ ok: true, bookings, tours });
+      } catch (err) {
+        return json({ ok: false, error: err?.message || "一覧の取得に失敗しました" }, 500);
+      }
+    }
 
     // ---- 2. 手数料先払い完了 ----
     const payMatch = path.match(/^\/api\/bookings\/([^/]+)\/pay-fee$/);
