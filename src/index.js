@@ -677,6 +677,104 @@ if (path === "/api/owner/login" && method === "POST") {
         return json({ ok: false, error: err?.message || "見学予約の処理に失敗しました" }, 500);
       }
     }
+    // ---- 無料見学リクエスト（お客様・オーナー双方へメール） ----
+    if (path === "/api/tours" && method === "POST") {
+      try {
+        const b = await request.json().catch(() => ({}));
+        const salonIdRaw = s(b.salon_id, 60);
+        const salonName = s(b.salon_name, 150);
+        const guestName = s(b.name, 80);
+        const guestEmail = s(b.email, 200);
+        const guestPhone = s(b.phone, 40);
+        const date = s(b.date, 10);
+        const time = s(b.time, 5);
+        const message = s(b.message, 500);
+
+        if (!salonName || !guestName || !guestEmail || !date || !time) {
+          return json({ ok: false, error: "必須項目が未入力です" }, 400);
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) {
+          return json({ ok: false, error: "メールアドレスの形式が正しくありません" }, 400);
+        }
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) {
+          return json({ ok: false, error: "日時の形式が正しくありません" }, 400);
+        }
+
+        const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+        const recent = await env.DB.prepare(
+          "SELECT COUNT(*) AS c FROM tour_requests WHERE guest_email = ? AND created_at > ?"
+        ).bind(guestEmail, since).first();
+        if (Number(recent?.c || 0) >= 3) {
+          return json({ ok: false, error: "短時間に送信が続いています。しばらくしてからお試しください" }, 429);
+        }
+
+        let ownerEmail = "";
+        const m = salonIdRaw.match(/^db_(\d+)$/);
+        if (m) {
+          const row = await env.DB.prepare(
+            "SELECT owner_email FROM published_salons WHERE id = ?"
+          ).bind(Number(m[1])).first();
+          ownerEmail = row?.owner_email || "";
+        }
+        const adminEmail = env.NOTIFY_EMAIL || "";
+        const toOwner = ownerEmail || adminEmail;
+
+        await env.DB.prepare(
+          `INSERT INTO tour_requests
+            (salon_id, salon_name, owner_email, guest_name, guest_email, guest_phone, desired_date, desired_time, message, status, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'requested', ?)`
+        ).bind(
+          salonIdRaw, salonName, toOwner, guestName, guestEmail, guestPhone,
+          date, time, message, new Date().toISOString()
+        ).run();
+
+        const [yy, mm, dd] = date.split("-");
+        const when = `${yy}年${Number(mm)}月${Number(dd)}日 ${time}〜（約30分）`;
+
+        const guestText = [
+          `${guestName} 様`,
+          "",
+          "無料見学のリクエストを受け付けました。",
+          "オーナーからの返信をお待ちください。",
+          "",
+          `サロン: ${salonName}`,
+          `希望日時: ${when}`,
+          message ? `ご要望: ${message}` : "",
+          "",
+          "※ このメールは送信専用です。",
+          "SalonBase",
+        ].filter((x) => x !== "").join("\n");
+
+        const ownerText = [
+          "無料見学のリクエストが届きました。",
+          "",
+          `サロン: ${salonName}`,
+          `希望日時: ${when}`,
+          "",
+          `お名前: ${guestName}`,
+          `メール: ${guestEmail}`,
+          guestPhone ? `電話: ${guestPhone}` : "",
+          message ? `ご要望: ${message}` : "",
+          "",
+          "ご都合を確認のうえ、お客様のメールアドレスへご連絡ください。",
+          "SalonBase",
+        ].filter((x) => x !== "").join("\n");
+
+        const results = [];
+        results.push(await sendMail(env, guestEmail, "【SalonBase】無料見学のリクエストを受け付けました", guestText));
+        if (toOwner) {
+          results.push(await sendMail(env, toOwner, `【SalonBase】無料見学のリクエスト：${salonName}`, ownerText));
+        }
+        if (adminEmail && adminEmail !== toOwner) {
+          results.push(await sendMail(env, adminEmail, `【SalonBase】（運営控え）無料見学リクエスト：${salonName}`, ownerText));
+        }
+
+        return json({ ok: true, mail_sent: results.every(Boolean) });
+      } catch (err) {
+        return json({ ok: false, error: "見学リクエストの送信に失敗しました" }, 500);
+      }
+    }
+
 
     // ---- 1. 予約作成 ----
     if (method === "POST" && path === "/api/bookings") {
