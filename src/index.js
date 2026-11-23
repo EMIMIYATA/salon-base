@@ -751,6 +751,149 @@ if (path === "/api/owner/login" && method === "POST") {
     }
 
 
+    // ---- 見学リクエスト一覧（ログイン必須） ----
+    if (path === "/api/tours" && method === "GET") {
+      if (!(await verifyAdminToken(request, env))) {
+        return json({ ok: false, error: "認証が必要です" }, 401);
+      }
+      try {
+        const rawTok = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").split(".")[0];
+        const tok = JSON.parse(atob(rawTok));
+        let rows;
+        if (tok.role === "admin") {
+          rows = await env.DB.prepare("SELECT * FROM tour_requests ORDER BY id DESC LIMIT 100").all();
+        } else {
+          const ow = await env.DB.prepare("SELECT email FROM owner_entries WHERE id = ?").bind(tok.owner_id).first();
+          rows = await env.DB.prepare(
+            "SELECT * FROM tour_requests WHERE owner_email = ? ORDER BY id DESC LIMIT 100"
+          ).bind(ow?.email || "").all();
+        }
+        return json({ ok: true, tours: rows.results || [] });
+      } catch (e) {
+        return json({ ok: false, error: "取得に失敗しました" }, 500);
+      }
+    }
+
+    // ---- 自分のサロン（詳細つき・オーナー用） ----
+    if (path === "/api/owner/salons" && method === "GET") {
+      if (!(await verifyAdminToken(request, env))) {
+        return json({ ok: false, error: "認証が必要です" }, 401);
+      }
+      try {
+        const rawTok = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").split(".")[0];
+        const tok = JSON.parse(atob(rawTok));
+        let rows;
+        if (tok.role === "admin") {
+          rows = await env.DB.prepare("SELECT * FROM published_salons ORDER BY id DESC LIMIT 100").all();
+        } else {
+          const ow = await env.DB.prepare("SELECT email FROM owner_entries WHERE id = ?").bind(tok.owner_id).first();
+          rows = await env.DB.prepare("SELECT * FROM published_salons WHERE owner_email = ? ORDER BY id DESC").bind(ow?.email || "").all();
+        }
+        const list = rows.results || [];
+        const photoRows = await env.DB.prepare(
+          "SELECT salon_id, image_key FROM salon_photos ORDER BY salon_id, sort_order ASC"
+        ).all();
+        const photoMap = {};
+        for (const p of photoRows.results || []) {
+          (photoMap[p.salon_id] ||= []).push({ key: p.image_key, url: `/api/images/${encodeURIComponent(p.image_key)}` });
+        }
+        const salons = list.map((r) => ({
+          id: r.id,
+          name: r.name,
+          area: r.area,
+          station: r.station,
+          price: Number(r.price_per_hour || 0),
+          badge: r.availability_badge || "本日空きあり",
+          genres: safeJsonArray(r.genres_json, []),
+          equipment: safeJsonArray(r.equipment_json, []),
+          freeAmenities: safeJsonArray(r.free_amenities_json, []),
+          description: r.description || "",
+          entryRules: r.entry_rules || "",
+          bookedHours: safeJsonArray(r.booked_hours_json, []),
+          photos: photoMap[r.id] || (r.image_key ? [{ key: r.image_key, url: `/api/images/${encodeURIComponent(r.image_key)}` }] : []),
+        }));
+        return json({ ok: true, salons });
+      } catch (e) {
+        return json({ ok: false, error: "取得に失敗しました" }, 500);
+      }
+    }
+
+    // ---- サロン内容の変更・削除（ログイン必須） ----
+    const salonIdMatch = path.match(/^\/api\/salons\/(\d+)$/);
+    if (salonIdMatch && (method === "PUT" || method === "DELETE")) {
+      if (!(await verifyAdminToken(request, env))) {
+        return json({ ok: false, error: "認証が必要です" }, 401);
+      }
+      try {
+        const sid = Number(salonIdMatch[1]);
+        const rawTok = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").split(".")[0];
+        const tok = JSON.parse(atob(rawTok));
+        const sal = await env.DB.prepare("SELECT id, owner_email FROM published_salons WHERE id = ?").bind(sid).first();
+        if (!sal) return json({ ok: false, error: "サロンが見つかりません" }, 404);
+        if (tok.role !== "admin") {
+          const ow = await env.DB.prepare("SELECT email FROM owner_entries WHERE id = ?").bind(tok.owner_id).first();
+          if (!ow?.email || sal.owner_email !== ow.email) {
+            return json({ ok: false, error: "このサロンは編集できません" }, 403);
+          }
+        }
+
+        if (method === "DELETE") {
+          await env.DB.prepare("DELETE FROM salon_photos WHERE salon_id = ?").bind(sid).run();
+          await env.DB.prepare("DELETE FROM salon_closures WHERE salon_id = ?").bind(sid).run();
+          await env.DB.prepare("DELETE FROM published_salons WHERE id = ?").bind(sid).run();
+          return json({ ok: true });
+        }
+
+        const b = await request.json();
+        const name = s(b.name, 120);
+        const area = s(b.area, 80);
+        const station = s(b.station, 120) || area;
+        const pricePerHour = Number(b.pricePerHour);
+        if (!name || !area || !Number.isFinite(pricePerHour) || pricePerHour <= 0) {
+          return json({ ok: false, error: "サロン名・エリア・1時間料金は必須です" }, 400);
+        }
+        const genres = Array.isArray(b.genres) && b.genres.length ? b.genres.map((x) => s(x, 50)) : ["エステ・リラク"];
+        const equipment = Array.isArray(b.equipment) ? b.equipment.map((x) => s(x, 50)) : [];
+        const freeAmenities = Array.isArray(b.freeAmenities) ? b.freeAmenities.map((x) => s(x, 120)).filter(Boolean) : [];
+        const bookedHours = Array.isArray(b.bookedHours) ? b.bookedHours.map((x) => s(x, 20)) : [];
+        const nowIso = new Date().toISOString();
+
+        let imageKey = null;
+        let imageKeys = null;
+        if (Array.isArray(b.image_keys)) {
+          imageKeys = b.image_keys.map((x) => s(x, 250)).filter((x) => x.startsWith("owners/")).slice(0, 20);
+          imageKey = imageKeys[0] || "";
+        }
+
+        await env.DB.prepare(
+          `UPDATE published_salons SET
+            name = ?, area = ?, station = ?, price_per_hour = ?, availability_badge = ?,
+            genres_json = ?, equipment_json = ?, description = ?, free_amenities_json = ?,
+            entry_rules = ?, booked_hours_json = ?, updated_at = ?
+           WHERE id = ?`
+        ).bind(
+          name, area, station, Math.round(pricePerHour), s(b.availabilityBadge, 40) || "本日空きあり",
+          JSON.stringify(genres), JSON.stringify(equipment), s(b.description, 1000),
+          JSON.stringify(freeAmenities), s(b.entryRules, 1000), JSON.stringify(bookedHours),
+          nowIso, sid
+        ).run();
+
+        if (imageKeys) {
+          await env.DB.prepare("DELETE FROM salon_photos WHERE salon_id = ?").bind(sid).run();
+          for (let i = 0; i < imageKeys.length; i++) {
+            await env.DB.prepare(
+              "INSERT INTO salon_photos (salon_id, image_key, sort_order, created_at) VALUES (?, ?, ?, ?)"
+            ).bind(sid, imageKeys[i], i, nowIso).run();
+          }
+          await env.DB.prepare("UPDATE published_salons SET image_key = ?, image_url = ? WHERE id = ?")
+            .bind(imageKey, imageKey ? `/api/images/${encodeURIComponent(imageKey)}` : "", sid).run();
+        }
+        return json({ ok: true });
+      } catch (e) {
+        return json({ ok: false, error: "保存に失敗しました" }, 500);
+      }
+    }
+
 
     // ---- 無料見学リクエスト（お客様・オーナー双方へメール） ----
     if (path === "/api/tours" && method === "POST") {
