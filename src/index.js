@@ -849,6 +849,147 @@ if (path === "/api/owner/login" && method === "POST") {
         return json({ ok: false, error: "見学リクエストの送信に失敗しました" }, 500);
       }
     }
+    // ---- サロン予約リクエスト（予約者・サロンオーナー・運営へメール通知） ----
+    if (path === "/api/booking" && method === "POST") {
+      try {
+        const b = await request.json().catch(() => ({}));
+        const salonIdRaw = s(b.salon_id, 60);
+        const salonName = s(b.salon_name, 150);
+        const date = s(b.date, 20);
+        const hours = Array.isArray(b.hours)
+          ? b.hours.map((h) => s(h, 20)).filter(Boolean)
+          : [];
+        const hoursCount = Number(b.hours_count) || hours.length || 1;
+        const basePrice = Number(b.base_price) || 0;
+        const serviceFee = Number(b.service_fee) || 0;
+        const totalPrice = Number(b.total_price) || 0;
+        const guestName = s(b.guest_name, 100);
+        const guestEmail = s(b.guest_email, 200);
+        const guestPhone = s(b.guest_phone, 50);
+
+        if (!salonName || !date || hours.length === 0 || !guestName || !guestEmail) {
+          return json(
+            { ok: false, error: "サロン情報・利用日時・お名前・メールアドレスは必須です" },
+            400
+          );
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) {
+          return json({ ok: false, error: "メールアドレスの形式が正しくありません" }, 400);
+        }
+
+        if (!env.RESEND_API_KEY) {
+          return json({ ok: false, error: "メール送信設定（RESEND_API_KEY）が未設定です" }, 500);
+        }
+
+        const bookingId = makeBookingCode();
+        const timesStr = hours.join(" / ");
+        const totalStr = `¥${totalPrice.toLocaleString()}`;
+
+        let ownerEmail = "";
+        const m = salonIdRaw.match(/^db_(\d+)$/);
+        if (m) {
+          try {
+            const row = await env.DB.prepare(
+              "SELECT owner_email FROM published_salons WHERE id = ?"
+            )
+              .bind(Number(m[1]))
+              .first();
+            ownerEmail = row?.owner_email || "";
+          } catch (dbErr) {
+            console.log("owner_email lookup skipped:", String(dbErr));
+          }
+        }
+
+        const adminEmail = env.NOTIFY_EMAIL || "";
+        const toOwner = ownerEmail || adminEmail;
+
+        const guestSubject = `【SalonBase】予約リクエストを受け付けました：${salonName}`;
+        const guestText = [
+          `${guestName} 様`,
+          "",
+          "SalonBase より、サロン予約リクエストを受け付けました。",
+          "サロンオーナーからの連絡が来るまで今しばらくお待ちください。",
+          "",
+          "■ ご予約リクエスト内容",
+          `予約番号: ${bookingId}`,
+          `サロン名: ${salonName}`,
+          `利用日: ${date}`,
+          `利用時間: ${timesStr}（計${hoursCount}時間）`,
+          `お支払い合計: ${totalStr}`,
+          guestPhone ? `電話番号: ${guestPhone}` : "",
+          "",
+          "※ このメールは送信専用です。",
+          "SalonBase",
+        ]
+          .filter((x) => x !== "")
+          .join("\n");
+
+        const sentToGuest = await sendMail(env, guestEmail, guestSubject, guestText);
+
+        if (toOwner) {
+          const ownerText = [
+            "新しいサロン予約リクエストが届きました。",
+            "",
+            `予約番号: ${bookingId}`,
+            `サロン名: ${salonName}`,
+            `利用日: ${date}`,
+            `利用時間: ${timesStr}（計${hoursCount}時間）`,
+            `お支払い合計: ${totalStr}`,
+            "",
+            "■ ご予約者情報",
+            `お名前: ${guestName} 様`,
+            `メール: ${guestEmail}`,
+            guestPhone ? `電話: ${guestPhone}` : "",
+            "",
+            "内容をご確認のうえ、ご予約者へご連絡をお願いいたします。",
+            "SalonBase",
+          ]
+            .filter((x) => x !== "")
+            .join("\n");
+
+          await sendMail(
+            env,
+            toOwner,
+            `【SalonBase】新規予約リクエスト：${salonName}（${date} ${timesStr}）`,
+            ownerText
+          );
+        }
+
+        if (adminEmail && adminEmail !== toOwner) {
+          const adminText = [
+            "（運営控え）新しいサロン予約リクエストが届きました。",
+            "",
+            `予約番号: ${bookingId}`,
+            `サロン名: ${salonName}`,
+            `利用日: ${date}`,
+            `利用時間: ${timesStr}（計${hoursCount}時間）`,
+            `お支払い合計: ${totalStr}`,
+            `お名前: ${guestName} 様`,
+            `メール: ${guestEmail}`,
+            guestPhone ? `電話: ${guestPhone}` : "",
+            `送信先オーナー: ${toOwner || "未設定"}`,
+          ]
+            .filter((x) => x !== "")
+            .join("\n");
+
+          await sendMail(
+            env,
+            adminEmail,
+            `【SalonBase】（運営控え）予約リクエスト：${salonName}`,
+            adminText
+          );
+        }
+
+        if (!sentToGuest) {
+          return json({ ok: false, error: "確認メールの送信に失敗しました" }, 500);
+        }
+
+        return json({ ok: true, booking_id: bookingId }, 201);
+      } catch (err) {
+        console.log("booking error:", String(err));
+        return json({ ok: false, error: "予約リクエストの処理に失敗しました" }, 500);
+      }
+    }
 
 
     // ---- 1. 予約作成 ----
