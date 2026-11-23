@@ -917,6 +917,15 @@ if (path === "/api/owner/login" && method === "POST") {
         if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) {
           return json({ ok: false, error: "日時の形式が正しくありません" }, 400);
         }
+        const closeM = salonIdRaw.match(/^db_(\d+)$/);
+        if (closeM) {
+          const cl = await env.DB.prepare(
+            "SELECT hours FROM salon_closures WHERE salon_id = ? AND date = ?"
+          ).bind(Number(closeM[1]), date).first();
+          if (cl && safeJsonArray(cl.hours).includes(time)) {
+            return json({ ok: false, error: "その日時は受付できません。別の時間をお選びください" }, 400);
+          }
+        }
 
         const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
         const recent = await env.DB.prepare(
