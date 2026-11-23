@@ -157,8 +157,9 @@ async function verifyAdminToken(request, env) {
     );
     if (!valid) return false;
 
-    const data = JSON.parse(atob(payload));
-    return data?.role === "admin" && Number(data.exp) > Date.now();
+        const data = JSON.parse(atob(payload));
+    const isValidRole = data?.role === "admin" || data?.role === "owner";
+    return isValidRole && Number(data.exp) > Date.now();
   } catch {
     return false;
   }
