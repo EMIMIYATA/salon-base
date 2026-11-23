@@ -844,8 +844,13 @@
         submitBtn.innerHTML = originalBtnHtml;
       }
     });
+    function prefillOwnerCode() {
+      try { const c = localStorage.getItem('salonbase_owner_code'); if (c) codeInput.value = c; } catch {}
+    }
 
     window.addEventListener('DOMContentLoaded', () => {
+            prefillOwnerCode();
+
       const saved = loadSession();
       if (saved && saved.owner_code) renderDashboard(saved);
     });
