@@ -1844,18 +1844,35 @@ function resetEntryForm() {
             const dateEl = document.getElementById('tour-date');
             dateEl.min = today;
             dateEl.value = document.getElementById('search-date').value || today;
-
-                        const slots = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
-            const booked = currentModalSalon.bookedHours || [];
-            document.getElementById('tour-time').innerHTML =
-                slots.filter(t => !booked.includes(t)).map(t => `<option value="${t}">${t}〜</option>`).join('');
-
-
-            document.getElementById('tour-error').classList.add('hidden');
+            refreshTourTimes();
+             
+        
+document.getElementById('tour-error').classList.add('hidden');
             const m = document.getElementById('tour-modal');
             m.classList.remove('hidden');
             m.classList.add('flex');
         }
+        const TOUR_SLOTS = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
+        async function refreshTourTimes() {
+            const sel = document.getElementById('tour-time');
+            const date = document.getElementById('tour-date').value;
+            const salon = currentModalSalon;
+            if (!salon) return;
+            let closed = (salon.bookedHours || []).slice();
+            const m = String(salon.id).match(/^db_(\d+)$/);
+            if (m && date) {
+                try {
+                    const res = await fetch('/api/closures?salon_id=' + m[1] + '&date=' + date);
+                    const data = await res.json();
+                    closed = closed.concat(data.hours || []);
+                } catch (e) {}
+            }
+            const opts = TOUR_SLOTS.filter(t => !closed.includes(t));
+            sel.innerHTML = opts.length
+                ? opts.map(t => `<option value="${t}">${t}〜</option>`).join('')
+                : '<option value="">この日は満枠です</option>';
+        }
+        document.getElementById('tour-date').addEventListener('change', refreshTourTimes);
 
         function closeTourModal() {
             const m = document.getElementById('tour-modal');
