@@ -287,6 +287,23 @@
             <textarea id="pub-rules" rows="3" placeholder="入室時間・退室時の片付け・禁煙や音・香りに関するルールなど。"
               class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm"></textarea>
           </div>
+          </div>
+
+          <!-- 掲載日・営業時間帯（</form> の中に置く） -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="pub-available-from" class="block text-xs font-bold text-base-charcoal mb-1.5">掲載・受付開始日</label>
+              <input id="pub-available-from" type="date"
+                class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
+            </div>
+            <div>
+              <label for="pub-hours" class="block text-xs font-bold text-base-charcoal mb-1.5">営業時間帯（例：10:00〜21:00）</label>
+              <input id="pub-hours" type="text" placeholder="例：10:00〜21:00"
+                class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
+            </div>
+          </div>
+
+          <div id="publish-status-msg" ...
 
           <div id="publish-status-msg" class="hidden text-xs font-medium rounded-xl px-4 py-2.5"></div>
 
@@ -301,18 +318,7 @@
           </div>
         </form>
       </div>
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-  <div>
-    <label for="pub-available-from" class="block text-xs font-bold text-base-charcoal mb-1.5">掲載・受付開始日</label>
-    <input id="pub-available-from" type="date"
-      class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
-  </div>
-  <div>
-    <label for="pub-hours" class="block text-xs font-bold text-base-charcoal mb-1.5">営業時間帯（例：10:00〜21:00）</label>
-    <input id="pub-hours" type="text" placeholder="例：10:00〜21:00"
-      class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
-  </div>
-</div>
+
 
       <!-- 案内＆クイックアクション -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -574,6 +580,8 @@
           description: v('pub-description'),
           entryRules: v('pub-rules'),
           image_keys: keys,
+          availableFrom: v('pub-available-from'),
+　　　　　　businessHours: v('pub-hours'),
         };
 
         const res = await fetch('/api/salons', {
