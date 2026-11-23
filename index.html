@@ -2279,7 +2279,149 @@ document.getElementById('tour-error').classList.add('hidden');
             document.getElementById('edit-salon-name').value = target.name || target.salon_name || fullSalon.name || '';
             document.getElementById('edit-salon-price').value = target.pricePerHour ?? target.price_per_hour ?? fullSalon.pricePerHour ?? '';
             document.getElementById('edit-salon-description').value
-    
+                document.getElementById('edit-salon-description').value = target.description || target.salon_description || fullSalon.description || '';
+        }
+
+        async function submitSalonUpdate() {
+            const editSection = document.getElementById('salon-edit-section');
+            const rawId = String(editSection?.dataset.editingSalonId || '').replace(/^db_/, '');
+            if (!rawId || !adminConsoleToken) return;
+
+            const payload = {
+                name: document.getElementById('edit-salon-name')?.value || '',
+                pricePerHour: Number(document.getElementById('edit-salon-price')?.value || 0),
+                description: document.getElementById('edit-salon-description')?.value || ''
+            };
+
+               function openSalonEditMode() {
+        const target = adminManagedSalons[0];
+        if (!target) return;
+
+        const targetIdStr = String(target.id);
+        const targetNumId = targetIdStr.replace(/^db_/, '');
+        const fullSalon = salons.find(
+            (sItem) => String(sItem.id) === targetIdStr || String(sItem.id).replace(/^db_/, '') === targetNumId
+        ) || {};
+
+        const editSection = document.getElementById('salon-edit-section');
+        editSection.classList.remove('hidden');
+        editSection.dataset.editingSalonId = targetNumId;
+
+        document.getElementById('edit-salon-name').value = target.name || target.salon_name || fullSalon.name || '';
+        document.getElementById('edit-salon-price').value = target.pricePerHour ?? target.price_per_hour ?? fullSalon.pricePerHour ?? '';
+        document.getElementById('edit-salon-description').value = target.description || target.salon_description || fullSalon.description || '';
+    }
+
+    async function submitSalonUpdate() {
+        const editSection = document.getElementById('salon-edit-section');
+        const rawId = String(editSection?.dataset.editingSalonId || '').replace(/^db_/, '');
+        if (!rawId || !adminConsoleToken) return;
+
+        const payload = {
+            name: document.getElementById('edit-salon-name')?.value || '',
+            pricePerHour: Number(document.getElementById('edit-salon-price')?.value || 0),
+            description: document.getElementById('edit-salon-description')?.value || ''
+        };
+
+        const res = await fetch(`/api/salons/${rawId}`, {
+            method: 'PUT',
+            headers: {
+                'content-type': 'application/json',
+                Authorization: `Bearer ${adminConsoleToken}`
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.ok === false) {
+            openNotifModal('更新エラー', data.error || 'サロン詳細の変更に失敗しました。');
+            return;
+        }
+
+        openNotifModal('変更完了', 'サロン詳細を更新しました。');
+        editSection.classList.add('hidden');
+        await refreshAdminConsoleData();
+    }
+
+    async function loadAdminScheduleForSelectedDate() {
+        const sid = document.getElementById('admin-salon-select')?.value;
+        const dateStr = document.getElementById('admin-schedule-date')?.value || '';
+        const hours = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
+
+        let closedHours = [];
+        if (sid && dateStr) {
+            try {
+                const r = await fetch(`/api/closures?salon_id=${encodeURIComponent(sid)}&date=${encodeURIComponent(dateStr)}`);
+                const d = await r.json().catch(() => ({}));
+                if (r.ok && Array.isArray(d.hours)) closedHours = d.hours;
+            } catch {}
+        }
+
+        renderAdminDateTimeSchedule(dateStr, hours, adminBookingsCache, closedHours);
+    }
+
+    function renderAdminDateTimeSchedule(dateStr, hoursList, bookings = [], closedHours = []) {
+        const container = document.getElementById('admin-schedule-by-date');
+        if (!container) return;
+
+        const closedSet = new Set(closedHours);
+        const bookedBySlot = new Map();
+
+        for (const b of bookings) {
+            const startRaw = String(b.start_at || b.desired_date || '');
+            if (!dateStr || !startRaw.startsWith(dateStr)) continue;
+            const dObj = new Date(b.start_at);
+            const slotLabel = Number.isNaN(dObj.getTime())
+                ? String(b.desired_time || '').slice(0, 5)
+                : dObj.toLocaleTimeString('ja-JP', {
+                    timeZone: 'Asia/Tokyo',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+            if (slotLabel) bookedBySlot.set(slotLabel, b);
+        }
+
+        container.innerHTML = `
+            <div class="text-xs font-bold text-base-charcoal mb-2">${dateStr} の時間帯スケジュール</div>
+            <div class="divide-y divide-base-border border border-base-border rounded-xl bg-white overflow-hidden">
+                ${hoursList.map(hhmm => {
+                    const booking = bookedBySlot.get(hhmm);
+                    const isClosed = closedSet.has(hhmm);
+                    let badge = `<span class="text-emerald-700 font-semibold">空き</span>`;
+                    let detail = `利用可能`;
+
+                    if (booking) {
+                        badge = `<span class="text-base-terra font-bold">予約あり</span>`;
+                        detail = `${booking.booking_code || booking.id || '予約'}（${booking.status || 'confirmed'}）`;
+                    } else if (isClosed) {
+                        badge = `<span class="text-gray-500 font-semibold">休み枠</span>`;
+                        detail = `受付停止中`;
+                    }
+
+                    return `
+                        <div class="flex items-center justify-between px-3.5 py-2.5 text-xs">
+                            <div class="font-mono font-bold text-base-charcoal w-16">${hhmm}</div>
+                            <div class="flex-1 text-base-muted truncate pr-2">${detail}</div>
+                            <div>${badge}</div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const dateInput = document.getElementById('admin-schedule-date');
+        if (dateInput && !dateInput.value) {
+            dateInput.value = new Date().toISOString().split('T')[0];
+        }
+        const hours = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
+        renderAdminDateTimeSchedule(dateInput?.value || '', hours, [], []);
+        restoreSavedPasswordInput();
+        syncSalonFormMode([]);
+        restoreAdminSession();
+    });
+
 </script>
 </body>
 </html>
