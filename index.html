@@ -2086,6 +2086,11 @@ function resetEntryForm() {
                 </div>
             `;
         }
+             // ページ読み込み時に登録状態を反映
+        document.addEventListener('DOMContentLoaded', () => {
+            syncSalonFormMode([]);
+        });
+   
 </script>
 </body>
 </html>
