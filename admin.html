@@ -42,24 +42,13 @@
     };
   </script>
   <style>
-    body {
-      background-color: #FAF7F2;
-      color: #3D352E;
-      font-family: 'Noto Sans JP', sans-serif;
-      -webkit-font-smoothing: antialiased;
-    }
-    .fade-in {
-      animation: fadeIn 0.25s ease-out forwards;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    body { background-color: #FAF7F2; color: #3D352E; font-family: 'Noto Sans JP', sans-serif; -webkit-font-smoothing: antialiased; }
+    .fade-in { animation: fadeIn 0.25s ease-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-  <!-- ヘッダー -->
   <header class="bg-white/95 backdrop-blur-md border-b border-base-border sticky top-0 z-30">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
       <a href="/" class="flex items-center gap-2.5">
@@ -71,7 +60,6 @@
           <span class="text-xs text-base-muted ml-1.5 hidden sm:inline">Owner Console</span>
         </div>
       </a>
-
       <div class="flex items-center gap-3">
         <a href="/" class="text-xs text-base-muted hover:text-base-terra font-medium transition">
           <i class="fa-solid fa-arrow-left mr-1"></i>トップへ戻る
@@ -84,70 +72,38 @@
     </div>
   </header>
 
-  <!-- メイン -->
   <main class="flex-grow flex items-center justify-center px-4 py-10">
 
     <!-- ログインカード -->
     <section id="login-section" class="w-full max-w-md bg-white rounded-3xl border border-base-border shadow-soft p-6 sm:p-8 fade-in">
       <div class="text-center mb-6">
-        <span class="inline-block px-3 py-1 rounded-full bg-base-terraLight text-base-terraDark text-xs font-semibold mb-2">
-          OWNER AUTHENTICATION
-        </span>
+        <span class="inline-block px-3 py-1 rounded-full bg-base-terraLight text-base-terraDark text-xs font-semibold mb-2">OWNER AUTHENTICATION</span>
         <h1 class="font-serif text-2xl font-bold text-base-charcoal">SalonBase Owner Console</h1>
-        <p class="text-xs sm:text-sm text-base-muted mt-1.5">
-          エントリー時に発行された割り当て番号とパスワードでログインしてください。
-        </p>
+        <p class="text-xs sm:text-sm text-base-muted mt-1.5">エントリー時に発行された割り当て番号とパスワードでログインしてください。</p>
       </div>
-
       <form id="owner-login-form" class="space-y-4">
         <div>
-          <label for="owner-code-input" class="block text-xs font-bold text-base-charcoal mb-1.5">
-            割り当て番号 <span class="text-base-terra">*</span>
-          </label>
-          <input
-            id="owner-code-input"
-            type="text"
-            required
-            autocomplete="username"
-            placeholder="例：SB-2026-9482"
-            class="w-full px-4 py-3 rounded-xl border border-base-border bg-base-bg/60 focus:bg-white focus:outline-none focus:border-base-terra text-sm uppercase"
-          />
+          <label for="owner-code-input" class="block text-xs font-bold text-base-charcoal mb-1.5">割り当て番号 <span class="text-base-terra">*</span></label>
+          <input id="owner-code-input" type="text" required autocomplete="username" placeholder="例：SB-2026-9482"
+            class="w-full px-4 py-3 rounded-xl border border-base-border bg-base-bg/60 focus:bg-white focus:outline-none focus:border-base-terra text-sm uppercase" />
         </div>
-
         <div>
-          <label for="owner-password-input" class="block text-xs font-bold text-base-charcoal mb-1.5">
-            パスワード <span class="text-base-terra">*</span>
-          </label>
+          <label for="owner-password-input" class="block text-xs font-bold text-base-charcoal mb-1.5">パスワード <span class="text-base-terra">*</span></label>
           <div class="relative">
-            <input
-              id="owner-password-input"
-              type="password"
-              required
-              autocomplete="current-password"
-              placeholder="設定したパスワードを入力"
-              class="w-full px-4 py-3 pr-11 rounded-xl border border-base-border bg-base-bg/60 focus:bg-white focus:outline-none focus:border-base-terra text-sm"
-            />
-            <button
-              id="toggle-pw-btn"
-              type="button"
-              aria-label="パスワード表示切り替え"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-base-muted hover:text-base-charcoal p-1"
-            >
+            <input id="owner-password-input" type="password" required autocomplete="current-password" placeholder="設定したパスワードを入力"
+              class="w-full px-4 py-3 pr-11 rounded-xl border border-base-border bg-base-bg/60 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
+            <button id="toggle-pw-btn" type="button" aria-label="パスワード表示切り替え"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-base-muted hover:text-base-charcoal p-1">
               <i id="toggle-pw-icon" class="fa-regular fa-eye"></i>
             </button>
           </div>
         </div>
-
         <div id="login-error-box" class="hidden rounded-xl bg-red-50 border border-red-200 px-3.5 py-2.5 text-xs text-red-700 flex items-start gap-2">
           <i class="fa-solid fa-circle-exclamation mt-0.5 shrink-0"></i>
           <span id="login-error-text"></span>
         </div>
-
-        <button
-          id="login-submit-btn"
-          type="submit"
-          class="w-full py-3.5 rounded-full bg-base-terra hover:bg-base-terraDark disabled:opacity-60 text-white font-bold text-sm shadow-sm transition flex items-center justify-center gap-2"
-        >
+        <button id="login-submit-btn" type="submit"
+          class="w-full py-3.5 rounded-full bg-base-terra hover:bg-base-terraDark disabled:opacity-60 text-white font-bold text-sm shadow-sm transition flex items-center justify-center gap-2">
           <span>ログインする</span>
           <i class="fa-solid fa-arrow-right text-xs"></i>
         </button>
@@ -156,26 +112,21 @@
 
     <!-- ログイン後ダッシュボード -->
     <section id="dashboard-section" class="hidden w-full max-w-4xl space-y-6 fade-in self-start">
-      <!-- ウェルカムカード -->
+
       <div class="bg-white rounded-3xl border border-base-border shadow-card p-6 sm:p-8">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-base-border">
           <div>
             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-base-sageLight text-base-sage text-xs font-semibold mb-2">
-              <i class="fa-solid fa-circle-check"></i>
-              <span>認証済みオーナー</span>
+              <i class="fa-solid fa-circle-check"></i><span>認証済みオーナー</span>
             </span>
             <h1 id="dash-salon-name" class="font-serif text-2xl sm:text-3xl font-bold text-base-charcoal"></h1>
-            <p class="text-xs sm:text-sm text-base-muted mt-1">
-              ご担当者：<span id="dash-person-name" class="font-medium text-base-charcoal"></span>
-            </p>
+            <p class="text-xs sm:text-sm text-base-muted mt-1">ご担当者：<span id="dash-person-name" class="font-medium text-base-charcoal"></span></p>
           </div>
           <div class="bg-base-sand px-4 py-3 rounded-2xl border border-base-border text-left sm:text-right">
             <span class="block text-[11px] text-base-muted">割り当て番号</span>
             <span id="dash-owner-code" class="font-mono text-base font-bold text-base-terraDark"></span>
           </div>
         </div>
-
-        <!-- オーナー情報一覧 -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6">
           <div class="bg-base-bg rounded-2xl p-4 border border-base-border/80">
             <span class="block text-[11px] text-base-muted mb-1">オーナーID</span>
@@ -192,7 +143,7 @@
         </div>
       </div>
 
-      <!-- サロン掲載・写真アップロード＆明るさ調節・AI文章作成 -->
+      <!-- サロン掲載フォーム -->
       <div class="bg-white rounded-3xl border border-base-border shadow-card p-6 sm:p-8">
         <div class="mb-6 pb-4 border-b border-base-border">
           <span class="font-en text-base-terra text-xs font-bold tracking-widest uppercase">Salon Publishing</span>
@@ -226,146 +177,144 @@
                 class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
             </div>
             <div>
-              <label for="pub-genre" class="block text-xs font-bold text-base-charcoal mb-1.5">主な対応ジャンル</label>
-              <input id="pub-genre" type="text" placeholder="例：アロマ・エステ・フェイシャル"
-                class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
+              <label for="pub-badge" class="block text-xs font-bold text-base-charcoal mb-1.5">空き状況バッジ</label>
+              <select id="pub-badge" class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 text-sm">
+                <option value="本日空きあり">本日空きあり</option>
+                <option value="残りわずか">残りわずか</option>
+              </select>
             </div>
           </div>
 
           <div>
-            <label for="pub-amenities" class="block text-xs font-bold text-base-charcoal mb-1.5">設備・備品（カンマ区切り）</label>
-            <input id="pub-amenities" type="text" placeholder="例：施術ベッド, ホットストーン, タオルウォーマー, 調光照明"
-              class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
+            <label class="block text-xs font-bold text-base-charcoal mb-2">対応ジャンル（複数選択可）</label>
+            <div id="pub-genre-chips" class="flex flex-wrap gap-2">
+              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="エステ・リラク" class="accent-base-terra">エステ・リラク</label>
+              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="ネイル" class="accent-base-terra">ネイル</label>
+              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="マツエク" class="accent-base-terra">マツエク</label>
+              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="整体・ストレッチ" class="accent-base-terra">整体・ストレッチ</label>
+              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="ヘアメイク" class="accent-base-terra">ヘアメイク</label>
+            </div>
           </div>
 
-                    <!-- 写真選択＆プレビュー＆明るさ調節 -->
+          <div>
+            <label class="block text-xs font-bold text-base-charcoal mb-2">サロン専用設備・こだわり（複数選択可）</label>
+            <div id="pub-equip-chips" class="flex flex-wrap gap-2">
+              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="電動昇降ベッド" class="accent-base-terra">電動昇降ベッド</label>
+              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="折り畳みベッド" class="accent-base-terra">折り畳みベッド</label>
+              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="完全個室" class="accent-base-terra">完全個室</label>
+              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="タオルウォーマー" class="accent-base-terra">タオルウォーマー</label>
+              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="ドレッサー・三面鏡" class="accent-base-terra">ドレッサー・三面鏡</label>
+              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="シャワー完備" class="accent-base-terra">シャワー完備</label>
+              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="リングライト" class="accent-base-terra">リングライト</label>
+              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="駅徒歩5分以内" class="accent-base-terra">駅徒歩5分以内</label>
+            </div>
+          </div>
+
+          <div>
+            <label for="pub-free-amenities" class="block text-xs font-bold text-base-charcoal mb-1.5">無料で使える設備・備品（改行または読点で区切り）</label>
+            <textarea id="pub-free-amenities" rows="3" placeholder="例：電動昇降施術ベッド&#10;大型タオルウォーマー&#10;Bluetoothスピーカー・Wi-Fi"
+              class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm"></textarea>
+          </div>
+
+          <div class="bg-base-sand/70 p-4 rounded-2xl border border-base-border">
+            <h4 class="text-sm font-bold text-base-charcoal mb-1"><i class="fa-regular fa-clock text-base-terra mr-1.5"></i>貸し出せない時間（満枠にする）</h4>
+            <p class="text-[11px] text-base-muted mb-3">貸し出せない時間をタップすると、グレーの「満枠」になります。もう一度タップすると戻ります。</p>
+            <div id="pub-closed-hours" class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              <button type="button" data-time="10:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">10:00〜</button>
+              <button type="button" data-time="11:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">11:00〜</button>
+              <button type="button" data-time="12:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">12:00〜</button>
+              <button type="button" data-time="13:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">13:00〜</button>
+              <button type="button" data-time="14:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">14:00〜</button>
+              <button type="button" data-time="15:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">15:00〜</button>
+              <button type="button" data-time="16:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">16:00〜</button>
+              <button type="button" data-time="17:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">17:00〜</button>
+              <button type="button" data-time="18:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">18:00〜</button>
+              <button type="button" data-time="19:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">19:00〜</button>
+              <button type="button" data-time="20:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">20:00〜</button>
+              <button type="button" data-time="21:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">21:00〜</button>
+            </div>
+          </div>
+
           <div class="space-y-3">
             <label for="pub-photos" class="block text-xs font-bold text-base-charcoal">サロン写真（複数選択可）</label>
             <input id="pub-photos" type="file" accept="image/*" multiple onchange="handlePhotoSelection(event)" class="block w-full text-xs text-base-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-base-terraLight file:text-base-terraDark hover:file:bg-base-sand cursor-pointer" />
-
-            <!-- 写真の明るさ調節 -->
             <div class="bg-base-bg/80 rounded-2xl p-4 border border-base-border space-y-2">
               <div class="flex items-center justify-between text-xs">
-                <label for="pub-photo-brightness" class="font-bold text-base-charcoal">
-                  写真の明るさ調節
-                </label>
+                <label for="pub-photo-brightness" class="font-bold text-base-charcoal">写真の明るさ調節</label>
                 <div class="flex items-center gap-3">
                   <span id="pub-photo-brightness-val" class="font-bold text-base-terraDark">100%</span>
-                  <button type="button" onclick="resetPhotoBrightness()" class="text-[11px] text-base-muted hover:text-base-charcoal underline">
-                    リセット
-                  </button>
+                  <button type="button" onclick="resetPhotoBrightness()" class="text-[11px] text-base-muted hover:text-base-charcoal underline">リセット</button>
                 </div>
               </div>
               <input id="pub-photo-brightness" type="range" min="70" max="140" value="100" step="5" oninput="updatePhotoBrightnessPreview()" class="w-full accent-base-terra cursor-pointer">
             </div>
-
             <div id="pub-photo-preview" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
           </div>
 
-          <!-- サロン空間の紹介文 + AI作成ボタン -->
           <div>
             <div class="flex items-center justify-between mb-1.5">
               <label for="pub-description" class="block text-xs font-bold text-base-charcoal">サロン空間の紹介文</label>
               <button type="button" onclick="requestAiCopy('description', this)"
-                class="px-3 py-1 rounded-full bg-base-terraLight hover:bg-base-sand text-base-terraDark text-xs font-bold transition">
-                ✨ AIで作成
-              </button>
+                class="px-3 py-1 rounded-full bg-base-terraLight hover:bg-base-sand text-base-terraDark text-xs font-bold transition">✨ AIで作成</button>
             </div>
             <textarea id="pub-description" rows="4" placeholder="お部屋の雰囲気や施術のしやすさ、こだわりポイントを入力してください。"
               class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm"></textarea>
           </div>
 
-          <!-- 入室方法・ご利用ルール + AI作成ボタン -->
           <div>
             <div class="flex items-center justify-between mb-1.5">
               <label for="pub-rules" class="block text-xs font-bold text-base-charcoal">入室方法・ご利用ルール</label>
               <button type="button" onclick="requestAiCopy('rules', this)"
-                class="px-3 py-1 rounded-full bg-base-terraLight hover:bg-base-sand text-base-terraDark text-xs font-bold transition">
-                ✨ AIで作成
-              </button>
+                class="px-3 py-1 rounded-full bg-base-terraLight hover:bg-base-sand text-base-terraDark text-xs font-bold transition">✨ AIで作成</button>
             </div>
             <textarea id="pub-rules" rows="3" placeholder="入室時間・退室時の片付け・禁煙や音・香りに関するルールなど。"
               class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm"></textarea>
           </div>
-          </div>
-
-          <!-- 掲載日・営業時間帯（</form> の中に置く） -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label for="pub-available-from" class="block text-xs font-bold text-base-charcoal mb-1.5">掲載・受付開始日</label>
-              <input id="pub-available-from" type="date"
-                class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
-            </div>
-            <div>
-              <label for="pub-hours" class="block text-xs font-bold text-base-charcoal mb-1.5">営業時間帯（例：10:00〜21:00）</label>
-              <input id="pub-hours" type="text" placeholder="例：10:00〜21:00"
-                class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
-            </div>
-          </div>
-
-          <div id="publish-status-msg" ...
 
           <div id="publish-status-msg" class="hidden text-xs font-medium rounded-xl px-4 py-2.5"></div>
 
           <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
-            <a href="/" class="text-xs font-bold text-base-muted hover:text-base-terra transition">
-              公開ページで表示を確認する →
-            </a>
+            <a href="/" class="text-xs font-bold text-base-muted hover:text-base-terra transition">公開ページで表示を確認する →</a>
             <button type="submit" id="publish-submit-btn"
-              class="px-6 py-3 rounded-full bg-base-terra hover:bg-base-terraDark text-white text-sm font-bold shadow-sm transition">
-              この内容で掲載する
-            </button>
+              class="px-6 py-3 rounded-full bg-base-terra hover:bg-base-terraDark text-white text-sm font-bold shadow-sm transition">この内容で掲載する</button>
           </div>
         </form>
       </div>
 
+      <!-- 無料見学リクエスト一覧 -->
+      <section class="bg-white rounded-3xl border border-base-border shadow-card p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-serif text-lg font-bold text-base-charcoal">無料見学のリクエスト</h2>
+          <button type="button" id="refresh-bookings-btn" class="px-3 py-1.5 rounded-full text-xs font-bold border border-base-border hover:bg-base-bg">更新</button>
+        </div>
+        <div id="admin-bookings-list" class="space-y-2 text-xs text-base-charcoal">
+          <p class="text-base-muted">読み込み中です...</p>
+        </div>
+      </section>
 
-      <!-- 案内＆クイックアクション -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-white rounded-3xl border border-base-border shadow-card p-6">
           <h2 class="font-serif text-lg font-bold text-base-charcoal mb-2 flex items-center gap-2">
-            <i class="fa-solid fa-bullhorn text-base-terra"></i>
-            <span>掲載準備のご案内</span>
+            <i class="fa-solid fa-bullhorn text-base-terra"></i><span>掲載準備のご案内</span>
           </h2>
           <p class="text-xs sm:text-sm text-base-muted leading-relaxed mb-4">
             ご登録ありがとうございます。初期掲載オーナー様向けの無料ページ作成サポートや空き枠設定については、担当スタッフより順次ご案内いたします。
           </p>
           <a href="/#owner-entry-form" class="inline-flex items-center gap-1.5 text-xs font-bold text-base-terraDark hover:underline">
-            <span>エントリーフォームへ戻る</span>
-            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            <span>エントリーフォームへ戻る</span><i class="fa-solid fa-arrow-up-right-from-square"></i>
           </a>
         </div>
-
         <div class="bg-white rounded-3xl border border-base-border shadow-card p-6">
           <h2 class="font-serif text-lg font-bold text-base-charcoal mb-2 flex items-center gap-2">
-            <i class="fa-solid fa-store text-base-terra"></i>
-            <span>公開スペースの確認</span>
+            <i class="fa-solid fa-store text-base-terra"></i><span>公開スペースの確認</span>
           </h2>
-          <p class="text-xs sm:text-sm text-base-muted leading-relaxed mb-4">
-            借り手向け検索ページでは、エリア・設備タグ・時間枠ごとの見え方を確認できます。
-          </p>
+          <p class="text-xs sm:text-sm text-base-muted leading-relaxed mb-4">借り手向け検索ページでは、エリア・設備タグ・時間枠ごとの見え方を確認できます。</p>
           <a href="/" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-base-terra hover:bg-base-terraDark text-white text-xs font-bold transition">
-            <span>レンタルサロン一覧を見る</span>
-            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            <span>レンタルサロン一覧を見る</span><i class="fa-solid fa-chevron-right text-[10px]"></i>
           </a>
         </div>
       </div>
     </section>
-        <!-- 予約・見学の受信一覧 -->
-        <section class="bg-white rounded-3xl border border-base-border shadow-card p-6 mt-6">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="font-serif text-lg font-bold text-base-charcoal">
-              入っている予約・無料見学（時間枠の確認）
-            </h2>
-            <button type="button" id="refresh-bookings-btn"
-              class="px-3 py-1.5 rounded-full text-xs font-bold border border-base-border hover:bg-base-bg">
-              更新
-            </button>
-          </div>
-          <div id="admin-bookings-list" class="space-y-2 text-xs text-base-charcoal">
-            <p class="text-base-muted">読み込み中です...</p>
-          </div>
-        </section>
 
   </main>
 
@@ -391,12 +340,41 @@
     let selectedPhotoFiles = [];
     let currentPhotoBrightness = 100;
 
+    const closedHours = new Set();
+    const HOUR_OPEN_CLS = 'py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center';
+    const HOUR_CLOSED_CLS = 'py-2.5 px-2 rounded-xl border border-gray-200 bg-gray-100 text-gray-400 text-xs sm:text-sm font-medium line-through text-center';
+
+    function toggleClosedHour(btn) {
+      const t = btn.dataset.time;
+      if (closedHours.has(t)) {
+        closedHours.delete(t);
+        btn.className = HOUR_OPEN_CLS;
+        btn.textContent = t + '〜';
+      } else {
+        closedHours.add(t);
+        btn.className = HOUR_CLOSED_CLS;
+        btn.textContent = t + '（満枠）';
+      }
+    }
+
+    function checkedVals(containerId) {
+      return Array.from(document.querySelectorAll('#' + containerId + ' input[type="checkbox"]:checked')).map((el) => el.value);
+    }
+
+    function splitListText(t) {
+      return String(t || '').split(/[\n、,，]+/).map((x) => x.trim()).filter(Boolean);
+    }
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
     function getAuthHeaders() {
       try {
         const raw = sessionStorage.getItem(STORAGE_KEY);
         const parsed = raw ? JSON.parse(raw) : null;
-        const token = parsed?.token;
-        return token ? { 'Authorization': `Bearer ${token}` } : {};
+        const token = parsed && parsed.token;
+        return token ? { 'Authorization': 'Bearer ' + token } : {};
       } catch {
         return {};
       }
@@ -412,11 +390,41 @@
       errorBox.classList.add('hidden');
     }
 
+    async function loadAdminBookings() {
+      const box = document.getElementById('admin-bookings-list');
+      if (!box) return;
+      box.innerHTML = '<p class="text-base-muted">読み込み中です...</p>';
+      try {
+        const res = await fetch('/api/tours', { headers: { ...getAuthHeaders() } });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.ok === false) throw new Error(data.error || '取得に失敗しました');
+        const list = data.tours || [];
+        if (list.length === 0) {
+          box.innerHTML = '<p class="text-base-muted">まだ見学のリクエストはありません。</p>';
+          return;
+        }
+        box.innerHTML = list.map((t) => {
+          const d = String(t.desired_date || '').split('-');
+          const when = d.length === 3 ? d[0] + '年' + Number(d[1]) + '月' + Number(d[2]) + '日 ' : '';
+          return '<div class="rounded-2xl border border-base-border bg-base-bg p-3.5">'
+            + '<div class="font-bold text-sm text-base-terraDark">' + esc(when) + esc(t.desired_time) + '〜</div>'
+            + '<div class="mt-0.5 font-semibold">' + esc(t.salon_name) + '</div>'
+            + '<div class="mt-1 text-base-muted">' + esc(t.guest_name) + ' ／ ' + esc(t.guest_email) + (t.guest_phone ? ' ／ ' + esc(t.guest_phone) : '') + '</div>'
+            + (t.message ? '<div class="mt-1">' + esc(t.message) + '</div>' : '')
+            + '</div>';
+        }).join('');
+      } catch (err) {
+        box.innerHTML = '<p class="text-red-700">' + esc(err.message || '取得に失敗しました') + '</p>';
+      }
+    }
+
+    document.getElementById('refresh-bookings-btn').addEventListener('click', loadAdminBookings);
+
     function renderDashboard(owner) {
       document.getElementById('dash-salon-name').textContent = owner.salon_name || 'サロン名未設定';
       document.getElementById('dash-person-name').textContent = owner.person_name || '担当者未設定';
       document.getElementById('dash-owner-code').textContent = owner.owner_code || '-';
-      document.getElementById('dash-owner-id').textContent = owner.id ?? '-';
+      document.getElementById('dash-owner-id').textContent = owner.id != null ? owner.id : '-';
 
       const nameInput = document.getElementById('pub-name');
       if (nameInput && !nameInput.value && owner.salon_name) {
@@ -425,8 +433,8 @@
 
       loginSection.classList.add('hidden');
       dashboardSection.classList.remove('hidden');
-      loadAdminBookings();
       headerLogoutBtn.classList.remove('hidden');
+      loadAdminBookings();
     }
 
     function handleLogout() {
@@ -438,15 +446,13 @@
       hideError();
     }
 
-    // 【①】明るさプレビュー更新＆リセット＆画像ファイル適用
     function updatePhotoBrightnessPreview() {
       const slider = document.getElementById('pub-photo-brightness');
       const label = document.getElementById('pub-photo-brightness-val');
-      currentPhotoBrightness = Number(slider?.value || 100);
-      if (label) label.textContent = `${currentPhotoBrightness}%`;
-
-      document.querySelectorAll('.salon-preview-img').forEach(img => {
-        img.style.filter = `brightness(${currentPhotoBrightness}%)`;
+      currentPhotoBrightness = Number((slider && slider.value) || 100);
+      if (label) label.textContent = currentPhotoBrightness + '%';
+      document.querySelectorAll('.salon-preview-img').forEach((img) => {
+        img.style.filter = 'brightness(' + currentPhotoBrightness + '%)';
       });
     }
 
@@ -456,7 +462,7 @@
       updatePhotoBrightnessPreview();
     }
 
-       async function applyBrightnessToFile(file, brightnessPercent = 100) {
+    async function applyBrightnessToFile(file, brightnessPercent = 100) {
       if (!file) return file;
       const bmp = await createImageBitmap(file);
       const scale = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
@@ -491,7 +497,6 @@
       selectedPhotoFiles = files.slice(0, 20);
       const previewEl = document.getElementById('pub-photo-preview');
       if (!previewEl) return;
-
       previewEl.innerHTML = '';
       selectedPhotoFiles.forEach((file) => {
         const url = URL.createObjectURL(file);
@@ -501,22 +506,22 @@
         img.src = url;
         img.alt = file.name;
         img.className = 'salon-preview-img w-full h-full object-cover';
-        img.style.filter = `brightness(${currentPhotoBrightness}%)`;
+        img.style.filter = 'brightness(' + currentPhotoBrightness + '%)';
         card.appendChild(img);
         previewEl.appendChild(card);
       });
     }
 
-
     async function requestAiCopy(target, btn) {
-      const name = document.getElementById('pub-name')?.value.trim() || '';
-      const area = document.getElementById('pub-area')?.value.trim() || '';
-      const station = document.getElementById('pub-station')?.value.trim() || '';
-      const price = document.getElementById('pub-price')?.value.trim() || '';
-      const genre = document.getElementById('pub-genre')?.value.trim() || '';
-      const amenities = document.getElementById('pub-amenities')?.value.trim() || '';
-      const description = document.getElementById('pub-description')?.value.trim() || '';
-      const rules = document.getElementById('pub-rules')?.value.trim() || '';
+      const val = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+      const name = val('pub-name');
+      const area = val('pub-area');
+      const station = val('pub-station');
+      const price = val('pub-price');
+      const genre = checkedVals('pub-genre-chips').join('、');
+      const amenities = [...checkedVals('pub-equip-chips'), ...splitListText(val('pub-free-amenities'))].join('、');
+      const description = val('pub-description');
+      const rules = val('pub-rules');
 
       const origText = btn.textContent;
       btn.disabled = true;
@@ -525,22 +530,14 @@
       try {
         const res = await fetch('/api/ai/generate-copy', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...getAuthHeaders(),
-          },
-          body: JSON.stringify({
-            target,
-            salon: { name, area, station, price, genre, amenities, description, rules },
-          }),
+          headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+          body: JSON.stringify({ target, salon: { name, area, station, price, genre, amenities, description, rules } }),
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok || data.ok === false || !data.text) {
           throw new Error(data.error || 'AI文章の生成に失敗しました');
         }
-
-        const fieldId = target === 'rules' ? 'pub-rules' : 'pub-description';
-        const fieldEl = document.getElementById(fieldId);
+        const fieldEl = document.getElementById(target === 'rules' ? 'pub-rules' : 'pub-description');
         if (fieldEl) fieldEl.value = data.text;
       } catch (err) {
         alert(err.message || 'AI生成中にエラーが発生しました');
@@ -550,7 +547,7 @@
       }
     }
 
-      document.getElementById('salon-publish-form')?.addEventListener('submit', async (e) => {
+    document.getElementById('salon-publish-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const statusMsg = document.getElementById('publish-status-msg');
       const pubBtn = document.getElementById('publish-submit-btn');
@@ -564,7 +561,6 @@
         statusMsg.classList.remove('hidden');
       };
       const v = (id) => document.getElementById(id).value.trim();
-      const splitList = (t) => t.split(/[、,，・]+/).map((x) => x.trim()).filter(Boolean);
 
       pubBtn.disabled = true;
       pubBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>掲載処理中...';
@@ -572,15 +568,11 @@
       try {
         const keys = [];
         for (let i = 0; i < selectedPhotoFiles.length; i++) {
-          show(true, `写真をアップロード中… (${i + 1}/${selectedPhotoFiles.length})`);
+          show(true, '写真をアップロード中… (' + (i + 1) + '/' + selectedPhotoFiles.length + ')');
           const adjusted = await applyBrightnessToFile(selectedPhotoFiles[i], currentPhotoBrightness);
           const fd = new FormData();
           fd.append('file', adjusted);
-          const up = await fetch('/api/upload', {
-            method: 'POST',
-            headers: { ...getAuthHeaders() },
-            body: fd,
-          });
+          const up = await fetch('/api/upload', { method: 'POST', headers: { ...getAuthHeaders() }, body: fd });
           const upData = await up.json().catch(() => ({}));
           if (!up.ok || !upData.ok) throw new Error(upData.error || '写真のアップロードに失敗しました');
           keys.push(upData.key);
@@ -591,13 +583,14 @@
           area: v('pub-area'),
           station: v('pub-station') || v('pub-area'),
           pricePerHour: Number(v('pub-price')),
-          genres: splitList(v('pub-genre')),
-          equipment: splitList(v('pub-amenities')),
+          genres: checkedVals('pub-genre-chips'),
+          equipment: checkedVals('pub-equip-chips'),
+          freeAmenities: splitListText(v('pub-free-amenities')),
+          availabilityBadge: v('pub-badge'),
+          bookedHours: Array.from(closedHours),
           description: v('pub-description'),
           entryRules: v('pub-rules'),
           image_keys: keys,
-          availableFrom: v('pub-available-from'),
-　　　　　　businessHours: v('pub-hours'),
         };
 
         const res = await fetch('/api/salons', {
@@ -621,7 +614,6 @@
       }
     });
 
-
     togglePwBtn.addEventListener('click', () => {
       const isPassword = passwordInput.type === 'password';
       passwordInput.type = isPassword ? 'text' : 'password';
@@ -634,7 +626,6 @@
 
       const ownerCode = codeInput.value.trim().toUpperCase();
       const password = passwordInput.value;
-
       if (!ownerCode || !password) {
         showError('割り当て番号とパスワードを入力してください。');
         return;
@@ -648,26 +639,15 @@
         const res = await fetch('/api/owner/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            owner_code: ownerCode,
-            password: password,
-          }),
+          body: JSON.stringify({ owner_code: ownerCode, password: password }),
         });
-
         const data = await res.json().catch(() => ({}));
-
         if (!res.ok || data.ok === false || !data.owner) {
           throw new Error(data.error || '割り当て番号またはパスワードが正しくありません。');
         }
-
-        const sessionPayload = {
-  ...(data.owner || {}),
-  token: data.token || data.owner?.token || '',
-};
-sessionStorage.setItem(STORAGE_KEY, JSON.stringify(sessionPayload));
-renderDashboard(sessionPayload);
-
-    
+        const sessionPayload = { ...(data.owner || {}), token: data.token || '' };
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(sessionPayload));
+        renderDashboard(sessionPayload);
       } catch (err) {
         showError(err.message || 'ログイン処理中にエラーが発生しました。');
       } finally {
@@ -681,9 +661,7 @@ renderDashboard(sessionPayload);
         const saved = sessionStorage.getItem(STORAGE_KEY);
         if (saved) {
           const owner = JSON.parse(saved);
-          if (owner && owner.owner_code) {
-            renderDashboard(owner);
-          }
+          if (owner && owner.owner_code) renderDashboard(owner);
         }
       } catch {
         sessionStorage.removeItem(STORAGE_KEY);
