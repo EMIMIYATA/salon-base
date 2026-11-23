@@ -751,6 +751,46 @@ if (path === "/api/owner/login" && method === "POST") {
         totalPrepaidJpy,
         paymentDueAt
       ).run();
+        // ---- 予約作成時の管理者・オーナー通知メール ----
+        try {
+          if (env.RESEND_API_KEY) {
+            const notifyTargets = new Set();
+            if (env.NOTIFY_EMAIL) notifyTargets.add(env.NOTIFY_EMAIL);
+
+            if (salon?.owner_user_id) {
+              const ownerRow = await env.DB.prepare(
+                `SELECT email FROM users WHERE id = ?`
+              )
+                .bind(salon.owner_user_id)
+                .first();
+              if (ownerRow?.email) notifyTargets.add(ownerRow.email);
+            }
+
+            const noticeText = [
+              "新しいスペース予約が入りました。",
+              "",
+              `予約ID: ${bookingId}`,
+              `予約コード: ${bookingCode}`,
+              `サロンID: ${space.salon_id}`,
+              `スペース: ${space.title || space_id}`,
+              `開始日時: ${start_at}`,
+              `終了日時: ${end_at}`,
+              `予約者ID: ${guest_user_id}`,
+              `合計金額: ¥${Number(totalPrepaidJpy || 0).toLocaleString()}`,
+            ].join("\n");
+
+            for (const toAddr of notifyTargets) {
+              await sendMail(
+                env,
+                toAddr,
+                `【SalonBase】新規予約通知：${space.title || space_id}（${start_at}）`,
+                noticeText
+              );
+            }
+          }
+        } catch (mailErr) {
+          console.log("booking notify mail error:", String(mailErr));
+        }
 
       return json({
         ok: true,
