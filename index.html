@@ -1345,9 +1345,22 @@ window.addEventListener('DOMContentLoaded', async () => {
             );
         }
 
-        // サロン予約リクエスト完了
+                // サロン予約リクエスト完了
         function triggerSalonBooking() {
             if (modalSelectedHours.length === 0) return;
+
+            const guestName = (document.getElementById('booking-guest-name')?.value || '').trim();
+            const guestEmail = (document.getElementById('booking-guest-email')?.value || '').trim();
+
+            if (!guestName) {
+                openNotifModal('入力エラー', 'ご予約者のお名前を入力してください。');
+                return;
+            }
+            if (!guestEmail || !guestEmail.includes('@')) {
+                openNotifModal('入力エラー', '有効なメールアドレスを入力してください。');
+                return;
+            }
+
             const salonName = currentModalSalon.name;
             const dateVal = document.getElementById('search-date').value;
             const timesStr = modalSelectedHours.join(' / ');
@@ -1355,10 +1368,11 @@ window.addEventListener('DOMContentLoaded', async () => {
 
             closeSalonModal();
             openNotifModal(
-                "サロン予約リクエストを送信しました",
-                `「${salonName}」\n利用日：${dateVal}（${timesStr}）\n合計金額：${totalStr}\n\n予約確定後、マイページおよびメールにて入室用スマートロック暗証番号をご案内いたします。`
+                'サロン予約リクエストを送信しました',
+                `「${salonName}」\nお名前：${guestName} 様\n利用日：${dateVal}（${timesStr}）\n合計金額：${totalStr}\n\n${guestEmail} 宛に確認メールをお送りしました。\nサロンオーナーからの連絡が来るまで今しばらくお待ちください。`
             );
         }
+
 
         // 6. オーナー向けインタラクティブ収益シミュレーター
         function updateSimulator() {
