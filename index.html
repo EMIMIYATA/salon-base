@@ -2100,6 +2100,15 @@ function resetEntryForm() {
                     }).join('')}
                 </div>
             `;
+                 async function restoreAdminSession() {
+         try {
+             const savedToken = localStorage.getItem(ADMIN_TOKEN_KEY);
+             if (!savedToken) return;
+             adminConsoleToken = savedToken;
+             await refreshAdminConsoleData();
+         } catch {}
+     }
+
         }
              // ページ読み込み時に登録状態を反映
         document.addEventListener('DOMContentLoaded', () => {
