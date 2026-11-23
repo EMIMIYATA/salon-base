@@ -740,23 +740,49 @@
             await loadAdminScheduleForSelectedDate();
         }
 
+                const SALON_REGISTERED_KEY = 'salonbase_registered_once';
+
+        function hasRegisteredSalon(ownerSalons = []) {
+            if (Array.isArray(ownerSalons) && ownerSalons.length > 0) {
+                return true;
+            }
+            try {
+                return localStorage.getItem(SALON_REGISTERED_KEY) === '1';
+            } catch {
+                return false;
+            }
+        }
+
+        function markSalonAsRegistered() {
+            try {
+                localStorage.setItem(SALON_REGISTERED_KEY, '1');
+            } catch {}
+        }
+
         function syncSalonFormMode(ownerSalons = []) {
             const createFormEl = document.getElementById('entry-form-body');
             const editBtnEl = document.getElementById('open-salon-edit-btn');
             const summaryEl = document.getElementById('registered-salon-summary');
-            const hasSalon = Array.isArray(ownerSalons) && ownerSalons.length > 0;
+            const isRegistered = hasRegisteredSalon(ownerSalons);
 
-            if (hasSalon) {
+            if (isRegistered) {
+                // 登録済み：新規登録フォームは非表示にし、「変更」ボタンのみ表示
                 if (createFormEl) createFormEl.classList.add('hidden');
                 if (editBtnEl) editBtnEl.classList.remove('hidden');
-                if (summaryEl) summaryEl.textContent = `登録済み：${ownerSalons[0].name}（詳細の変更は「変更」ボタンから行えます）`;
+                const salonTitle = ownerSalons[0]?.name || '登録済みサロン';
+                if (summaryEl) {
+                    summaryEl.textContent = `${salonTitle}（掲載済み：内容を変更したいときのみ「変更」ボタンを押してください）`;
+                }
             } else {
+                // 初回未登録のみ表示
                 if (createFormEl) createFormEl.classList.remove('hidden');
                 if (editBtnEl) editBtnEl.classList.add('hidden');
-                if (summaryEl) summaryEl.textContent = 'まだサロンが登録されていません。';
+                if (summaryEl) {
+                    summaryEl.textContent = '初回のみ掲載登録を行えます。登録後は「変更」ボタンから更新します。';
+                }
             }
         }
-
+                    
         function openSalonEditMode() {
             const target = adminManagedSalons[0];
             if (!target) return;
