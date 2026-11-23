@@ -109,7 +109,7 @@ function verifyAdminPassword(password, env) {
   }
   return diff === 0;
 }
-async function createAdminToken(env, role = "admin", extra = {}) {
+async function hmacKey(secret, usage) {
   return crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(secret),
@@ -119,7 +119,7 @@ async function createAdminToken(env, role = "admin", extra = {}) {
   );
 }
 
-async function createAdminToken(env) {
+async function createAdminToken(env, role = "admin", extra = {}) {
   const secret = getAdminSecret(env);
   if (!secret) throw new Error("ADMIN_TOKEN_SECRET が未設定です");
   const now = Date.now();
