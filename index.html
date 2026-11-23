@@ -1845,10 +1845,11 @@ function resetEntryForm() {
             dateEl.min = today;
             dateEl.value = document.getElementById('search-date').value || today;
 
-            const slots = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
+                        const slots = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
             const booked = currentModalSalon.bookedHours || [];
             document.getElementById('tour-time').innerHTML =
                 slots.filter(t => !booked.includes(t)).map(t => `<option value="${t}">${t}〜</option>`).join('');
+
 
             document.getElementById('tour-error').classList.add('hidden');
             const m = document.getElementById('tour-modal');
