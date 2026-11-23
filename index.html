@@ -908,13 +908,23 @@
         let currentModalSalon = null;
 
         // 初期化処理
-        window.addEventListener('DOMContentLoaded', () => {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('search-date').value = today;
+window.addEventListener('DOMContentLoaded', async () => {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('search-date').value = today;
 
-            renderSalonCards(salons);
-            updateSimulator();
-        });
+    try {
+        const res = await fetch('/api/salons');
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok && Array.isArray(data.salons) && data.salons.length > 0) {
+            salons = [...data.salons, ...salons];
+        }
+    } catch (e) {
+        console.error('サロン一覧の取得エラー:', e);
+    }
+
+    renderSalonCards(salons);
+    updateSimulator();
+});
 
         // 2. ビュー切り替え（借り手向け画面 ⇔ オーナー向け募集LP）
         function switchView(target) {
