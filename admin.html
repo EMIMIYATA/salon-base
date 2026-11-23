@@ -280,7 +280,30 @@
           </div>
         </form>
       </div>
-
+      <!-- 日付ごとの休み設定 -->
+      <section class="bg-white rounded-3xl border border-base-border shadow-card p-6 sm:p-8">
+        <div class="mb-4 pb-3 border-b border-base-border">
+          <span class="font-en text-base-terra text-xs font-bold tracking-widest uppercase">Availability</span>
+          <h2 class="font-serif text-lg font-bold text-base-charcoal mt-0.5">日付ごとの貸し出せない時間</h2>
+          <p class="text-[11px] text-base-muted mt-1">日付を選び、貸し出せない時間をタップして「保存」を押します。全部グレーにすると、その日は終日お休みです。</p>
+        </div>
+        <div class="space-y-3">
+          <select id="cl-salon" class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 text-sm"></select>
+          <input id="cl-date" type="date" class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 text-sm" />
+          <div id="cl-hours" class="grid grid-cols-3 sm:grid-cols-4 gap-2"></div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" id="cl-all" class="px-4 py-2 rounded-full border border-base-border text-xs font-bold hover:bg-base-bg">終日お休みにする</button>
+            <button type="button" id="cl-clear" class="px-4 py-2 rounded-full border border-base-border text-xs font-bold hover:bg-base-bg">すべて空ける</button>
+            <button type="button" id="cl-save" class="px-5 py-2 rounded-full bg-base-terra hover:bg-base-terraDark text-white text-xs font-bold">この日を保存</button>
+          </div>
+          <div id="cl-msg" class="hidden text-xs font-bold rounded-xl px-4 py-2.5"></div>
+          <div>
+            <h3 class="text-xs font-bold text-base-charcoal mb-2">設定済みの日</h3>
+            <div id="cl-list" class="space-y-1.5 text-xs"></div>
+          </div>
+        </div>
+      </section>
+      
       <!-- 無料見学リクエスト一覧 -->
       <section class="bg-white rounded-3xl border border-base-border shadow-card p-6">
         <div class="flex items-center justify-between mb-4">
