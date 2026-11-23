@@ -2101,7 +2101,11 @@ function resetEntryForm() {
                 </div>
             `;
                  async function restoreAdminSession() {
-         try {
+              document.addEventListener('DOMContentLoaded', () => {
+         syncSalonFormMode([]);
+         restoreAdminSession();
+     });
+                     try {
              const savedToken = localStorage.getItem(ADMIN_TOKEN_KEY);
              if (!savedToken) return;
              adminConsoleToken = savedToken;
