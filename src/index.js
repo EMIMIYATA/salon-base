@@ -436,6 +436,18 @@ export default {
           )
           .run();
         const newId = ins.meta?.last_row_id;
+                try {
+          const rawTok = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").split(".")[0];
+          const tokData = JSON.parse(atob(rawTok));
+          if (tokData.owner_id) {
+            const ow = await env.DB.prepare("SELECT email FROM owner_entries WHERE id = ?").bind(tokData.owner_id).first();
+            if (ow?.email) {
+              await env.DB.prepare("UPDATE published_salons SET owner_email = ? WHERE id = ?").bind(ow.email, newId).run();
+            }
+          }
+        } catch (e) {
+          console.log("owner email save skipped", String(e));
+        }
         for (let i = 0; i < imageKeys.length; i++) {
           await env.DB.prepare(
             `INSERT INTO salon_photos (salon_id, image_key, sort_order, created_at) VALUES (?, ?, ?, ?)`
