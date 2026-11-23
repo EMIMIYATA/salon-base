@@ -1513,6 +1513,76 @@ function resetEntryForm() {
                 box.classList.add('translate-y-24', 'opacity-0');
             }, 3500);
         }
+        function triggerTourBooking() {
+            if (!currentModalSalon) return;
+            document.getElementById('tour-salon-name').textContent = currentModalSalon.name;
+
+            const today = new Date().toISOString().split('T')[0];
+            const dateEl = document.getElementById('tour-date');
+            dateEl.min = today;
+            dateEl.value = document.getElementById('search-date').value || today;
+
+            const slots = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
+            const booked = currentModalSalon.bookedHours || [];
+            document.getElementById('tour-time').innerHTML =
+                slots.filter(t => !booked.includes(t)).map(t => `<option value="${t}">${t}〜</option>`).join('');
+
+            document.getElementById('tour-error').classList.add('hidden');
+            const m = document.getElementById('tour-modal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+
+        function closeTourModal() {
+            const m = document.getElementById('tour-modal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        async function submitTour(e) {
+            e.preventDefault();
+            const errBox = document.getElementById('tour-error');
+            const btn = document.getElementById('tour-submit-btn');
+            const payload = {
+                salon_id: currentModalSalon.id,
+                salon_name: currentModalSalon.name,
+                date: document.getElementById('tour-date').value,
+                time: document.getElementById('tour-time').value,
+                name: document.getElementById('tour-name').value.trim(),
+                email: document.getElementById('tour-email').value.trim(),
+                phone: document.getElementById('tour-phone').value.trim(),
+                message: document.getElementById('tour-message').value.trim(),
+            };
+            errBox.classList.add('hidden');
+            btn.disabled = true;
+            const orig = btn.textContent;
+            btn.textContent = '送信中...';
+            try {
+                const res = await fetch('/api/tours', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || data.ok === false) throw new Error(data.error || '送信に失敗しました');
+
+                const [yy, mm, dd] = payload.date.split('-');
+                const salonName = currentModalSalon.name;
+                closeTourModal();
+                closeSalonModal();
+                e.target.reset();
+                openNotifModal(
+                    '無料見学のリクエストを送信しました',
+                    `「${salonName}」\n希望日時：${yy}年${Number(mm)}月${Number(dd)}日 ${payload.time}〜\n\nご入力のメールアドレスに確認メールをお送りしました。オーナーからのご連絡をお待ちください。`
+                );
+            } catch (err) {
+                errBox.textContent = err.message || '送信に失敗しました';
+                errBox.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = orig;
+            }
+        }
 
         // モーダル背景クリックで閉じる
         document.getElementById('salon-detail-modal').addEventListener('click', function(e) {
