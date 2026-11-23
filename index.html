@@ -1273,12 +1273,42 @@ window.addEventListener('DOMContentLoaded', async () => {
                                     <span id="calc-total-price" class="font-serif text-xl text-base-terraDark">¥0</span>
                                 </div>
                             </div>
+                            <!-- 予約者情報入力欄 -->
+                            <div class="bg-white p-4 rounded-xl border border-base-border mb-4 space-y-3">
+                                <h5 class="text-xs font-bold text-base-charcoal">
+                                    <i class="fa-regular fa-user text-base-terra mr-1.5"></i>ご予約者情報（確認メール送信先）
+                                </h5>
+                                <div>
+                                    <label for="booking-guest-name" class="block text-[11px] font-bold text-base-charcoal mb-1">
+                                        お名前 <span class="text-base-terra">*</span>
+                                    </label>
+                                    <input type="text" id="booking-guest-name" required placeholder="例：山田 花子"
+                                           class="w-full px-3.5 py-2.5 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-xs sm:text-sm bg-base-bg/50">
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label for="booking-guest-email" class="block text-[11px] font-bold text-base-charcoal mb-1">
+                                            メールアドレス <span class="text-base-terra">*</span>
+                                        </label>
+                                        <input type="email" id="booking-guest-email" required placeholder="therapist@example.com"
+                                               class="w-full px-3.5 py-2.5 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-xs sm:text-sm bg-base-bg/50">
+                                    </div>
+                                    <div>
+                                        <label for="booking-guest-phone" class="block text-[11px] font-bold text-base-charcoal mb-1">
+                                            電話番号（任意）
+                                        </label>
+                                        <input type="tel" id="booking-guest-phone" placeholder="例：090-1234-5678"
+                                               class="w-full px-3.5 py-2.5 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-xs sm:text-sm bg-base-bg/50">
+                                    </div>
+                                </div>
+                            </div>
 
                             <!-- 予約リクエスト送信ボタン -->
                             <button type="button" id="submit-booking-btn" onclick="triggerSalonBooking()" disabled
                                     class="w-full py-4 rounded-full bg-gray-300 text-white font-bold text-sm sm:text-base transition cursor-not-allowed">
                                 時間を選択してください
                             </button>
+
                         </div>
                     </div>
                 </div>
