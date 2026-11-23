@@ -678,6 +678,110 @@
         submitBtn.innerHTML = originalBtnHtml;
       }
     });
+    const CL_TIMES = ['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00'];
+    const clClosed = new Set();
+
+    function clMsg(ok, msg) {
+      const el = document.getElementById('cl-msg');
+      el.className = ok ? 'text-xs font-bold rounded-xl px-4 py-2.5 bg-base-sageLight text-base-sage'
+                        : 'text-xs font-bold rounded-xl px-4 py-2.5 bg-red-50 text-red-700 border border-red-200';
+      el.textContent = msg;
+    }
+
+    function clRenderHours() {
+      const box = document.getElementById('cl-hours');
+      box.innerHTML = '';
+      CL_TIMES.forEach((t) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        const closed = clClosed.has(t);
+        b.className = closed ? HOUR_CLOSED_CLS : HOUR_OPEN_CLS;
+        b.textContent = closed ? t + '（満枠）' : t + '〜';
+        b.addEventListener('click', () => {
+          if (clClosed.has(t)) clClosed.delete(t); else clClosed.add(t);
+          clRenderHours();
+        });
+        box.appendChild(b);
+      });
+    }
+
+    async function loadMySalons() {
+      const sel = document.getElementById('cl-salon');
+      try {
+        const res = await fetch('/api/my-salons', { headers: { ...getAuthHeaders() } });
+        const data = await res.json().catch(() => ({}));
+        const list = data.salons || [];
+        sel.innerHTML = list.length
+          ? list.map((s) => '<option value="' + s.id + '">' + esc(s.name) + '</option>').join('')
+          : '<option value="">掲載中のサロンがありません</option>';
+      } catch {
+        sel.innerHTML = '<option value="">取得に失敗しました</option>';
+      }
+      clRenderHours();
+      loadClosureList();
+    }
+
+    async function loadClosureList() {
+      const sid = document.getElementById('cl-salon').value;
+      const box = document.getElementById('cl-list');
+      if (!sid) { box.innerHTML = ''; return; }
+      try {
+        const res = await fetch('/api/closures?salon_id=' + sid);
+        const data = await res.json().catch(() => ({}));
+        const list = data.closures || [];
+        box.innerHTML = list.length
+          ? list.map((c) => '<button type="button" data-date="' + esc(c.date) + '" class="cl-item w-full text-left rounded-xl border border-base-border bg-base-bg px-3 py-2">'
+              + '<b>' + esc(c.date) + '</b>　' + (c.hours.length >= CL_TIMES.length ? '終日お休み' : esc(c.hours.join('、')) + ' が満枠') + '</button>').join('')
+          : '<p class="text-base-muted">まだ設定はありません。</p>';
+        box.querySelectorAll('.cl-item').forEach((el) => {
+          el.addEventListener('click', () => {
+            document.getElementById('cl-date').value = el.dataset.date;
+            loadClosureForDate();
+          });
+        });
+      } catch {
+        box.innerHTML = '';
+      }
+    }
+
+    async function loadClosureForDate() {
+      const sid = document.getElementById('cl-salon').value;
+      const date = document.getElementById('cl-date').value;
+      clClosed.clear();
+      if (sid && date) {
+        try {
+          const res = await fetch('/api/closures?salon_id=' + sid + '&date=' + date);
+          const data = await res.json().catch(() => ({}));
+          (data.hours || []).forEach((h) => clClosed.add(h));
+        } catch {}
+      }
+      clRenderHours();
+    }
+
+    document.getElementById('cl-salon').addEventListener('change', () => { loadClosureList(); loadClosureForDate(); });
+    document.getElementById('cl-date').addEventListener('change', loadClosureForDate);
+    document.getElementById('cl-all').addEventListener('click', () => { CL_TIMES.forEach((t) => clClosed.add(t)); clRenderHours(); });
+    document.getElementById('cl-clear').addEventListener('click', () => { clClosed.clear(); clRenderHours(); });
+    document.getElementById('cl-save').addEventListener('click', async () => {
+      const sid = document.getElementById('cl-salon').value;
+      const date = document.getElementById('cl-date').value;
+      if (!sid || !date) { clMsg(false, 'サロンと日付を選んでください。'); return; }
+      try {
+        const res = await fetch('/api/closures', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+          body: JSON.stringify({ salon_id: Number(sid), date, hours: Array.from(clClosed) }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.ok === false) throw new Error(data.error || '保存に失敗しました');
+        clMsg(true, date + ' の設定を保存しました。');
+        loadClosureList();
+      } catch (err) {
+        clMsg(false, err.message || '保存に失敗しました');
+      }
+      document.getElementById('cl-msg').classList.remove('hidden');
+    });
+
 
     window.addEventListener('DOMContentLoaded', () => {
       try {
