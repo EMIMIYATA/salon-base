@@ -547,7 +547,6 @@ if (path === "/api/owner/login" && method === "POST") {
     if (hashHex !== row.password_hash) {
       return json({ ok: false, error: "番号またはパスワードが正しくありません" }, 401);
     }
-    const token = await createAdminToken(env, "owner", { owner_id: row.id });
         const token = await createAdminToken(env, "owner", { owner_id: row.id });
     return json({
       ok: true,
