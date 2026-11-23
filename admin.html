@@ -795,6 +795,7 @@
         const data = await res.json().catch(() => ({}));
         if (res.status === 401) {
           handleLogout();
+                prefillOwnerCode();
           showError('ログインの有効期限が切れました。もう一度ログインしてください。');
           return;
         }
@@ -850,9 +851,11 @@
 
     window.addEventListener('DOMContentLoaded', () => {
             prefillOwnerCode();
-
       const saved = loadSession();
+              try { if (document.getElementById('remember-code').checked) localStorage.setItem('salonbase_owner_code', ownerCode); else localStorage.removeItem('salonbase_owner_code'); } catch {}
+      
       if (saved && saved.owner_code) renderDashboard(saved);
+      
     });
   </script>
 </body>
