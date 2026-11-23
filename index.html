@@ -2100,25 +2100,168 @@ function resetEntryForm() {
                     }).join('')}
                 </div>
             `;
-                 async function restoreAdminSession() {
-              document.addEventListener('DOMContentLoaded', () => {
-         syncSalonFormMode([]);
-         restoreAdminSession();
-     });
-                     try {
-             const savedToken = localStorage.getItem(ADMIN_TOKEN_KEY);
-             if (!savedToken) return;
-             adminConsoleToken = savedToken;
-             await refreshAdminConsoleData();
-         } catch {}
-     }
+        const ADMIN_TOKEN_KEY = 'salonbase_admin_token';
+        const ADMIN_PW_KEY = 'salonbase_admin_pw';
+        const SALON_REGISTERED_KEY = 'salonbase_registered_once';
 
+        let adminConsoleToken = '';
+        let adminBookingsCache = [];
+        let adminManagedSalons = [];
+
+        function restoreSavedPasswordInput() {
+            try {
+                const pwInput = document.getElementById('console-admin-password');
+                const rememberEl = document.getElementById('remember-admin-login');
+                const savedPw = localStorage.getItem(ADMIN_PW_KEY);
+                if (savedPw && pwInput) {
+                    pwInput.value = savedPw;
+                    if (rememberEl) rememberEl.checked = true;
+                }
+            } catch {}
         }
-             // ページ読み込み時に登録状態を反映
-        document.addEventListener('DOMContentLoaded', () => {
-            syncSalonFormMode([]);
-        });
-   
+
+        function saveOrClearPasswordInput(pw, shouldRemember) {
+            try {
+                if (shouldRemember && pw) {
+                    localStorage.setItem(ADMIN_PW_KEY, pw);
+                } else {
+                    localStorage.removeItem(ADMIN_PW_KEY);
+                }
+            } catch {}
+        }
+
+        function hasRegisteredSalon(ownerSalons = []) {
+            if (Array.isArray(ownerSalons) && ownerSalons.length > 0) return true;
+            try {
+                return localStorage.getItem(SALON_REGISTERED_KEY) === '1';
+            } catch {
+                return false;
+            }
+        }
+
+        function markSalonAsRegistered() {
+            try {
+                localStorage.setItem(SALON_REGISTERED_KEY, '1');
+            } catch {}
+        }
+
+        function syncSalonFormMode(ownerSalons = []) {
+            const createFormEl = document.getElementById('entry-form-body');
+            const editBtnEl = document.getElementById('open-salon-edit-btn');
+            const summaryEl = document.getElementById('registered-salon-summary');
+            const isRegistered = hasRegisteredSalon(ownerSalons);
+
+            if (isRegistered) {
+                if (createFormEl) createFormEl.classList.add('hidden');
+                if (editBtnEl) editBtnEl.classList.remove('hidden');
+                const salonTitle = ownerSalons[0]?.name || '登録済みサロン';
+                if (summaryEl) {
+                    summaryEl.textContent = `${salonTitle}（掲載済み：内容を変更したいときのみ「変更」ボタンを押してください）`;
+                }
+            } else {
+                if (createFormEl) createFormEl.classList.remove('hidden');
+                if (editBtnEl) editBtnEl.classList.add('hidden');
+                if (summaryEl) {
+                    summaryEl.textContent = '初回のみ掲載登録を行えます。登録後は「変更」ボタンから更新します。';
+                }
+            }
+        }
+
+        async function loginAdminConsole() {
+            const pw = document.getElementById('console-admin-password')?.value || '';
+            const rememberEl = document.getElementById('remember-admin-login');
+            const shouldRemember = rememberEl ? rememberEl.checked : true;
+
+            if (!pw) {
+                openNotifModal('入力エラー', '管理者パスワードを入力してください。');
+                return;
+            }
+
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ password: pw })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.token) {
+                openNotifModal('ログインエラー', data.error || 'ログインに失敗しました。');
+                return;
+            }
+
+            adminConsoleToken = data.token;
+            saveOrClearPasswordInput(pw, shouldRemember);
+
+            try {
+                if (shouldRemember) {
+                    localStorage.setItem(ADMIN_TOKEN_KEY, data.token);
+                } else {
+                    localStorage.removeItem(ADMIN_TOKEN_KEY);
+                }
+            } catch {}
+
+            await refreshAdminConsoleData();
+        }
+
+        async function restoreAdminSession() {
+            try {
+                const savedToken = localStorage.getItem(ADMIN_TOKEN_KEY);
+                if (!savedToken) return;
+                adminConsoleToken = savedToken;
+                await refreshAdminConsoleData();
+            } catch {}
+        }
+
+        async function refreshAdminConsoleData() {
+            if (!adminConsoleToken) return;
+
+            const [myRes, bkgRes] = await Promise.all([
+                fetch('/api/my-salons', { headers: { Authorization: `Bearer ${adminConsoleToken}` } }),
+                fetch('/api/admin/bookings', { headers: { Authorization: `Bearer ${adminConsoleToken}` } })
+            ]);
+
+            if (myRes.status === 401 || bkgRes.status === 401) {
+                adminConsoleToken = '';
+                try { localStorage.removeItem(ADMIN_TOKEN_KEY); } catch {}
+                return;
+            }
+
+            const myData = await myRes.json().catch(() => ({}));
+            const bkgData = await bkgRes.json().catch(() => ({}));
+
+            adminManagedSalons = myData.salons || [];
+            adminBookingsCache = bkgData.bookings || [];
+
+            if (adminManagedSalons.length > 0) markSalonAsRegistered();
+            syncSalonFormMode(adminManagedSalons);
+
+            const selectEl = document.getElementById('admin-salon-select');
+            if (selectEl) {
+                selectEl.innerHTML = adminManagedSalons.map(sItem =>
+                    `<option value="${sItem.id}">${sItem.name}（ID: ${sItem.id}）</option>`
+                ).join('');
+            }
+
+            await loadAdminScheduleForSelectedDate();
+        }
+
+        function openSalonEditMode() {
+            const target = adminManagedSalons[0];
+            if (!target) return;
+
+            const targetIdStr = String(target.id);
+            const targetNumId = targetIdStr.replace(/^db_/, '');
+            const fullSalon = salons.find(
+                (sItem) => String(sItem.id) === targetIdStr || String(sItem.id).replace(/^db_/, '') === targetNumId
+            ) || {};
+
+            const editSection = document.getElementById('salon-edit-section');
+            editSection.classList.remove('hidden');
+            editSection.dataset.editingSalonId = targetNumId;
+
+            document.getElementById('edit-salon-name').value = target.name || target.salon_name || fullSalon.name || '';
+            document.getElementById('edit-salon-price').value = target.pricePerHour ?? target.price_per_hour ?? fullSalon.pricePerHour ?? '';
+            document.getElementById('edit-salon-description').value
+    
 </script>
 </body>
 </html>
