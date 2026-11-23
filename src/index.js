@@ -749,7 +749,23 @@ if (path === "/api/owner/login" && method === "POST") {
         return json({ ok: false, error: "保存に失敗しました" }, 500);
       }
     }
-
+    // ---- 管理画面アプリ化（マニフェストとアイコン） ----
+    if (path === "/admin.webmanifest" && method === "GET") {
+      return new Response(JSON.stringify({
+        name: "SalonBase オーナー管理",
+        short_name: "SalonBase",
+        start_url: "/admin",
+        scope: "/",
+        display: "standalone",
+        background_color: "#FAF7F2",
+        theme_color: "#C4826E",
+        icons: [{ src: "/admin-icon.png", sizes: "256x256", type: "image/png", purpose: "any" }]
+      }), { headers: { "content-type": "application/manifest+json; charset=UTF-8" } });
+    }
+    if (path === "/admin-icon.png" && method === "GET") {
+      const bin = Uint8Array.from(atob("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"), (c) => c.charCodeAt(0));
+      return new Response(bin, { headers: { "content-type": "image/png", "cache-control": "public, max-age=86400" } });
+    }
 
     // ---- 見学リクエスト一覧（ログイン必須） ----
     if (path === "/api/tours" && method === "GET") {
