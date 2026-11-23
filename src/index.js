@@ -564,6 +564,107 @@ if (path === "/api/owner/login" && method === "POST") {
     return json({ ok: false, error: String(err?.message || err) }, 500);
   }
 }
+    // ---- 無料見学（30分）の予約＋応募者へのメール送信 ----
+    if (path === "/api/tour-bookings" && method === "POST") {
+      try {
+        const b = await request.json().catch(() => ({}));
+        const salonName = s(b.salon_name || b.salonName, 150);
+        const applicantName = s(b.name || b.applicant_name, 100);
+        const email = s(b.email, 200);
+        const phone = s(b.phone, 50);
+        const tourDate = s(b.tour_date || b.date, 30);
+        const tourTime = s(b.tour_time || b.time, 30);
+        const note = s(b.note || b.message, 500);
+
+        if (!salonName || !applicantName || !email || !tourDate || !tourTime) {
+          return json(
+            { ok: false, error: "サロン名・お名前・メールアドレス・希望日・希望時間を入力してください" },
+            400
+          );
+        }
+
+        const tourId = makeId("tour");
+        const createdAt = new Date().toISOString();
+
+        try {
+          await env.DB.prepare(
+            `INSERT INTO tour_bookings
+              (id, salon_name, applicant_name, email, phone, tour_date, tour_time, note, status, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'requested', ?)`
+          )
+            .bind(
+              tourId,
+              salonName,
+              applicantName,
+              email,
+              phone,
+              tourDate,
+              tourTime,
+              note,
+              createdAt
+            )
+            .run();
+        } catch (dbErr) {
+          console.log("tour_bookings insert skipped/error:", String(dbErr));
+        }
+
+        if (!env.RESEND_API_KEY) {
+          return json({ ok: false, error: "メール送信設定（RESEND_API_KEY）が未設定です" }, 500);
+        }
+
+        const guestSubject = `【SalonBase】無料見学（30分）のご予約受付完了：${salonName}`;
+        const guestText = [
+          `${applicantName} 様`,
+          "",
+          "SalonBase より、無料見学（30分）のご予約を受け付けました。",
+          "",
+          "■ ご予約内容",
+          `予約番号: ${tourId}`,
+          `サロン名: ${salonName}`,
+          `ご希望日時: ${tourDate} ${tourTime}`,
+          phone ? `電話番号: ${phone}` : "",
+          note ? `備考・ご質問: ${note}` : "",
+          "",
+          "担当者より当日のご案内をお送りいたします。",
+          "ご不明点がある場合は、このメールへご返信ください。",
+        ]
+          .filter(Boolean)
+          .join("\n");
+
+        const sentToGuest = await sendMail(env, email, guestSubject, guestText);
+
+        if (env.NOTIFY_EMAIL) {
+          const adminText = [
+            "新しい無料見学（30分）の予約が入りました。",
+            "",
+            `予約番号: ${tourId}`,
+            `サロン名: ${salonName}`,
+            `応募者: ${applicantName}`,
+            `メール: ${email}`,
+            phone ? `電話: ${phone}` : "",
+            `希望日時: ${tourDate} ${tourTime}`,
+            note ? `備考: ${note}` : "",
+          ]
+            .filter(Boolean)
+            .join("\n");
+
+          await sendMail(
+            env,
+            env.NOTIFY_EMAIL,
+            `【SalonBase】無料見学予約：${salonName}（${tourDate} ${tourTime}）`,
+            adminText
+          );
+        }
+
+        if (!sentToGuest) {
+          return json({ ok: false, error: "応募者へのメール送信に失敗しました" }, 500);
+        }
+
+        return json({ ok: true, id: tourId }, 201);
+      } catch (err) {
+        return json({ ok: false, error: err?.message || "見学予約の処理に失敗しました" }, 500);
+      }
+    }
 
     // ---- 1. 予約作成 ----
     if (method === "POST" && path === "/api/bookings") {
