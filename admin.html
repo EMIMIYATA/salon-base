@@ -113,8 +113,9 @@
     <!-- ログイン後ダッシュボード -->
     <section id="dashboard-section" class="hidden w-full max-w-4xl space-y-6 fade-in self-start">
 
+      <!-- オーナー情報 -->
       <div class="bg-white rounded-3xl border border-base-border shadow-card p-6 sm:p-8">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-base-border">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-base-sageLight text-base-sage text-xs font-semibold mb-2">
               <i class="fa-solid fa-circle-check"></i><span>認証済みオーナー</span>
@@ -127,165 +128,14 @@
             <span id="dash-owner-code" class="font-mono text-base font-bold text-base-terraDark"></span>
           </div>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6">
-          <div class="bg-base-bg rounded-2xl p-4 border border-base-border/80">
-            <span class="block text-[11px] text-base-muted mb-1">オーナーID</span>
-            <span id="dash-owner-id" class="font-mono text-sm font-bold text-base-charcoal"></span>
-          </div>
-          <div class="bg-base-bg rounded-2xl p-4 border border-base-border/80">
-            <span class="block text-[11px] text-base-muted mb-1">ステータス</span>
-            <span class="text-sm font-bold text-base-sage">エントリー受付済み</span>
-          </div>
-          <div class="bg-base-bg rounded-2xl p-4 border border-base-border/80">
-            <span class="block text-[11px] text-base-muted mb-1">次のステップ</span>
-            <span class="text-sm font-bold text-base-charcoal">掲載ページ準備・相談</span>
-          </div>
-        </div>
       </div>
 
-      <!-- サロン掲載フォーム -->
-      <div class="bg-white rounded-3xl border border-base-border shadow-card p-6 sm:p-8">
-        <div class="mb-6 pb-4 border-b border-base-border">
-          <span class="font-en text-base-terra text-xs font-bold tracking-widest uppercase">Salon Publishing</span>
-          <h2 class="font-serif text-xl sm:text-2xl font-bold text-base-charcoal mt-0.5">サロン掲載情報の作成・公開</h2>
-          <p class="text-xs text-base-muted mt-1">入力・調整した内容はそのまま公開ページ（SalonBase一覧・詳細）に反映されます。</p>
-        </div>
-
-        <form id="salon-publish-form" class="space-y-5">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label for="pub-name" class="block text-xs font-bold text-base-charcoal mb-1.5">サロン名 *</label>
-              <input id="pub-name" type="text" required placeholder="例：LUPUNA 白金プライベートサロン"
-                class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
-            </div>
-            <div>
-              <label for="pub-area" class="block text-xs font-bold text-base-charcoal mb-1.5">エリア *</label>
-              <input id="pub-area" type="text" required placeholder="例：白金台・港区"
-                class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label for="pub-station" class="block text-xs font-bold text-base-charcoal mb-1.5">最寄駅・徒歩</label>
-              <input id="pub-station" type="text" placeholder="例：白金台駅 徒歩4分"
-                class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
-            </div>
-            <div>
-              <label for="pub-price" class="block text-xs font-bold text-base-charcoal mb-1.5">1時間料金（円） *</label>
-              <input id="pub-price" type="number" min="500" step="100" required placeholder="例：2200"
-                class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
-            </div>
-            <div>
-              <label for="pub-badge" class="block text-xs font-bold text-base-charcoal mb-1.5">空き状況バッジ</label>
-              <select id="pub-badge" class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 text-sm">
-                <option value="本日空きあり">本日空きあり</option>
-                <option value="残りわずか">残りわずか</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-base-charcoal mb-2">対応ジャンル（複数選択可）</label>
-            <div id="pub-genre-chips" class="flex flex-wrap gap-2">
-              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="エステ・リラク" class="accent-base-terra">エステ・リラク</label>
-              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="ネイル" class="accent-base-terra">ネイル</label>
-              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="マツエク" class="accent-base-terra">マツエク</label>
-              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="整体・ストレッチ" class="accent-base-terra">整体・ストレッチ</label>
-              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="ヘアメイク" class="accent-base-terra">ヘアメイク</label>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-base-charcoal mb-2">サロン専用設備・こだわり（複数選択可）</label>
-            <div id="pub-equip-chips" class="flex flex-wrap gap-2">
-              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="電動昇降ベッド" class="accent-base-terra">電動昇降ベッド</label>
-              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="折り畳みベッド" class="accent-base-terra">折り畳みベッド</label>
-              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="完全個室" class="accent-base-terra">完全個室</label>
-              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="タオルウォーマー" class="accent-base-terra">タオルウォーマー</label>
-              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="ドレッサー・三面鏡" class="accent-base-terra">ドレッサー・三面鏡</label>
-              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="シャワー完備" class="accent-base-terra">シャワー完備</label>
-              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="リングライト" class="accent-base-terra">リングライト</label>
-              <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="駅徒歩5分以内" class="accent-base-terra">駅徒歩5分以内</label>
-            </div>
-          </div>
-
-          <div>
-            <label for="pub-free-amenities" class="block text-xs font-bold text-base-charcoal mb-1.5">無料で使える設備・備品（改行または読点で区切り）</label>
-            <textarea id="pub-free-amenities" rows="3" placeholder="例：電動昇降施術ベッド&#10;大型タオルウォーマー&#10;Bluetoothスピーカー・Wi-Fi"
-              class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm"></textarea>
-          </div>
-
-          <div class="bg-base-sand/70 p-4 rounded-2xl border border-base-border">
-            <h4 class="text-sm font-bold text-base-charcoal mb-1"><i class="fa-regular fa-clock text-base-terra mr-1.5"></i>貸し出せない時間（満枠にする）</h4>
-            <p class="text-[11px] text-base-muted mb-3">貸し出せない時間をタップすると、グレーの「満枠」になります。もう一度タップすると戻ります。</p>
-            <div id="pub-closed-hours" class="grid grid-cols-3 sm:grid-cols-4 gap-2">
-              <button type="button" data-time="10:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">10:00〜</button>
-              <button type="button" data-time="11:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">11:00〜</button>
-              <button type="button" data-time="12:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">12:00〜</button>
-              <button type="button" data-time="13:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">13:00〜</button>
-              <button type="button" data-time="14:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">14:00〜</button>
-              <button type="button" data-time="15:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">15:00〜</button>
-              <button type="button" data-time="16:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">16:00〜</button>
-              <button type="button" data-time="17:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">17:00〜</button>
-              <button type="button" data-time="18:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">18:00〜</button>
-              <button type="button" data-time="19:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">19:00〜</button>
-              <button type="button" data-time="20:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">20:00〜</button>
-              <button type="button" data-time="21:00" onclick="toggleClosedHour(this)" class="py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center">21:00〜</button>
-            </div>
-          </div>
-
-          <div class="space-y-3">
-            <label for="pub-photos" class="block text-xs font-bold text-base-charcoal">サロン写真（複数選択可）</label>
-            <input id="pub-photos" type="file" accept="image/*" multiple onchange="handlePhotoSelection(event)" class="block w-full text-xs text-base-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-base-terraLight file:text-base-terraDark hover:file:bg-base-sand cursor-pointer" />
-            <div class="bg-base-bg/80 rounded-2xl p-4 border border-base-border space-y-2">
-              <div class="flex items-center justify-between text-xs">
-                <label for="pub-photo-brightness" class="font-bold text-base-charcoal">写真の明るさ調節</label>
-                <div class="flex items-center gap-3">
-                  <span id="pub-photo-brightness-val" class="font-bold text-base-terraDark">100%</span>
-                  <button type="button" onclick="resetPhotoBrightness()" class="text-[11px] text-base-muted hover:text-base-charcoal underline">リセット</button>
-                </div>
-              </div>
-              <input id="pub-photo-brightness" type="range" min="70" max="140" value="100" step="5" oninput="updatePhotoBrightnessPreview()" class="w-full accent-base-terra cursor-pointer">
-            </div>
-            <div id="pub-photo-preview" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
-          </div>
-
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <label for="pub-description" class="block text-xs font-bold text-base-charcoal">サロン空間の紹介文</label>
-              <button type="button" onclick="requestAiCopy('description', this)"
-                class="px-3 py-1 rounded-full bg-base-terraLight hover:bg-base-sand text-base-terraDark text-xs font-bold transition">✨ AIで作成</button>
-            </div>
-            <textarea id="pub-description" rows="4" placeholder="お部屋の雰囲気や施術のしやすさ、こだわりポイントを入力してください。"
-              class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm"></textarea>
-          </div>
-
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <label for="pub-rules" class="block text-xs font-bold text-base-charcoal">入室方法・ご利用ルール</label>
-              <button type="button" onclick="requestAiCopy('rules', this)"
-                class="px-3 py-1 rounded-full bg-base-terraLight hover:bg-base-sand text-base-terraDark text-xs font-bold transition">✨ AIで作成</button>
-            </div>
-            <textarea id="pub-rules" rows="3" placeholder="入室時間・退室時の片付け・禁煙や音・香りに関するルールなど。"
-              class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm"></textarea>
-          </div>
-
-          <div id="publish-status-msg" class="hidden text-xs font-medium rounded-xl px-4 py-2.5"></div>
-
-          <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
-            <a href="/" class="text-xs font-bold text-base-muted hover:text-base-terra transition">公開ページで表示を確認する →</a>
-            <button type="submit" id="publish-submit-btn"
-              class="px-6 py-3 rounded-full bg-base-terra hover:bg-base-terraDark text-white text-sm font-bold shadow-sm transition">この内容で掲載する</button>
-          </div>
-        </form>
-      </div>
-      <!-- 日付ごとの休み設定 -->
+      <!-- ① 日にち・時間の設定（メイン） -->
       <section class="bg-white rounded-3xl border border-base-border shadow-card p-6 sm:p-8">
         <div class="mb-4 pb-3 border-b border-base-border">
           <span class="font-en text-base-terra text-xs font-bold tracking-widest uppercase">Availability</span>
-          <h2 class="font-serif text-lg font-bold text-base-charcoal mt-0.5">日付ごとの貸し出せない時間</h2>
-          <p class="text-[11px] text-base-muted mt-1">日付を選び、貸し出せない時間をタップして「保存」を押します。全部グレーにすると、その日は終日お休みです。</p>
+          <h2 class="font-serif text-lg sm:text-xl font-bold text-base-charcoal mt-0.5">日にち・時間の設定</h2>
+          <p class="text-[11px] text-base-muted mt-1">日付を選び、貸し出せない時間をタップして「この日を保存」を押します。すべてグレーにすると、その日は終日お休みです。</p>
         </div>
         <div class="space-y-3">
           <select id="cl-salon" class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 text-sm"></select>
@@ -298,13 +148,13 @@
           </div>
           <div id="cl-msg" class="hidden text-xs font-bold rounded-xl px-4 py-2.5"></div>
           <div>
-            <h3 class="text-xs font-bold text-base-charcoal mb-2">設定済みの日</h3>
+            <h3 class="text-xs font-bold text-base-charcoal mb-2">設定済みの日（タップで編集）</h3>
             <div id="cl-list" class="space-y-1.5 text-xs"></div>
           </div>
         </div>
       </section>
-      
-      <!-- 無料見学リクエスト一覧 -->
+
+      <!-- ② 無料見学リクエスト -->
       <section class="bg-white rounded-3xl border border-base-border shadow-card p-6">
         <div class="flex items-center justify-between mb-4">
           <h2 class="font-serif text-lg font-bold text-base-charcoal">無料見学のリクエスト</h2>
@@ -315,28 +165,141 @@
         </div>
       </section>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-white rounded-3xl border border-base-border shadow-card p-6">
-          <h2 class="font-serif text-lg font-bold text-base-charcoal mb-2 flex items-center gap-2">
-            <i class="fa-solid fa-bullhorn text-base-terra"></i><span>掲載準備のご案内</span>
-          </h2>
-          <p class="text-xs sm:text-sm text-base-muted leading-relaxed mb-4">
-            ご登録ありがとうございます。初期掲載オーナー様向けの無料ページ作成サポートや空き枠設定については、担当スタッフより順次ご案内いたします。
-          </p>
-          <a href="/#owner-entry-form" class="inline-flex items-center gap-1.5 text-xs font-bold text-base-terraDark hover:underline">
-            <span>エントリーフォームへ戻る</span><i class="fa-solid fa-arrow-up-right-from-square"></i>
-          </a>
+      <!-- ③ サロン掲載内容（一度登録したら、変更ボタンで修正） -->
+      <section class="bg-white rounded-3xl border border-base-border shadow-card p-6 sm:p-8">
+        <div class="flex items-start justify-between gap-3 mb-4 pb-3 border-b border-base-border">
+          <div>
+            <span class="font-en text-base-terra text-xs font-bold tracking-widest uppercase">Salon Profile</span>
+            <h2 class="font-serif text-lg sm:text-xl font-bold text-base-charcoal mt-0.5">サロン掲載内容</h2>
+            <p class="text-[11px] text-base-muted mt-1">写真・場所・設備などは、一度登録すれば、変更したいときだけ「変更」を押します。</p>
+          </div>
+          <button type="button" id="add-salon-btn" class="hidden shrink-0 px-3.5 py-2 rounded-full border border-base-border text-xs font-bold hover:bg-base-bg">＋ 追加</button>
         </div>
-        <div class="bg-white rounded-3xl border border-base-border shadow-card p-6">
-          <h2 class="font-serif text-lg font-bold text-base-charcoal mb-2 flex items-center gap-2">
-            <i class="fa-solid fa-store text-base-terra"></i><span>公開スペースの確認</span>
-          </h2>
-          <p class="text-xs sm:text-sm text-base-muted leading-relaxed mb-4">借り手向け検索ページでは、エリア・設備タグ・時間枠ごとの見え方を確認できます。</p>
-          <a href="/" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-base-terra hover:bg-base-terraDark text-white text-xs font-bold transition">
-            <span>レンタルサロン一覧を見る</span><i class="fa-solid fa-chevron-right text-[10px]"></i>
-          </a>
+
+        <div id="salon-summary" class="space-y-3"></div>
+
+        <!-- 登録・変更フォーム -->
+        <div id="salon-form-wrap" class="hidden mt-5 pt-5 border-t border-base-border">
+          <h3 id="form-title" class="font-serif text-base font-bold text-base-charcoal mb-4">はじめての掲載</h3>
+          <form id="salon-publish-form" class="space-y-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label for="pub-name" class="block text-xs font-bold text-base-charcoal mb-1.5">サロン名 *</label>
+                <input id="pub-name" type="text" required placeholder="例：LUPUNA 白金プライベートサロン"
+                  class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
+              </div>
+              <div>
+                <label for="pub-area" class="block text-xs font-bold text-base-charcoal mb-1.5">エリア *</label>
+                <input id="pub-area" type="text" required placeholder="例：白金台・港区"
+                  class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label for="pub-station" class="block text-xs font-bold text-base-charcoal mb-1.5">最寄駅・徒歩</label>
+                <input id="pub-station" type="text" placeholder="例：白金台駅 徒歩4分"
+                  class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
+              </div>
+              <div>
+                <label for="pub-price" class="block text-xs font-bold text-base-charcoal mb-1.5">1時間料金（円） *</label>
+                <input id="pub-price" type="number" min="500" step="100" required placeholder="例：2200"
+                  class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm" />
+              </div>
+              <div>
+                <label for="pub-badge" class="block text-xs font-bold text-base-charcoal mb-1.5">空き状況バッジ</label>
+                <select id="pub-badge" class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 text-sm">
+                  <option value="本日空きあり">本日空きあり</option>
+                  <option value="残りわずか">残りわずか</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-base-charcoal mb-2">対応ジャンル（複数選択可）</label>
+              <div id="pub-genre-chips" class="flex flex-wrap gap-2">
+                <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="エステ・リラク" class="accent-base-terra">エステ・リラク</label>
+                <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="ネイル" class="accent-base-terra">ネイル</label>
+                <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="マツエク" class="accent-base-terra">マツエク</label>
+                <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="整体・ストレッチ" class="accent-base-terra">整体・ストレッチ</label>
+                <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="ヘアメイク" class="accent-base-terra">ヘアメイク</label>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-base-charcoal mb-2">サロン専用設備・こだわり（複数選択可）</label>
+              <div id="pub-equip-chips" class="flex flex-wrap gap-2">
+                <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="電動昇降ベッド" class="accent-base-terra">電動昇降ベッド</label>
+                <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="折り畳みベッド" class="accent-base-terra">折り畳みベッド</label>
+                <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="完全個室" class="accent-base-terra">完全個室</label>
+                <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="タオルウォーマー" class="accent-base-terra">タオルウォーマー</label>
+                <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="ドレッサー・三面鏡" class="accent-base-terra">ドレッサー・三面鏡</label>
+                <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="シャワー完備" class="accent-base-terra">シャワー完備</label>
+                <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="リングライト" class="accent-base-terra">リングライト</label>
+                <label class="flex items-center gap-1.5 px-3 py-2 rounded-full border border-base-border bg-base-bg text-xs font-medium"><input type="checkbox" value="駅徒歩5分以内" class="accent-base-terra">駅徒歩5分以内</label>
+              </div>
+            </div>
+
+            <div>
+              <label for="pub-free-amenities" class="block text-xs font-bold text-base-charcoal mb-1.5">無料で使える設備・備品（改行または読点で区切り）</label>
+              <textarea id="pub-free-amenities" rows="3" placeholder="例：電動昇降施術ベッド&#10;大型タオルウォーマー&#10;Bluetoothスピーカー・Wi-Fi"
+                class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm"></textarea>
+            </div>
+
+            <div class="bg-base-sand/70 p-4 rounded-2xl border border-base-border">
+              <h4 class="text-sm font-bold text-base-charcoal mb-1"><i class="fa-regular fa-clock text-base-terra mr-1.5"></i>毎日貸し出せない時間（任意）</h4>
+              <p class="text-[11px] text-base-muted mb-3">毎日決まって貸し出さない時間があれば、タップしてグレーにします。日付ごとの休みは、上の「日にち・時間の設定」で行います。</p>
+              <div id="pub-closed-hours" class="grid grid-cols-3 sm:grid-cols-4 gap-2"></div>
+            </div>
+
+            <div class="space-y-3">
+              <label class="block text-xs font-bold text-base-charcoal">サロン写真</label>
+              <div id="pub-existing-photos" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+              <input id="pub-photos" type="file" accept="image/*" multiple onchange="handlePhotoSelection(event)" class="block w-full text-xs text-base-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-base-terraLight file:text-base-terraDark hover:file:bg-base-sand cursor-pointer" />
+              <div class="bg-base-bg/80 rounded-2xl p-4 border border-base-border space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                  <label for="pub-photo-brightness" class="font-bold text-base-charcoal">追加する写真の明るさ調節</label>
+                  <div class="flex items-center gap-3">
+                    <span id="pub-photo-brightness-val" class="font-bold text-base-terraDark">100%</span>
+                    <button type="button" onclick="resetPhotoBrightness()" class="text-[11px] text-base-muted hover:text-base-charcoal underline">リセット</button>
+                  </div>
+                </div>
+                <input id="pub-photo-brightness" type="range" min="70" max="140" value="100" step="5" oninput="updatePhotoBrightnessPreview()" class="w-full accent-base-terra cursor-pointer">
+              </div>
+              <div id="pub-photo-preview" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="pub-description" class="block text-xs font-bold text-base-charcoal">サロン空間の紹介文</label>
+                <button type="button" onclick="requestAiCopy('description', this)"
+                  class="px-3 py-1 rounded-full bg-base-terraLight hover:bg-base-sand text-base-terraDark text-xs font-bold transition">✨ AIで作成</button>
+              </div>
+              <textarea id="pub-description" rows="4" placeholder="お部屋の雰囲気や施術のしやすさ、こだわりポイントを入力してください。"
+                class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm"></textarea>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="pub-rules" class="block text-xs font-bold text-base-charcoal">入室方法・ご利用ルール</label>
+                <button type="button" onclick="requestAiCopy('rules', this)"
+                  class="px-3 py-1 rounded-full bg-base-terraLight hover:bg-base-sand text-base-terraDark text-xs font-bold transition">✨ AIで作成</button>
+              </div>
+              <textarea id="pub-rules" rows="3" placeholder="入室時間・退室時の片付け・禁煙や音・香りに関するルールなど。"
+                class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 focus:bg-white focus:outline-none focus:border-base-terra text-sm"></textarea>
+            </div>
+
+            <div id="publish-status-msg" class="hidden text-xs font-medium rounded-xl px-4 py-2.5"></div>
+
+            <div class="flex flex-wrap items-center justify-end gap-3 pt-2">
+              <button type="button" id="form-cancel-btn" class="px-5 py-3 rounded-full border border-base-border text-sm font-bold text-base-muted hover:bg-base-bg">キャンセル</button>
+              <button type="submit" id="publish-submit-btn"
+                class="px-6 py-3 rounded-full bg-base-terra hover:bg-base-terraDark text-white text-sm font-bold shadow-sm transition">この内容で掲載する</button>
+            </div>
+          </form>
         </div>
-      </div>
+      </section>
+
     </section>
 
   </main>
@@ -360,62 +323,75 @@
     const togglePwBtn = document.getElementById('toggle-pw-btn');
     const togglePwIcon = document.getElementById('toggle-pw-icon');
 
-    let selectedPhotoFiles = [];
-    let currentPhotoBrightness = 100;
-
-    const closedHours = new Set();
+    const HOURS = ['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00'];
     const HOUR_OPEN_CLS = 'py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal text-xs sm:text-sm font-medium transition text-center';
     const HOUR_CLOSED_CLS = 'py-2.5 px-2 rounded-xl border border-gray-200 bg-gray-100 text-gray-400 text-xs sm:text-sm font-medium line-through text-center';
 
-    function toggleClosedHour(btn) {
-      const t = btn.dataset.time;
-      if (closedHours.has(t)) {
-        closedHours.delete(t);
-        btn.className = HOUR_OPEN_CLS;
-        btn.textContent = t + '〜';
-      } else {
-        closedHours.add(t);
-        btn.className = HOUR_CLOSED_CLS;
-        btn.textContent = t + '（満枠）';
-      }
-    }
+    let selectedPhotoFiles = [];
+    let currentPhotoBrightness = 100;
+    let mySalons = [];
+    let editingId = null;
+    let existingPhotos = [];
+    const closedHours = new Set();   // 掲載フォーム：毎日の貸出不可
+    const clClosed = new Set();      // 日付ごとの休み
 
+    // ---------- 共通 ----------
+    function saveSession(obj) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(obj)); } catch {}
+    }
+    function loadSession() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const obj = raw ? JSON.parse(raw) : null;
+        if (!obj || !obj.token) return null;
+        const p = JSON.parse(atob(String(obj.token).split('.')[0]));
+        if (!p.exp || Number(p.exp) < Date.now()) { clearSession(); return null; }
+        return obj;
+      } catch { return null; }
+    }
+    function clearSession() {
+      try { localStorage.removeItem(STORAGE_KEY); } catch {}
+      try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
+    }
+    function getAuthHeaders() {
+      const s = loadSession();
+      return s && s.token ? { 'Authorization': 'Bearer ' + s.token } : {};
+    }
     function checkedVals(containerId) {
       return Array.from(document.querySelectorAll('#' + containerId + ' input[type="checkbox"]:checked')).map((el) => el.value);
     }
-
+    function setChecked(containerId, values) {
+      const set = new Set(values || []);
+      document.querySelectorAll('#' + containerId + ' input[type="checkbox"]').forEach((el) => { el.checked = set.has(el.value); });
+    }
     function splitListText(t) {
       return String(t || '').split(/[\n、,，]+/).map((x) => x.trim()).filter(Boolean);
     }
-
     function esc(s) {
       return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     }
+    function showError(msg) { errorText.textContent = msg; errorBox.classList.remove('hidden'); }
+    function hideError() { errorText.textContent = ''; errorBox.classList.add('hidden'); }
 
-    function getAuthHeaders() {
-      try {
-        const raw = sessionStorage.getItem(STORAGE_KEY);
-        const parsed = raw ? JSON.parse(raw) : null;
-        const token = parsed && parsed.token;
-        return token ? { 'Authorization': 'Bearer ' + token } : {};
-      } catch {
-        return {};
-      }
+    function renderHours(boxId, set) {
+      const box = document.getElementById(boxId);
+      box.innerHTML = '';
+      HOURS.forEach((t) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        const closed = set.has(t);
+        b.className = closed ? HOUR_CLOSED_CLS : HOUR_OPEN_CLS;
+        b.textContent = closed ? t + '（満枠）' : t + '〜';
+        b.addEventListener('click', () => {
+          if (set.has(t)) set.delete(t); else set.add(t);
+          renderHours(boxId, set);
+        });
+        box.appendChild(b);
+      });
     }
 
-    function showError(msg) {
-      errorText.textContent = msg;
-      errorBox.classList.remove('hidden');
-    }
-
-    function hideError() {
-      errorText.textContent = '';
-      errorBox.classList.add('hidden');
-    }
-
+    // ---------- 見学リクエスト ----------
     async function loadAdminBookings() {
-            loadAdminBookings();
-      loadMySalons();
       const box = document.getElementById('admin-bookings-list');
       if (!box) return;
       box.innerHTML = '<p class="text-base-muted">読み込み中です...</p>';
@@ -442,28 +418,230 @@
         box.innerHTML = '<p class="text-red-700">' + esc(err.message || '取得に失敗しました') + '</p>';
       }
     }
-
     document.getElementById('refresh-bookings-btn').addEventListener('click', loadAdminBookings);
+
+    // ---------- 日にち・時間の設定 ----------
+    function clMsg(ok, msg) {
+      const el = document.getElementById('cl-msg');
+      el.className = ok ? 'text-xs font-bold rounded-xl px-4 py-2.5 bg-base-sageLight text-base-sage'
+                        : 'text-xs font-bold rounded-xl px-4 py-2.5 bg-red-50 text-red-700 border border-red-200';
+      el.textContent = msg;
+    }
+
+    function fillClosureSalons() {
+      const sel = document.getElementById('cl-salon');
+      const prev = sel.value;
+      sel.innerHTML = mySalons.length
+        ? mySalons.map((s) => '<option value="' + s.id + '">' + esc(s.name) + '</option>').join('')
+        : '<option value="">先にサロンを登録してください</option>';
+      if (prev && mySalons.some((s) => String(s.id) === prev)) sel.value = prev;
+      renderHours('cl-hours', clClosed);
+      loadClosureList();
+    }
+
+    async function loadClosureList() {
+      const sid = document.getElementById('cl-salon').value;
+      const box = document.getElementById('cl-list');
+      if (!sid) { box.innerHTML = ''; return; }
+      try {
+        const res = await fetch('/api/closures?salon_id=' + sid);
+        const data = await res.json().catch(() => ({}));
+        const list = data.closures || [];
+        box.innerHTML = list.length
+          ? list.map((c) => '<button type="button" data-date="' + esc(c.date) + '" class="cl-item w-full text-left rounded-xl border border-base-border bg-base-bg px-3 py-2">'
+              + '<b>' + esc(c.date) + '</b>　' + (c.hours.length >= HOURS.length ? '終日お休み' : esc(c.hours.join('、')) + ' が満枠') + '</button>').join('')
+          : '<p class="text-base-muted">まだ設定はありません。</p>';
+        box.querySelectorAll('.cl-item').forEach((el) => {
+          el.addEventListener('click', () => {
+            document.getElementById('cl-date').value = el.dataset.date;
+            loadClosureForDate();
+          });
+        });
+      } catch { box.innerHTML = ''; }
+    }
+
+    async function loadClosureForDate() {
+      const sid = document.getElementById('cl-salon').value;
+      const date = document.getElementById('cl-date').value;
+      clClosed.clear();
+      if (sid && date) {
+        try {
+          const res = await fetch('/api/closures?salon_id=' + sid + '&date=' + date);
+          const data = await res.json().catch(() => ({}));
+          (data.hours || []).forEach((h) => clClosed.add(h));
+        } catch {}
+      }
+      renderHours('cl-hours', clClosed);
+    }
+
+    document.getElementById('cl-salon').addEventListener('change', () => { loadClosureList(); loadClosureForDate(); });
+    document.getElementById('cl-date').addEventListener('change', loadClosureForDate);
+    document.getElementById('cl-all').addEventListener('click', () => { HOURS.forEach((t) => clClosed.add(t)); renderHours('cl-hours', clClosed); });
+    document.getElementById('cl-clear').addEventListener('click', () => { clClosed.clear(); renderHours('cl-hours', clClosed); });
+    document.getElementById('cl-save').addEventListener('click', async () => {
+      const sid = document.getElementById('cl-salon').value;
+      const date = document.getElementById('cl-date').value;
+      const msg = document.getElementById('cl-msg');
+      msg.classList.remove('hidden');
+      if (!sid || !date) { clMsg(false, 'サロンと日付を選んでください。'); return; }
+      try {
+        const res = await fetch('/api/closures', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+          body: JSON.stringify({ salon_id: Number(sid), date, hours: Array.from(clClosed) }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401) { handleLogout(); showError('ログインの有効期限が切れました。もう一度ログインしてください。'); return; }
+        if (!res.ok || data.ok === false) throw new Error(data.error || '保存に失敗しました');
+        clMsg(true, date + ' の設定を保存しました。');
+        loadClosureList();
+      } catch (err) {
+        clMsg(false, err.message || '保存に失敗しました');
+      }
+    });
+
+    // ---------- サロン掲載内容 ----------
+    async function loadMySalons() {
+      try {
+        const res = await fetch('/api/owner/salons', { headers: { ...getAuthHeaders() } });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401) { handleLogout(); showError('ログインの有効期限が切れました。もう一度ログインしてください。'); return; }
+        mySalons = data.salons || [];
+      } catch { mySalons = []; }
+      renderSalonSummary();
+      fillClosureSalons();
+      if (mySalons.length === 0) openForm(null);
+    }
+
+    function renderSalonSummary() {
+      const box = document.getElementById('salon-summary');
+      document.getElementById('add-salon-btn').classList.toggle('hidden', mySalons.length === 0);
+      if (mySalons.length === 0) {
+        box.innerHTML = '<p class="text-xs text-base-muted">まだ掲載がありません。下のフォームから登録してください。</p>';
+        return;
+      }
+      box.innerHTML = mySalons.map((s) => {
+        const thumb = s.photos && s.photos[0]
+          ? '<img src="' + esc(s.photos[0].url) + '" class="w-20 h-20 rounded-xl object-cover shrink-0" alt="">'
+          : '<div class="w-20 h-20 rounded-xl bg-base-sand flex items-center justify-center text-base-muted shrink-0"><i class="fa-regular fa-image"></i></div>';
+        return '<div class="flex gap-3 rounded-2xl border border-base-border bg-base-bg p-3">'
+          + thumb
+          + '<div class="min-w-0 flex-1">'
+          + '<div class="font-bold text-sm text-base-charcoal truncate">' + esc(s.name) + '</div>'
+          + '<div class="text-[11px] text-base-muted mt-0.5">' + esc(s.area) + ' ／ ¥' + Number(s.price || 0).toLocaleString() + '/時間</div>'
+          + '<div class="text-[11px] text-base-muted mt-0.5">写真 ' + (s.photos ? s.photos.length : 0) + '枚</div>'
+          + '<div class="flex gap-2 mt-2">'
+          + '<button type="button" data-edit="' + s.id + '" class="sal-edit px-3.5 py-1.5 rounded-full bg-base-terra text-white text-xs font-bold">変更</button>'
+          + '<button type="button" data-del="' + s.id + '" class="sal-del px-3.5 py-1.5 rounded-full border border-red-200 text-red-700 text-xs font-bold">削除</button>'
+          + '</div></div></div>';
+      }).join('');
+      box.querySelectorAll('.sal-edit').forEach((b) => b.addEventListener('click', () => openForm(Number(b.dataset.edit))));
+      box.querySelectorAll('.sal-del').forEach((b) => b.addEventListener('click', () => deleteSalon(Number(b.dataset.del))));
+    }
+
+    async function deleteSalon(id) {
+      const s = mySalons.find((x) => x.id === id);
+      if (!confirm('「' + (s ? s.name : '') + '」の掲載を削除します。元に戻せません。よろしいですか？')) return;
+      try {
+        const res = await fetch('/api/salons/' + id, { method: 'DELETE', headers: { ...getAuthHeaders() } });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.ok === false) throw new Error(data.error || '削除に失敗しました');
+        closeForm();
+        await loadMySalons();
+      } catch (err) {
+        alert(err.message || '削除に失敗しました');
+      }
+    }
+
+    function showPubStatus(ok, msg) {
+      const el = document.getElementById('publish-status-msg');
+      el.className = ok
+        ? 'text-xs font-bold rounded-xl px-4 py-2.5 bg-base-sageLight text-base-sage'
+        : 'text-xs font-bold rounded-xl px-4 py-2.5 bg-red-50 text-red-700 border border-red-200';
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    function renderExistingPhotos() {
+      const box = document.getElementById('pub-existing-photos');
+      box.innerHTML = '';
+      existingPhotos.forEach((p, i) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'relative aspect-[4/3] rounded-xl overflow-hidden border border-base-border bg-base-bg';
+        const img = document.createElement('img');
+        img.src = p.url;
+        img.className = 'w-full h-full object-cover';
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.textContent = '×';
+        del.className = 'absolute top-1 right-1 w-7 h-7 rounded-full bg-black/60 text-white text-sm font-bold';
+        del.addEventListener('click', () => { existingPhotos.splice(i, 1); renderExistingPhotos(); });
+        wrap.appendChild(img);
+        wrap.appendChild(del);
+        box.appendChild(wrap);
+      });
+    }
+
+    function openForm(id) {
+      editingId = id;
+      const s = id == null ? null : mySalons.find((x) => x.id === id);
+      document.getElementById('salon-publish-form').reset();
+      selectedPhotoFiles = [];
+      document.getElementById('pub-photo-preview').innerHTML = '';
+      document.getElementById('publish-status-msg').classList.add('hidden');
+      resetPhotoBrightness();
+      closedHours.clear();
+      existingPhotos = [];
+      if (s) {
+        document.getElementById('pub-name').value = s.name || '';
+        document.getElementById('pub-area').value = s.area || '';
+        document.getElementById('pub-station').value = s.station || '';
+        document.getElementById('pub-price').value = s.price || '';
+        document.getElementById('pub-badge').value = s.badge || '本日空きあり';
+        setChecked('pub-genre-chips', s.genres);
+        setChecked('pub-equip-chips', s.equipment);
+        document.getElementById('pub-free-amenities').value = (s.freeAmenities || []).join('\n');
+        document.getElementById('pub-description').value = s.description || '';
+        document.getElementById('pub-rules').value = s.entryRules || '';
+        (s.bookedHours || []).forEach((h) => closedHours.add(h));
+        existingPhotos = (s.photos || []).map((p) => ({ key: p.key, url: p.url }));
+        document.getElementById('form-title').textContent = '掲載内容を変更';
+        document.getElementById('publish-submit-btn').textContent = '変更を保存する';
+      } else {
+        const owner = loadSession();
+        if (owner && owner.salon_name) document.getElementById('pub-name').value = owner.salon_name;
+        document.getElementById('form-title').textContent = mySalons.length ? '新しいサロンを追加' : 'はじめての掲載';
+        document.getElementById('publish-submit-btn').textContent = 'この内容で掲載する';
+      }
+      document.getElementById('form-cancel-btn').classList.toggle('hidden', mySalons.length === 0);
+      renderHours('pub-closed-hours', closedHours);
+      renderExistingPhotos();
+      const wrap = document.getElementById('salon-form-wrap');
+      wrap.classList.remove('hidden');
+      if (mySalons.length) wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function closeForm() {
+      editingId = null;
+      document.getElementById('salon-form-wrap').classList.add('hidden');
+    }
+
+    document.getElementById('add-salon-btn').addEventListener('click', () => openForm(null));
+    document.getElementById('form-cancel-btn').addEventListener('click', closeForm);
 
     function renderDashboard(owner) {
       document.getElementById('dash-salon-name').textContent = owner.salon_name || 'サロン名未設定';
       document.getElementById('dash-person-name').textContent = owner.person_name || '担当者未設定';
       document.getElementById('dash-owner-code').textContent = owner.owner_code || '-';
-      document.getElementById('dash-owner-id').textContent = owner.id != null ? owner.id : '-';
-
-      const nameInput = document.getElementById('pub-name');
-      if (nameInput && !nameInput.value && owner.salon_name) {
-        nameInput.value = owner.salon_name;
-      }
-
       loginSection.classList.add('hidden');
       dashboardSection.classList.remove('hidden');
       headerLogoutBtn.classList.remove('hidden');
+      loadMySalons();
       loadAdminBookings();
     }
 
     function handleLogout() {
-      sessionStorage.removeItem(STORAGE_KEY);
+      clearSession();
       dashboardSection.classList.add('hidden');
       headerLogoutBtn.classList.add('hidden');
       loginSection.classList.remove('hidden');
@@ -471,6 +649,7 @@
       hideError();
     }
 
+    // ---------- 写真 ----------
     function updatePhotoBrightnessPreview() {
       const slider = document.getElementById('pub-photo-brightness');
       const label = document.getElementById('pub-photo-brightness-val');
@@ -498,7 +677,6 @@
       canvas.height = h;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(bmp, 0, 0, w, h);
-
       const b = Number(brightnessPercent) / 100;
       if (b !== 1) {
         const img = ctx.getImageData(0, 0, w, h);
@@ -511,7 +689,6 @@
         }
         ctx.putImageData(img, 0, 0);
       }
-
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.88));
       if (!blob) return file;
       return new File([blob], 'photo.jpg', { type: 'image/jpeg', lastModified: Date.now() });
@@ -537,6 +714,7 @@
       });
     }
 
+    // ---------- AI ----------
     async function requestAiCopy(target, btn) {
       const val = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
       const name = val('pub-name');
@@ -547,11 +725,9 @@
       const amenities = [...checkedVals('pub-equip-chips'), ...splitListText(val('pub-free-amenities'))].join('、');
       const description = val('pub-description');
       const rules = val('pub-rules');
-
       const origText = btn.textContent;
       btn.disabled = true;
       btn.textContent = '作成中...';
-
       try {
         const res = await fetch('/api/ai/generate-copy', {
           method: 'POST',
@@ -559,9 +735,7 @@
           body: JSON.stringify({ target, salon: { name, area, station, price, genre, amenities, description, rules } }),
         });
         const data = await res.json().catch(() => ({}));
-        if (!res.ok || data.ok === false || !data.text) {
-          throw new Error(data.error || 'AI文章の生成に失敗しました');
-        }
+        if (!res.ok || data.ok === false || !data.text) throw new Error(data.error || 'AI文章の生成に失敗しました');
         const fieldEl = document.getElementById(target === 'rules' ? 'pub-rules' : 'pub-description');
         if (fieldEl) fieldEl.value = data.text;
       } catch (err) {
@@ -572,28 +746,18 @@
       }
     }
 
+    // ---------- 掲載・変更の保存 ----------
     document.getElementById('salon-publish-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const statusMsg = document.getElementById('publish-status-msg');
       const pubBtn = document.getElementById('publish-submit-btn');
-      const origHtml = pubBtn.innerHTML;
-
-      const show = (ok, msg) => {
-        statusMsg.className = ok
-          ? 'text-xs font-bold rounded-xl px-4 py-2.5 bg-base-sageLight text-base-sage'
-          : 'text-xs font-bold rounded-xl px-4 py-2.5 bg-red-50 text-red-700 border border-red-200';
-        statusMsg.textContent = msg;
-        statusMsg.classList.remove('hidden');
-      };
+      const origText = pubBtn.textContent;
       const v = (id) => document.getElementById(id).value.trim();
-
       pubBtn.disabled = true;
-      pubBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>掲載処理中...';
-
+      pubBtn.textContent = '保存中...';
       try {
-        const keys = [];
+        const keys = existingPhotos.map((p) => p.key);
         for (let i = 0; i < selectedPhotoFiles.length; i++) {
-          show(true, '写真をアップロード中… (' + (i + 1) + '/' + selectedPhotoFiles.length + ')');
+          showPubStatus(true, '写真をアップロード中… (' + (i + 1) + '/' + selectedPhotoFiles.length + ')');
           const adjusted = await applyBrightnessToFile(selectedPhotoFiles[i], currentPhotoBrightness);
           const fd = new FormData();
           fd.append('file', adjusted);
@@ -618,8 +782,9 @@
           image_keys: keys,
         };
 
-        const res = await fetch('/api/salons', {
-          method: 'POST',
+        const isEdit = editingId != null;
+        const res = await fetch(isEdit ? '/api/salons/' + editingId : '/api/salons', {
+          method: isEdit ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
           body: JSON.stringify(payload),
         });
@@ -629,16 +794,19 @@
           showError('ログインの有効期限が切れました。もう一度ログインしてください。');
           return;
         }
-        if (!res.ok || data.ok === false) throw new Error(data.error || '掲載の保存に失敗しました');
-        show(true, 'サロン情報を公開ページへ反映しました！');
+        if (!res.ok || data.ok === false) throw new Error(data.error || '保存に失敗しました');
+        showPubStatus(true, isEdit ? '変更を保存しました。公開ページに反映されました。' : '掲載しました。公開ページに反映されました。');
+        await loadMySalons();
+        if (mySalons.length) setTimeout(closeForm, 1200);
       } catch (err) {
-        show(false, err.message || '保存中にエラーが発生しました');
+        showPubStatus(false, err.message || '保存中にエラーが発生しました');
       } finally {
         pubBtn.disabled = false;
-        pubBtn.innerHTML = origHtml;
+        pubBtn.textContent = origText;
       }
     });
 
+    // ---------- ログイン ----------
     togglePwBtn.addEventListener('click', () => {
       const isPassword = passwordInput.type === 'password';
       passwordInput.type = isPassword ? 'text' : 'password';
@@ -648,18 +816,12 @@
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       hideError();
-
       const ownerCode = codeInput.value.trim().toUpperCase();
       const password = passwordInput.value;
-      if (!ownerCode || !password) {
-        showError('割り当て番号とパスワードを入力してください。');
-        return;
-      }
-
+      if (!ownerCode || !password) { showError('割り当て番号とパスワードを入力してください。'); return; }
       submitBtn.disabled = true;
       const originalBtnHtml = submitBtn.innerHTML;
       submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>認証中...</span>';
-
       try {
         const res = await fetch('/api/owner/login', {
           method: 'POST',
@@ -667,11 +829,9 @@
           body: JSON.stringify({ owner_code: ownerCode, password: password }),
         });
         const data = await res.json().catch(() => ({}));
-        if (!res.ok || data.ok === false || !data.owner) {
-          throw new Error(data.error || '割り当て番号またはパスワードが正しくありません。');
-        }
+        if (!res.ok || data.ok === false || !data.owner) throw new Error(data.error || '割り当て番号またはパスワードが正しくありません。');
         const sessionPayload = { ...(data.owner || {}), token: data.token || '' };
-        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(sessionPayload));
+        saveSession(sessionPayload);
         renderDashboard(sessionPayload);
       } catch (err) {
         showError(err.message || 'ログイン処理中にエラーが発生しました。');
@@ -680,121 +840,10 @@
         submitBtn.innerHTML = originalBtnHtml;
       }
     });
-    const CL_TIMES = ['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00'];
-    const clClosed = new Set();
-
-    function clMsg(ok, msg) {
-      const el = document.getElementById('cl-msg');
-      el.className = ok ? 'text-xs font-bold rounded-xl px-4 py-2.5 bg-base-sageLight text-base-sage'
-                        : 'text-xs font-bold rounded-xl px-4 py-2.5 bg-red-50 text-red-700 border border-red-200';
-      el.textContent = msg;
-    }
-
-    function clRenderHours() {
-      const box = document.getElementById('cl-hours');
-      box.innerHTML = '';
-      CL_TIMES.forEach((t) => {
-        const b = document.createElement('button');
-        b.type = 'button';
-        const closed = clClosed.has(t);
-        b.className = closed ? HOUR_CLOSED_CLS : HOUR_OPEN_CLS;
-        b.textContent = closed ? t + '（満枠）' : t + '〜';
-        b.addEventListener('click', () => {
-          if (clClosed.has(t)) clClosed.delete(t); else clClosed.add(t);
-          clRenderHours();
-        });
-        box.appendChild(b);
-      });
-    }
-
-    async function loadMySalons() {
-      const sel = document.getElementById('cl-salon');
-      try {
-        const res = await fetch('/api/my-salons', { headers: { ...getAuthHeaders() } });
-        const data = await res.json().catch(() => ({}));
-        const list = data.salons || [];
-        sel.innerHTML = list.length
-          ? list.map((s) => '<option value="' + s.id + '">' + esc(s.name) + '</option>').join('')
-          : '<option value="">掲載中のサロンがありません</option>';
-      } catch {
-        sel.innerHTML = '<option value="">取得に失敗しました</option>';
-      }
-      clRenderHours();
-      loadClosureList();
-    }
-
-    async function loadClosureList() {
-      const sid = document.getElementById('cl-salon').value;
-      const box = document.getElementById('cl-list');
-      if (!sid) { box.innerHTML = ''; return; }
-      try {
-        const res = await fetch('/api/closures?salon_id=' + sid);
-        const data = await res.json().catch(() => ({}));
-        const list = data.closures || [];
-        box.innerHTML = list.length
-          ? list.map((c) => '<button type="button" data-date="' + esc(c.date) + '" class="cl-item w-full text-left rounded-xl border border-base-border bg-base-bg px-3 py-2">'
-              + '<b>' + esc(c.date) + '</b>　' + (c.hours.length >= CL_TIMES.length ? '終日お休み' : esc(c.hours.join('、')) + ' が満枠') + '</button>').join('')
-          : '<p class="text-base-muted">まだ設定はありません。</p>';
-        box.querySelectorAll('.cl-item').forEach((el) => {
-          el.addEventListener('click', () => {
-            document.getElementById('cl-date').value = el.dataset.date;
-            loadClosureForDate();
-          });
-        });
-      } catch {
-        box.innerHTML = '';
-      }
-    }
-
-    async function loadClosureForDate() {
-      const sid = document.getElementById('cl-salon').value;
-      const date = document.getElementById('cl-date').value;
-      clClosed.clear();
-      if (sid && date) {
-        try {
-          const res = await fetch('/api/closures?salon_id=' + sid + '&date=' + date);
-          const data = await res.json().catch(() => ({}));
-          (data.hours || []).forEach((h) => clClosed.add(h));
-        } catch {}
-      }
-      clRenderHours();
-    }
-
-    document.getElementById('cl-salon').addEventListener('change', () => { loadClosureList(); loadClosureForDate(); });
-    document.getElementById('cl-date').addEventListener('change', loadClosureForDate);
-    document.getElementById('cl-all').addEventListener('click', () => { CL_TIMES.forEach((t) => clClosed.add(t)); clRenderHours(); });
-    document.getElementById('cl-clear').addEventListener('click', () => { clClosed.clear(); clRenderHours(); });
-    document.getElementById('cl-save').addEventListener('click', async () => {
-      const sid = document.getElementById('cl-salon').value;
-      const date = document.getElementById('cl-date').value;
-      if (!sid || !date) { clMsg(false, 'サロンと日付を選んでください。'); return; }
-      try {
-        const res = await fetch('/api/closures', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-          body: JSON.stringify({ salon_id: Number(sid), date, hours: Array.from(clClosed) }),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok || data.ok === false) throw new Error(data.error || '保存に失敗しました');
-        clMsg(true, date + ' の設定を保存しました。');
-        loadClosureList();
-      } catch (err) {
-        clMsg(false, err.message || '保存に失敗しました');
-      }
-      document.getElementById('cl-msg').classList.remove('hidden');
-    });
-
 
     window.addEventListener('DOMContentLoaded', () => {
-      try {
-        const saved = sessionStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          const owner = JSON.parse(saved);
-          if (owner && owner.owner_code) renderDashboard(owner);
-        }
-      } catch {
-        sessionStorage.removeItem(STORAGE_KEY);
-      }
+      const saved = loadSession();
+      if (saved && saved.owner_code) renderDashboard(saved);
     });
   </script>
 </body>
