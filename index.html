@@ -1375,12 +1375,13 @@ window.addEventListener('DOMContentLoaded', async () => {
             );
         }
 
-                // サロン予約リクエスト完了
-        function triggerSalonBooking() {
+                       // サロン予約リクエスト送信（/api/booking へPOST）
+        async function triggerSalonBooking() {
             if (modalSelectedHours.length === 0) return;
 
             const guestName = (document.getElementById('booking-guest-name')?.value || '').trim();
             const guestEmail = (document.getElementById('booking-guest-email')?.value || '').trim();
+            const guestPhone = (document.getElementById('booking-guest-phone')?.value || '').trim();
 
             if (!guestName) {
                 openNotifModal('入力エラー', 'ご予約者のお名前を入力してください。');
@@ -1391,18 +1392,66 @@ window.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
+            const salonId = currentModalSalon.id;
             const salonName = currentModalSalon.name;
-            const dateVal = document.getElementById('search-date').value;
+            const dateVal = document.getElementById('search-date')?.value || '';
+            const hoursCount = modalSelectedHours.length;
+            const basePrice = hoursCount * (Number(currentModalSalon.pricePerHour) || 0);
+            const serviceFee = Math.round(basePrice * 0.05);
+            const totalPrice = basePrice + serviceFee;
             const timesStr = modalSelectedHours.join(' / ');
-            const totalStr = document.getElementById('calc-total-price').textContent;
+            const totalStr = `¥${totalPrice.toLocaleString()}`;
 
-            closeSalonModal();
-            openNotifModal(
-                'サロン予約リクエストを送信しました',
-                `「${salonName}」\nお名前：${guestName} 様\n利用日：${dateVal}（${timesStr}）\n合計金額：${totalStr}\n\n${guestEmail} 宛に確認メールをお送りしました。\nサロンオーナーからの連絡が来るまで今しばらくお待ちください。`
-            );
+            const submitBtn = document.getElementById('submit-booking-btn');
+
+            try {
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = '予約リクエスト送信中...';
+                }
+
+                const res = await fetch('/api/booking', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({
+                        salon_id: salonId,
+                        salon_name: salonName,
+                        date: dateVal,
+                        hours: modalSelectedHours,
+                        hours_count: hoursCount,
+                        base_price: basePrice,
+                        service_fee: serviceFee,
+                        total_price: totalPrice,
+                        guest_name: guestName,
+                        guest_email: guestEmail,
+                        guest_phone: guestPhone
+                    })
+                });
+
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || data.ok === false) {
+                    throw new Error(data.error || '予約リクエストの送信に失敗しました。');
+                }
+
+                const bookingIdNote = data.booking_id ? `\n予約番号：${data.booking_id}` : '';
+
+                closeSalonModal();
+                openNotifModal(
+                    'サロン予約リクエストを送信しました',
+                    `「${salonName}」\nお名前：${guestName} 様\n利用日：${dateVal}（${timesStr}）\n合計金額：${totalStr}${bookingIdNote}\n\n${guestEmail} 宛に確認メールをお送りしました。\nサロンオーナーからの連絡が来るまで今しばらくお待ちください。`
+                );
+            } catch (err) {
+                openNotifModal(
+                    '送信エラー',
+                    err.message || '通信中にエラーが発生しました。時間をおいて再度お試しください。'
+                );
+            } finally {
+                if (submitBtn && modalSelectedHours.length > 0) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'この内容で予約リクエストを送る';
+                }
+            }
         }
-
 
         // 6. オーナー向けインタラクティブ収益シミュレーター
         function updateSimulator() {
