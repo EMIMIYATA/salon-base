@@ -1209,6 +1209,14 @@ window.addEventListener('DOMContentLoaded', async () => {
     renderSalonCards(salons);
         try {
         const want = new URLSearchParams(location.search).get('salon');
+                try {
+        const qp = new URLSearchParams(location.search);
+        if (qp.get('paid')) {
+            openNotifModal('お支払いが完了しました', `予約番号：${qp.get('paid')}　ご予約の内容をメールでお送りします。`);
+        } else if (qp.get('canceled')) {
+            openNotifModal('お支払いは完了していません', 'お支払いがキャンセルされました。もう一度お試しいただけます。');
+        }
+    } catch (e) {}
         if (want) openSalonModal(want);
     } catch (e) {}
 
