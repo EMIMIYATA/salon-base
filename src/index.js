@@ -54,7 +54,7 @@ function resolveReceiptPeriod(billingCycle, anchorDateStr) {
     const d = `${year}-${mm}-${dd}`; return { periodStartDate: d, periodEndDate: d }; } if (billingCycle === "half_month") { if (day <= 15) { return { periodStartDate: `${year}-${mm}-01`, periodEndDate: `${year}-${mm}-15` }; } return { periodStartDate: `${year}-${mm}-16`, periodEndDate: `${year}-${mm}-${ddLast}` };
   }
   if (billingCycle === "monthly") {
-    return { periodStartDate: `${year}-${mm}-01`, periodEndDate: `${year}-${mm}-${ddLast}` }; } return null; }  function formatReceiptItemRow(row) { const baseAmount = Number(row.amount_jpy \vert{}\vert{} 0); const code = row.booking_code \vert{}\vert{} row.booking_id \vert{}\vert{} ""; if (row.tx_type === "prepay_fee") { return { signedAmountJpy: Math.abs(baseAmount), description: `予約先払い手数料（${code}）` };
+return { periodStartDate: `${year}-${mm}-01`, periodEndDate: `${year}-${mm}-${ddLast}` }; } return null; }  function formatReceiptItemRow(row) { const baseAmount = Number(row.amount_jpy || 0); const code = row.booking_code || row.booking_id || ""; if (row.tx_type === "prepay_fee") { return { signedAmountJpy: Math.abs(baseAmount), description: `予約先払い手数料（${code}）` };
   }
   if (row.tx_type === "penalty_capture") {
     return { signedAmountJpy: Math.abs(baseAmount), description: `キャンセル料・ペナルティ（${code}）` }; } if (row.tx_type === "refund") { return { signedAmountJpy: -Math.abs(baseAmount), description: `返金調整（${code}）` };
