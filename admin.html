@@ -653,6 +653,40 @@
 
     document.getElementById('add-salon-btn').addEventListener('click', () => openForm(null));
     document.getElementById('form-cancel-btn').addEventListener('click', closeForm);
+    async function loadStripeStatus() {
+      const st = document.getElementById('stripe-status');
+      const btn = document.getElementById('stripe-connect-btn');
+      try {
+        const r = await fetch('/api/stripe/status', { headers: getAuthHeaders() });
+        const d = await r.json();
+        if (d.ok && d.charges_enabled) {
+          st.textContent = '✅ 受け取り設定は完了しています。';
+          btn.textContent = '設定内容を確認・変更する';
+        } else if (d.ok && d.connected) {
+          st.textContent = '⚠️ 設定が途中です。続きを進めると、お客様からのカード決済を受け付けられます。';
+          btn.textContent = '設定を続ける';
+        } else {
+          st.textContent = 'カード決済の売上を受け取るには、受け取り口座の登録が必要です（手数料20%を差し引いてお振込みします）。';
+          btn.textContent = '受け取り口座を登録する';
+        }
+      } catch (e) {
+        st.textContent = '状態を取得できませんでした。';
+      }
+    }
+    document.getElementById('stripe-connect-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('stripe-connect-btn');
+      btn.disabled = true;
+      try {
+        const r = await fetch('/api/stripe/connect', { method: 'POST', headers: getAuthHeaders() });
+        const d = await r.json();
+        if (d.ok && d.url) { location.href = d.url; return; }
+        alert(d.error || '開始できませんでした');
+      } catch (e) {
+        alert('通信に失敗しました');
+      }
+      btn.disabled = false;
+    });
+
 
     function renderDashboard(owner) {
       document.getElementById('dash-salon-name').textContent = owner.salon_name || 'サロン名未設定';
