@@ -772,6 +772,214 @@ if (path === "/api/owner/login" && method === "POST") {
       const bin = Uint8Array.from(atob("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"), (c) => c.charCodeAt(0));
       return new Response(bin, { headers: { "content-type": "image/png", "cache-control": "public, max-age=86400" } });
     }
+    // ================= Stripe 決済（Connect） =================
+    const stripeFetch = async (httpMethod, endpoint, params) => {
+      if (!env.STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY が未設定です");
+      const r = await fetch("https://api.stripe.com/v1" + endpoint, {
+        method: httpMethod,
+        headers: {
+          Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: params ? new URLSearchParams(params).toString() : undefined,
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j?.error?.message || "Stripe エラー");
+      return j;
+    };
+    const tokenOf = () => {
+      const rawTok = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").split(".")[0];
+      return JSON.parse(atob(rawTok));
+    };
+
+    // ---- オーナーの受け取り口座の登録（Stripeの画面へ移動） ----
+    if (path === "/api/stripe/connect" && method === "POST") {
+      if (!(await verifyAdminToken(request, env))) return json({ ok: false, error: "認証が必要です" }, 401);
+      try {
+        const tok = tokenOf();
+        if (tok.role !== "owner" || !tok.owner_id) return json({ ok: false, error: "オーナーでログインしてください" }, 403);
+        const ow = await env.DB.prepare("SELECT id, email, stripe_account_id FROM owner_entries WHERE id = ?").bind(tok.owner_id).first();
+        if (!ow) return json({ ok: false, error: "オーナーが見つかりません" }, 404);
+        let acct = ow.stripe_account_id;
+        if (!acct) {
+          const created = await stripeFetch("POST", "/accounts", {
+            "controller[stripe_dashboard][type]": "express",
+            "controller[fees][payer]": "application",
+            "controller[losses][payments]": "application",
+            country: "JP",
+            email: ow.email || "",
+            "capabilities[card_payments][requested]": "true",
+            "capabilities[transfers][requested]": "true",
+          });
+          acct = created.id;
+          await env.DB.prepare("UPDATE owner_entries SET stripe_account_id = ? WHERE id = ?").bind(acct, ow.id).run();
+        }
+        const link = await stripeFetch("POST", "/account_links", {
+          account: acct,
+          refresh_url: `${url.origin}/admin?stripe=refresh`,
+          return_url: `${url.origin}/admin?stripe=return`,
+          type: "account_onboarding",
+        });
+        return json({ ok: true, url: link.url });
+      } catch (e) {
+        return json({ ok: false, error: String(e?.message || e) }, 500);
+      }
+    }
+
+    // ---- 受け取り設定の状況 ----
+    if (path === "/api/stripe/status" && method === "GET") {
+      if (!(await verifyAdminToken(request, env))) return json({ ok: false, error: "認証が必要です" }, 401);
+      try {
+        const tok = tokenOf();
+        if (tok.role !== "owner" || !tok.owner_id) return json({ ok: true, connected: false, charges_enabled: false });
+        const ow = await env.DB.prepare("SELECT stripe_account_id FROM owner_entries WHERE id = ?").bind(tok.owner_id).first();
+        if (!ow?.stripe_account_id) return json({ ok: true, connected: false, charges_enabled: false });
+        const a = await stripeFetch("GET", "/accounts/" + ow.stripe_account_id);
+        return json({
+          ok: true,
+          connected: true,
+          charges_enabled: !!a.charges_enabled,
+          details_submitted: !!a.details_submitted,
+        });
+      } catch (e) {
+        return json({ ok: false, error: String(e?.message || e) }, 500);
+      }
+    }
+
+    // ---- お客様の予約＋カード決済（Stripe Checkout へ） ----
+    if (path === "/api/checkout" && method === "POST") {
+      try {
+        const b = await request.json().catch(() => ({}));
+        const m = String(b.salon_id || "").match(/^db_(\d+)$/);
+        const date = s(b.date, 10);
+        const hours = Array.isArray(b.hours) ? [...new Set(b.hours.map((h) => s(h, 5)))].filter((h) => /^\d{2}:00$/.test(h)).sort() : [];
+        const guestName = s(b.guest_name, 100);
+        const guestEmail = s(b.guest_email, 200);
+        const guestPhone = s(b.guest_phone, 50);
+        if (!m || !/^\d{4}-\d{2}-\d{2}$/.test(date) || hours.length === 0 || !guestName) {
+          return json({ ok: false, error: "サロン・日付・時間・お名前を確認してください" }, 400);
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) {
+          return json({ ok: false, error: "メールアドレスの形式が正しくありません" }, 400);
+        }
+        const salonId = Number(m[1]);
+        const salon = await env.DB.prepare("SELECT id, name, price_per_hour, owner_email, booked_hours_json FROM published_salons WHERE id = ?").bind(salonId).first();
+        if (!salon) return json({ ok: false, error: "サロンが見つかりません" }, 404);
+
+        const fixedClosed = safeJsonArray(salon.booked_hours_json, []);
+        const cl = await env.DB.prepare("SELECT hours FROM salon_closures WHERE salon_id = ? AND date = ?").bind(salonId, date).first();
+        const dayClosed = cl ? safeJsonArray(cl.hours, []) : [];
+        if (hours.some((h) => fixedClosed.includes(h) || dayClosed.includes(h))) {
+          return json({ ok: false, error: "選択した時間に、お受けできない枠があります" }, 409);
+        }
+        const holdSince = new Date(Date.now() - 35 * 60 * 1000).toISOString();
+        const taken = await env.DB.prepare(
+          "SELECT hours FROM salon_bookings WHERE salon_id = ? AND date = ? AND (status = 'paid' OR (status = 'pending' AND created_at > ?))"
+        ).bind(salonId, date, holdSince).all();
+        for (const row of taken.results || []) {
+          const used = safeJsonArray(row.hours, []);
+          if (hours.some((h) => used.includes(h))) {
+            return json({ ok: false, error: "選択した時間は、すでに予約されています" }, 409);
+          }
+        }
+
+        const ow = await env.DB.prepare("SELECT stripe_account_id FROM owner_entries WHERE email = ? AND stripe_account_id IS NOT NULL LIMIT 1").bind(salon.owner_email || "").first();
+        if (!ow?.stripe_account_id) {
+          return json({ ok: false, error: "このサロンは、現在オンライン決済に対応していません" }, 400);
+        }
+        const acct = await stripeFetch("GET", "/accounts/" + ow.stripe_account_id);
+        if (!acct.charges_enabled) {
+          return json({ ok: false, error: "このサロンの受け取り設定が、まだ完了していません" }, 400);
+        }
+
+        const total = Number(salon.price_per_hour) * hours.length;
+        if (!Number.isFinite(total) || total < 50) return json({ ok: false, error: "金額が正しくありません" }, 400);
+        const fee = calcFeeJpy(total, FEE_RATE_BPS.attended);
+        const code = makeBookingCode();
+        const nowIso = new Date().toISOString();
+        const ins = await env.DB.prepare(
+          `INSERT INTO salon_bookings (booking_code, salon_id, salon_name, owner_email, date, hours, amount_jpy, fee_jpy, guest_name, guest_email, guest_phone, status, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`
+        ).bind(code, salonId, salon.name, salon.owner_email || "", date, JSON.stringify(hours), total, fee, guestName, guestEmail, guestPhone, nowIso).run();
+        const bookingId = ins.meta?.last_row_id;
+
+        const session = await stripeFetch("POST", "/checkout/sessions", {
+          mode: "payment",
+          "line_items[0][price_data][currency]": "jpy",
+          "line_items[0][price_data][product_data][name]": `${salon.name}（${date} ${hours.join("・")}）`,
+          "line_items[0][price_data][unit_amount]": String(total),
+          "line_items[0][quantity]": "1",
+          "payment_intent_data[application_fee_amount]": String(fee),
+          "payment_intent_data[transfer_data][destination]": ow.stripe_account_id,
+          customer_email: guestEmail,
+          "metadata[booking_id]": String(bookingId),
+          expires_at: String(Math.floor(Date.now() / 1000) + 31 * 60),
+          success_url: `${url.origin}/?paid=${encodeURIComponent(code)}`,
+          cancel_url: `${url.origin}/?canceled=1`,
+        });
+        await env.DB.prepare("UPDATE salon_bookings SET stripe_session_id = ? WHERE id = ?").bind(session.id, bookingId).run();
+        return json({ ok: true, url: session.url });
+      } catch (e) {
+        console.log("checkout error", String(e));
+        return json({ ok: false, error: "決済の準備に失敗しました。時間をおいてお試しください" }, 500);
+      }
+    }
+
+    // ---- Stripe からの支払い完了通知（Webhook） ----
+    if (path === "/api/stripe/webhook" && method === "POST") {
+      try {
+        const raw = await request.text();
+        const sigHeader = request.headers.get("Stripe-Signature") || "";
+        const parts = Object.fromEntries(sigHeader.split(",").map((kv) => kv.split("=")).filter((a) => a.length === 2));
+        const secret = String(env.STRIPE_WEBHOOK_SECRET || "");
+        if (!secret || !parts.t || !parts.v1) return json({ ok: false }, 400);
+        const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+        const sigBuf = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${parts.t}.${raw}`));
+        const expected = Array.from(new Uint8Array(sigBuf)).map((x) => x.toString(16).padStart(2, "0")).join("");
+        const fresh = Math.abs(Date.now() / 1000 - Number(parts.t)) < 300;
+        if (expected !== parts.v1 || !fresh) return json({ ok: false }, 400);
+
+        const event = JSON.parse(raw);
+        const obj = event?.data?.object || {};
+        const bookingId = Number(obj?.metadata?.booking_id || 0);
+
+        if (event.type === "checkout.session.expired" && bookingId) {
+          await env.DB.prepare("UPDATE salon_bookings SET status = 'expired' WHERE id = ? AND status = 'pending'").bind(bookingId).run();
+        }
+        if (event.type === "checkout.session.completed" && bookingId && obj.payment_status === "paid") {
+          const bk = await env.DB.prepare("SELECT * FROM salon_bookings WHERE id = ?").bind(bookingId).first();
+          if (bk && bk.status !== "paid") {
+            await env.DB.prepare("UPDATE salon_bookings SET status = 'paid' WHERE id = ?").bind(bookingId).run();
+            const hrs = safeJsonArray(bk.hours, []).join(" / ");
+            const [yy, mm, dd] = String(bk.date).split("-");
+            const when = `${yy}年${Number(mm)}月${Number(dd)}日 ${hrs}`;
+            const guestText = [
+              `${bk.guest_name} 様`, "", "ご予約とお支払いが完了しました。", "",
+              `予約番号: ${bk.booking_code}`, `サロン: ${bk.salon_name}`, `ご利用日時: ${when}`,
+              `お支払い金額: ¥${Number(bk.amount_jpy).toLocaleString()}`, "", "※ このメールは送信専用です。", "SalonBase",
+            ].join("\n");
+            const ownerText = [
+              "新しい予約（お支払い済み）が入りました。", "",
+              `予約番号: ${bk.booking_code}`, `サロン: ${bk.salon_name}`, `ご利用日時: ${when}`,
+              `お支払い金額: ¥${Number(bk.amount_jpy).toLocaleString()}`,
+              `運営手数料: ¥${Number(bk.fee_jpy).toLocaleString()}`,
+              `お受け取り予定額: ¥${(Number(bk.amount_jpy) - Number(bk.fee_jpy)).toLocaleString()}`, "",
+              `お客様: ${bk.guest_name} 様`, `メール: ${bk.guest_email}`, bk.guest_phone ? `電話: ${bk.guest_phone}` : "", "", "SalonBase",
+            ].filter((x) => x !== "").join("\n");
+            await sendMail(env, bk.guest_email, "【SalonBase】ご予約・お支払いが完了しました", guestText);
+            const adminEmail = env.NOTIFY_EMAIL || "";
+            const toOwner = bk.owner_email || adminEmail;
+            if (toOwner) await sendMail(env, toOwner, `【SalonBase】新規予約（支払い済み）：${bk.salon_name}`, ownerText);
+            if (adminEmail && adminEmail !== toOwner) await sendMail(env, adminEmail, `【SalonBase】（運営控え）新規予約：${bk.salon_name}`, ownerText);
+          }
+        }
+        return json({ ok: true });
+      } catch (e) {
+        console.log("webhook error", String(e));
+        return json({ ok: false }, 500);
+      }
+    }
+
 
     // ---- 見学リクエスト一覧（ログイン必須） ----
     if (path === "/api/tours" && method === "GET") {
