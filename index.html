@@ -47,12 +47,16 @@
         }
     </script>
     <style>
-        body {
-            background-image: url('/bg.jpg');
-background-size: cover; background-position: center; background-attachment: fixed;
-background-image: url('/bg.jpg');
-background-size: cover; background-position: center; background-attachment: fixed;
-} 
+        body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(rgba(250,247,242,0.55), rgba(250,247,242,0.55)),
+    url('/bg3.jpg') center / cover no-repeat;
+}
+
             color: #3D352E;
             font-family: 'Noto Sans JP', sans-serif;
             -webkit-font-smoothing: antialiased;
