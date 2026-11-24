@@ -1698,7 +1698,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
   }
 }
-                openNotifModal(
+                openNotifModal(        
                     '送信エラー',
                     err.message || '通信中にエラーが発生しました。時間をおいて再度お試しください。'
                 );
@@ -1708,7 +1708,9 @@ window.addEventListener('DOMContentLoaded', async () => {
                     submitBtn.textContent = 'この内容で予約リクエストを送る';
                 }
             }
-        }
+        }                              
+
+
 
         // 6. オーナー向けインタラクティブ収益シミュレーター
         function updateSimulator() {
