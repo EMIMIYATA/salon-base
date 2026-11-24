@@ -124,8 +124,14 @@ async function createAdminToken(env, role = "admin", extra = {}) {
   if (!secret) throw new Error("ADMIN_TOKEN_SECRET が未設定です");
   const now = Date.now();
   const payload = btoa(
- exp: now + ((role === "owner") ? 30 : 1) * 24 * 60 * 60 * 1000       
-  );
+  JSON.stringify({
+    ...extra,
+    role,
+    exp: now + ((role === "owner") ? 30 : 1) * 24 * 60 * 60 * 1000,
+  })
+);
+
+ 
   const key = await hmacKey(secret, "sign");
   const sigBuf = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
   const sigHex = Array.from(new Uint8Array(sigBuf))
