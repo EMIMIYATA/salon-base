@@ -54,7 +54,7 @@
       inset: 0;
       z-index: -1;
       background:
-        linear-gradient(rgba(250, 247, 242, 0.35), rgba(250, 247, 242, 0.35)),
+        linear-gradient(rgba(250, 247, 242, 0.75), rgba(250, 247, 242, 0.75)),
         url('/bg3.jpg') center / cover no-repeat;
     }
 
@@ -1698,17 +1698,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
   }
 }
-                openNotifModal(        
-                    '送信エラー',
-                    err.message || '通信中にエラーが発生しました。時間をおいて再度お試しください。'
-                );
-            } finally {
-                if (submitBtn && modalSelectedHours.length > 0) {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'この内容で予約リクエストを送る';
-                }
-            }
-        }                              
 
 
 
