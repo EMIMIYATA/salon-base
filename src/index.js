@@ -848,10 +848,6 @@ if (path === "/api/owner/login" && method === "POST") {
           use_case: {
             type: "account_onboarding",
             account_onboarding: {
-                        account_onboarding: {
-              refresh_url: `${url.origin}/admin?stripe=refresh`,
-              return_url: `${url.origin}/admin?stripe=return`,
-            },
               refresh_url: `${url.origin}/admin?stripe=refresh`,
               return_url: `${url.origin}/admin?stripe=return`,
             },
