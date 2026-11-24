@@ -840,27 +840,7 @@ if (path === "/api/owner/login" && method === "POST") {
           await env.DB.prepare("UPDATE owner_entries SET stripe_account_id = ? WHERE id = ?").bind(acct, ow.id).run();
         }
 
-            contact_email: ow.email || "",
-            identity: { country: "JP" },
-            dashboard: "express",
-            configuration: {
-              merchant: {
-                capabilities: {
-                  card_payments: { requested: true },
-                },
-              },
-              recipient: {
-                capabilities: {
-                  stripe_balance: {
-                    payouts: { requested: true },
-                  },
-                },
-              },
-            },
-          });
-          acct = created.id;
-          await env.DB.prepare("UPDATE owner_entries SET stripe_account_id = ? WHERE id = ?").bind(acct, ow.id).run();
-        }
+            
 
         const link = await stripeV2Fetch("POST", "/v2/core/account_links", {
           account: acct,
