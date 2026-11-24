@@ -772,7 +772,9 @@ if (path === "/api/owner/login" && method === "POST") {
       const bin = Uint8Array.from(atob("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"), (c) => c.charCodeAt(0));
       return new Response(bin, { headers: { "content-type": "image/png", "cache-control": "public, max-age=86400" } });
     }
-    // ================= Stripe 決済（Connect） =================
+    // ================= Stripe 決済（Connect v2） =================
+    const STRIPE_V2_VERSION = "2026-11-18.endive";
+
     const stripeFetch = async (httpMethod, endpoint, params) => {
       if (!env.STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY が未設定です");
       const r = await fetch("https://api.stripe.com/v1" + endpoint, {
@@ -787,10 +789,99 @@ if (path === "/api/owner/login" && method === "POST") {
       if (!r.ok) throw new Error(j?.error?.message || "Stripe エラー");
       return j;
     };
+
+    const stripeV2Fetch = async (httpMethod, endpoint, bodyObj) => {
+      if (!env.STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY が未設定です");
+      const r = await fetch("https://api.stripe.com" + endpoint, {
+        method: httpMethod,
+        headers: {
+          Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
+          "Stripe-Version": STRIPE_V2_VERSION,
+          "Content-Type": "application/json",
+        },
+        body: bodyObj ? JSON.stringify(bodyObj) : undefined,
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j?.error?.message || "Stripe v2 エラー");
+      return j;
+    };
+
     const tokenOf = () => {
       const rawTok = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").split(".")[0];
       return JSON.parse(atob(rawTok));
     };
+
+    // ---- オーナーの受け取り口座の登録（Stripe v2 画面へ移動） ----
+    if (path === "/api/stripe/connect" && method === "POST") {
+      if (!(await verifyAdminToken(request, env))) return json({ ok: false, error: "認証が必要です" }, 401);
+      try {
+        const tok = tokenOf();
+        if (tok.role !== "owner" || !tok.owner_id) return json({ ok: false, error: "オーナーでログインしてください" }, 403);
+        const ow = await env.DB.prepare("SELECT id, email, stripe_account_id FROM owner_entries WHERE id = ?").bind(tok.owner_id).first();
+        if (!ow) return json({ ok: false, error: "オーナーが見つかりません" }, 404);
+
+        let acct = ow.stripe_account_id;
+        if (!acct) {
+          const created = await stripeV2Fetch("POST", "/v2/core/accounts", {
+            contact_email: ow.email || "",
+            identity: { country: "JP" },
+            dashboard: "express",
+            configuration: {
+              merchant: {
+                capabilities: {
+                  card_payments: { requested: true },
+                },
+              },
+              recipient: {
+                capabilities: {
+                  stripe_balance: {
+                    payouts: { requested: true },
+                  },
+                },
+              },
+            },
+          });
+          acct = created.id;
+          await env.DB.prepare("UPDATE owner_entries SET stripe_account_id = ? WHERE id = ?").bind(acct, ow.id).run();
+        }
+
+        const link = await stripeV2Fetch("POST", "/v2/core/account_links", {
+          account: acct,
+          use_case: {
+            type: "account_onboarding",
+            account_onboarding: {
+              configurations: ["merchant", "recipient"],
+              refresh_url: `${url.origin}/admin?stripe=refresh`,
+              return_url: `${url.origin}/admin?stripe=return`,
+            },
+          },
+        });
+        return json({ ok: true, url: link.url });
+      } catch (e) {
+        return json({ ok: false, error: String(e?.message || e) }, 500);
+      }
+    }
+
+    // ---- 受け取り設定の状況 ----
+    if (path === "/api/stripe/status" && method === "GET") {
+      if (!(await verifyAdminToken(request, env))) return json({ ok: false, error: "認証が必要です" }, 401);
+      try {
+        const tok = tokenOf();
+        if (tok.role !== "owner" || !tok.owner_id) return json({ ok: true, connected: false, charges_enabled: false });
+        const ow = await env.DB.prepare("SELECT stripe_account_id FROM owner_entries WHERE id = ?").bind(tok.owner_id).first();
+        if (!ow?.stripe_account_id) return json({ ok: true, connected: false, charges_enabled: false });
+        const a = await stripeV2Fetch("GET", `/v2/core/accounts/${ow.stripe_account_id}?include[]=configuration.merchant&include[]=requirements`);
+        const chargesEnabled = !!a?.configuration?.merchant?.capabilities?.card_payments?.status === "active" || !!a?.charges_enabled;
+        return json({
+          ok: true,
+          connected: true,
+          charges_enabled: chargesEnabled,
+          details_submitted: !a?.requirements?.summary?.minimum_deadline?.current_deadline,
+        });
+      } catch (e) {
+        return json({ ok: false, error: String(e?.message || e) }, 500);
+      }
+    }
 
     // ---- オーナーの受け取り口座の登録（Stripeの画面へ移動） ----
     if (path === "/api/stripe/connect" && method === "POST") {
