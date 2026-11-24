@@ -822,7 +822,24 @@ if (path === "/api/owner/login" && method === "POST") {
 
         let acct = ow.stripe_account_id;
         if (!acct) {
+                  if (!acct) {
           const created = await stripeV2Fetch("POST", "/v2/core/accounts", {
+            contact_email: ow.email || "",
+            identity: { country: "JP" },
+            dashboard: "express",
+            configuration: {
+              merchant: {
+                capabilities: {
+                  card_payments: { requested: true },
+                },
+              },
+              recipient: {},
+            },
+          });
+          acct = created.id;
+          await env.DB.prepare("UPDATE owner_entries SET stripe_account_id = ? WHERE id = ?").bind(acct, ow.id).run();
+        }
+
             contact_email: ow.email || "",
             identity: { country: "JP" },
             dashboard: "express",
