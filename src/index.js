@@ -351,8 +351,12 @@ export default {
           (photoMap[p.salon_id] ||= []).push(`/api/images/${encodeURIComponent(p.image_key)}`);
         }
 
+        const ownRows = await env.DB.prepare("SELECT email, owner_code FROM owner_entries ORDER BY id ASC").all();
+        const memberMap = {};
+        for (const o of ownRows.results || []) { if (o.email && !memberMap[o.email]) memberMap[o.email] = o.owner_code; }
         const salons = (rows.results || []).map((r) => ({
           id: `db_${r.id}`,
+          memberNo: memberMap[r.owner_email || ""] || "",
           name: r.name,
           area: r.area,
           station: r.station,
@@ -515,7 +519,7 @@ export default {
         const adminText = [
           "新しい掲載エントリーが届きました。",
           "",
-          `割り当て番号: ${ownerCode}`,
+          `会員番号: ${ownerCode}`,
           `サロン名: ${salon}`,
           `担当者: ${person}`,
           `エリア: ${s(b.area, 200)}`,
@@ -532,7 +536,7 @@ export default {
       console.error("Notify mail error:", mailErr);
     }
 
-    // フロント側へ「割り当て番号」と「管理画面URL」を返して誘導しやすくする
+    // フロント側へ「会員番号」と「管理画面URL」を返して誘導しやすくする
     return json({
       ok: true,
       owner_code: ownerCode,
@@ -1117,8 +1121,10 @@ if (path === "/api/owner/login" && method === "POST") {
               `予約番号: ${bk.booking_code}`, `サロン: ${bk.salon_name}`, `ご利用日時: ${when}`,
               `お支払い金額: ¥${Number(bk.amount_jpy).toLocaleString()}`, "", "※ このメールは送信専用です。", "SHARE SALON",
             ].join("\n");
+            const ownRow = await env.DB.prepare("SELECT owner_code FROM owner_entries WHERE email = ? ORDER BY id ASC LIMIT 1").bind(bk.owner_email || "").first();
             const ownerText = [
               "新しい予約（お支払い済み）が入りました。", "",
+              ownRow?.owner_code ? `会員番号: ${ownRow.owner_code}` : "",
               `予約番号: ${bk.booking_code}`, `サロン: ${bk.salon_name}`, `ご利用日時: ${when}`,
               `お支払い金額: ¥${Number(bk.amount_jpy).toLocaleString()}`,
               `運営手数料: ¥${Number(bk.fee_jpy).toLocaleString()}`,
