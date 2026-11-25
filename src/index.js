@@ -542,6 +542,66 @@ export default {
     return json({ ok: false, error: String(err?.message || err) }, 500);
   }
 }
+// ---- オーナーの退会（番号＋パスワード確認） ----
+if (path === "/api/owner/withdraw" && method === "POST") {
+  try {
+    const b = await request.json().catch(() => ({}));
+    const ownerCode = String(b.owner_code || "").trim().toUpperCase();
+    const rawPassword = String(b.password || "");
+    if (!ownerCode || !rawPassword) {
+      return json({ ok: false, error: "番号とパスワードを入力してください" }, 400);
+    }
+    const row = await env.DB.prepare(
+      "SELECT id, email, owner_code, salon_name, person_name, password_hash, password_salt FROM owner_entries WHERE owner_code = ? LIMIT 1"
+    ).bind(ownerCode).first();
+    if (!row || !row.password_hash || !row.password_salt) {
+      return json({ ok: false, error: "番号またはパスワードが正しくありません" }, 401);
+    }
+    const { hashHex } = await hashPassword(rawPassword, row.password_salt);
+    if (hashHex !== row.password_hash) {
+      return json({ ok: false, error: "番号またはパスワードが正しくありません" }, 401);
+    }
+    // 今日以降の支払い済み予約があれば退会できない（日本時間）
+    const today = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+    const future = await env.DB.prepare(
+      "SELECT COUNT(*) AS n FROM salon_bookings WHERE owner_email = ? AND status = 'paid' AND date >= ?"
+    ).bind(row.email || "", today).first();
+    if (Number(future?.n || 0) > 0) {
+      return json({
+        ok: false,
+        error: "これからの日程で支払い済みの予約が " + future.n + " 件あります。予約日を過ぎてから、または運営へご連絡のうえ退会してください。",
+      }, 409);
+    }
+    // サロンと関連データを削除し、オーナー登録を削除
+    const sals = await env.DB.prepare("SELECT id FROM published_salons WHERE owner_email = ?").bind(row.email || "").all();
+    for (const sl of sals?.results || []) {
+      await env.DB.prepare("DELETE FROM salon_photos WHERE salon_id = ?").bind(sl.id).run();
+      await env.DB.prepare("DELETE FROM salon_closures WHERE salon_id = ?").bind(sl.id).run();
+      await env.DB.prepare("DELETE FROM published_salons WHERE id = ?").bind(sl.id).run();
+    }
+    await env.DB.prepare("DELETE FROM owner_entries WHERE id = ?").bind(row.id).run();
+    // 確認メール（オーナー・運営）
+    try {
+      if (env.RESEND_API_KEY) {
+        const body = [
+          "SalonBase の退会手続きが完了しました。",
+          "",
+          "オーナー番号: " + row.owner_code,
+          "サロン名: " + (row.salon_name || ""),
+          "担当者: " + (row.person_name || ""),
+          "",
+          "掲載していたサロン情報は削除されました。ご利用ありがとうございました。",
+        ].join("\n");
+        if (row.email) await sendMail(env, row.email, "【SalonBase】退会手続きが完了しました", body);
+        if (env.NOTIFY_EMAIL) await sendMail(env, env.NOTIFY_EMAIL, "【SalonBase】オーナーが退会しました（" + row.owner_code + "）", body);
+      }
+    } catch (e) { console.log("withdraw mail error", String(e)); }
+    return json({ ok: true });
+  } catch (err) {
+    return json({ ok: false, error: String(err?.message || err) }, 500);
+  }
+}
+
 if (path === "/api/owner/login" && method === "POST") {
   try {
     const b = await request.json();
