@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>退会手続き | SalonBase</title>
+<style>
+  body{margin:0;background:#faf7f2;color:#4a3b32;font-family:-apple-system,"Hiragino Sans",sans-serif;line-height:1.7}
+  .wrap{max-width:480px;margin:0 auto;padding:24px 16px 60px}
+  h1{font-size:22px;margin:8px 0 16px}
+  .card{background:#fff;border:1px solid #e8dfd3;border-radius:20px;padding:20px}
+  label{display:block;font-weight:700;font-size:14px;margin:14px 0 6px}
+  input[type=text],input[type=password]{width:100%;box-sizing:border-box;padding:12px;font-size:16px;border:1px solid #d9cdbd;border-radius:12px}
+  .warn{background:#fbeeea;border-radius:12px;padding:12px;font-size:14px;margin-top:12px}
+  button{width:100%;margin-top:18px;padding:14px;font-size:16px;font-weight:700;color:#fff;background:#b0594a;border:0;border-radius:999px}
+  button:disabled{opacity:.5}
+  .msg{margin-top:14px;font-size:14px;font-weight:700}
+  .err{color:#b0302a}.ok{color:#3d6b4f}
+  a{color:#b0594a}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>退会手続き</h1>
+  <div class="card" id="form-card">
+    <p style="margin-top:0;font-size:14px">退会すると、掲載中のサロン情報・写真・休業日の設定がすべて削除され、元に戻せません。</p>
+    <div class="warn">これからの日程で支払い済みの予約がある場合は、退会できません。</div>
+    <label for="code">オーナー番号（例：SB-2026-4860）</label>
+    <input type="text" id="code" autocomplete="username" autocapitalize="characters">
+    <label for="pw">パスワード</label>
+    <input type="password" id="pw" autocomplete="current-password">
+    <label style="font-weight:400;display:flex;gap:8px;align-items:flex-start;margin-top:16px">
+      <input type="checkbox" id="agree" style="margin-top:6px">
+      <span>上記を理解したうえで、退会します。</span>
+    </label>
+    <button id="btn" type="button">退会する</button>
+    <div class="msg" id="msg"></div>
+  </div>
+  <div class="card" id="done-card" style="display:none">
+    <p style="margin:0;font-weight:700">退会手続きが完了しました。</p>
+    <p style="font-size:14px">確認のメールをお送りしました。ご利用ありがとうございました。</p>
+    <p style="font-size:14px"><a href="/">トップへ戻る</a></p>
+  </div>
+  <p style="text-align:center;margin-top:20px;font-size:14px"><a href="/admin">← 管理画面に戻る</a></p>
+</div>
+<script>
+  var btn = document.getElementById('btn');
+  var msg = document.getElementById('msg');
+  btn.addEventListener('click', function () {
+    msg.className = 'msg'; msg.textContent = '';
+    var code = document.getElementById('code').value.trim();
+    var pw = document.getElementById('pw').value;
+    if (!code || !pw) { msg.className = 'msg err'; msg.textContent = '番号とパスワードを入力してください'; return; }
+    if (!document.getElementById('agree').checked) { msg.className = 'msg err'; msg.textContent = '確認のチェックを入れてください'; return; }
+    if (!confirm('本当に退会しますか？この操作は元に戻せません。')) return;
+    btn.disabled = true; btn.textContent = '処理中...';
+    fetch('/api/owner/withdraw', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ owner_code: code, password: pw })
+    }).then(function (r) { return r.json().catch(function () { return {}; }); })
+    .then(function (d) {
+      if (d && d.ok) {
+        try { localStorage.clear(); } catch (e) {}
+        document.getElementById('form-card').style.display = 'none';
+        document.getElementById('done-card').style.display = 'block';
+      } else {
+        msg.className = 'msg err'; msg.textContent = (d && d.error) || '退会できませんでした';
+        btn.disabled = false; btn.textContent = '退会する';
+      }
+    }).catch(function () {
+      msg.className = 'msg err'; msg.textContent = '通信エラーです。もう一度お試しください';
+      btn.disabled = false; btn.textContent = '退会する';
+    });
+  });
+</script>
+</body>
+</html>
