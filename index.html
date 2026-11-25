@@ -197,7 +197,7 @@
                                 <label for="search-area" class="block text-[11px] font-bold text-base-terraDark tracking-wider mb-1">
                                     <i class="fa-solid fa-location-dot text-base-terra mr-1"></i>エリア・駅名
                                 </label>
-                                <input type="text" id="search-area" oninput="applyFilters()" placeholder="例：表参道、恵比寿、新宿、心斎橋" 
+                                <input type="text" id="search-area" oninput="applyFilters()" placeholder="例：表参道、恵比寿、会員番号（SB-2026-…）" 
                                        class="w-full text-sm text-base-charcoal placeholder-gray-400 focus:outline-none bg-transparent">
                             </div>
 
@@ -1316,9 +1316,10 @@ window.addEventListener('DOMContentLoaded', async () => {
                          </p>
 
                          <!-- サロン名 -->
-                         <h3 class="font-serif text-base sm:text-lg font-bold text-base-charcoal group-hover:text-base-terra transition line-clamp-1 mb-3">
+                         <h3 class="font-serif text-base sm:text-lg font-bold text-base-charcoal group-hover:text-base-terra transition line-clamp-1 mb-1">
                              ${salon.name || ''}
                          </h3>
+                         ${salon.memberNo ? `<p class="text-[11px] text-base-muted mb-2.5">会員番号：${salon.memberNo}</p>` : '<div class="mb-2"></div>'}
 
                          <!-- 対応施術ジャンルバッジ -->
                          <div class="flex flex-wrap gap-1.5 mb-3.5">
@@ -1367,7 +1368,8 @@ window.addEventListener('DOMContentLoaded', async () => {
                 const matchArea = areaKeyword === '' || 
                                   salon.area.includes(areaKeyword) || 
                                   salon.station.includes(areaKeyword) || 
-                                  salon.name.includes(areaKeyword);
+                                  salon.name.includes(areaKeyword) ||
+                                  String(salon.memberNo || '').toUpperCase().includes(areaKeyword.toUpperCase());
                 const matchGenre = genreVal === 'all' || salon.genres.includes(genreVal);
                 
                 // 選択されたすべての設備タグを含むかチェック
@@ -1435,6 +1437,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                                 <i class="fa-solid fa-location-dot mr-1"></i>${salon.station}
                             </span>
                             <h3 class="font-serif text-xl sm:text-2xl font-bold leading-snug">${salon.name}</h3>
+                            ${salon.memberNo ? `<p class="text-xs text-white/80 mt-1">会員番号：${salon.memberNo}</p>` : ''}
                         </div>
                     </div>
 
@@ -1798,7 +1801,7 @@ async function handleOwnerSubmit(e) {
         }
 
         const codeNote = entryData.owner_code
-            ? `\n割り当て番号：${entryData.owner_code}`
+            ? `\n会員番号：${entryData.owner_code}`
             : '';
         const imageNote = uploadedKey
             ? `\n（アップロード済み画像キー: ${uploadedKey}）`
