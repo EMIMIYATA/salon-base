@@ -810,9 +810,25 @@ if (path === "/api/owner/login" && method === "POST") {
       return j;
     };
     const getTransfersInfo = async (acctId) => {
-      const a = await stripeV2("GET", "/core/accounts/" + acctId + "?include[0]=configuration.recipient&include[1]=requirements");
-      const st = a?.configuration?.recipient?.capabilities?.stripe_balance?.stripe_transfers?.status || "";
-      return { active: st === "active", status: st };
+      let v2st = "", codes = "", v1st = "", note = "";
+      try {
+        const a = await stripeV2("GET", "/core/accounts/" + acctId + "?include[0]=configuration.recipient&include[1]=requirements");
+        const cap = a?.configuration?.recipient?.capabilities?.stripe_balance?.stripe_transfers;
+        v2st = cap?.status || "";
+        codes = (cap?.status_details || []).map((d) => d.code).join(",");
+        if (!a?.configuration?.recipient) note += " recipient設定なし(applied=" + (a?.applied_configurations || []).join(",") + ")";
+      } catch (e) {
+        note += " v2:" + String(e?.message || e).slice(0, 80);
+      }
+      try {
+        const x = await stripeFetch("GET", "/accounts/" + acctId);
+        v1st = x?.capabilities?.transfers || "";
+      } catch (e) {
+        note += " v1:" + String(e?.message || e).slice(0, 80);
+      }
+      const active = v2st === "active" || v1st === "active";
+      const detail = "v2=" + (v2st || "なし") + (codes ? "[" + codes + "]" : "") + " v1=" + (v1st || "なし") + note;
+      return { active, status: v2st || v1st, detail };
     };
 
     // ---- オーナーの受け取り口座の登録（v2・Stripeの画面へ移動） ----
@@ -972,7 +988,7 @@ if (path === "/api/owner/login" && method === "POST") {
         }
         const tinfo = await getTransfersInfo(ow.stripe_account_id);
         if (!tinfo.active) {
-          return json({ ok: false, error: "このサロンの受け取り設定が、まだ完了していません" }, 400);
+          return json({ ok: false, error: "このサロンの受け取り設定が、まだ完了していません（確認用：" + tinfo.detail + "）" }, 400);
         }
 
         const total = Number(salon.price_per_hour) * hours.length;
