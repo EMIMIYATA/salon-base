@@ -179,7 +179,7 @@ async function sendMail(env, to, subject, text) {
       "content-type": "application/json",
     },
     body: JSON.stringify({
-      from: "SalonBase <noreply@weblavo-tokyo.com>",
+      from: "SHARE SALON <noreply@weblavo-tokyo.com>",
       to: [to],
       subject,
       text,
@@ -522,11 +522,11 @@ export default {
           `メール: ${email}`,
           `電話: ${phone}`,
           "",
-          "▼ 管理画面（SalonBase Owner Console）",
+          "▼ 管理画面（SHARE SALON Owner Console）",
           adminUrl
         ].join("\n");
 
-        await sendMail(env, env.NOTIFY_EMAIL, `【SalonBase】新規エントリー（${ownerCode}）：${salon}`, adminText);
+        await sendMail(env, env.NOTIFY_EMAIL, `【SHARE SALON】新規エントリー（${ownerCode}）：${salon}`, adminText);
       }
     } catch (mailErr) {
       console.error("Notify mail error:", mailErr);
@@ -584,7 +584,7 @@ if (path === "/api/owner/withdraw" && method === "POST") {
     try {
       if (env.RESEND_API_KEY) {
         const body = [
-          "SalonBase の退会手続きが完了しました。",
+          "SHARE SALON の退会手続きが完了しました。",
           "",
           "オーナー番号: " + row.owner_code,
           "サロン名: " + (row.salon_name || ""),
@@ -592,8 +592,8 @@ if (path === "/api/owner/withdraw" && method === "POST") {
           "",
           "掲載していたサロン情報は削除されました。ご利用ありがとうございました。",
         ].join("\n");
-        if (row.email) await sendMail(env, row.email, "【SalonBase】退会手続きが完了しました", body);
-        if (env.NOTIFY_EMAIL) await sendMail(env, env.NOTIFY_EMAIL, "【SalonBase】オーナーが退会しました（" + row.owner_code + "）", body);
+        if (row.email) await sendMail(env, row.email, "【SHARE SALON】退会手続きが完了しました", body);
+        if (env.NOTIFY_EMAIL) await sendMail(env, env.NOTIFY_EMAIL, "【SHARE SALON】オーナーが退会しました（" + row.owner_code + "）", body);
       }
     } catch (e) { console.log("withdraw mail error", String(e)); }
     return json({ ok: true });
@@ -690,11 +690,11 @@ if (path === "/api/owner/login" && method === "POST") {
           return json({ ok: false, error: "メール送信設定（RESEND_API_KEY）が未設定です" }, 500);
         }
 
-        const guestSubject = `【SalonBase】無料見学（30分）のご予約受付完了：${salonName}`;
+        const guestSubject = `【SHARE SALON】無料見学（30分）のご予約受付完了：${salonName}`;
         const guestText = [
           `${applicantName} 様`,
           "",
-          "SalonBase より、無料見学（30分）のご予約を受け付けました。",
+          "SHARE SALON より、無料見学（30分）のご予約を受け付けました。",
           "",
           "■ ご予約内容",
           `予約番号: ${tourId}`,
@@ -729,7 +729,7 @@ if (path === "/api/owner/login" && method === "POST") {
           await sendMail(
             env,
             env.NOTIFY_EMAIL,
-            `【SalonBase】無料見学予約：${salonName}（${tourDate} ${tourTime}）`,
+            `【SHARE SALON】無料見学予約：${salonName}（${tourDate} ${tourTime}）`,
             adminText
           );
         }
@@ -818,8 +818,8 @@ if (path === "/api/owner/login" && method === "POST") {
     // ---- 管理画面アプリ化（マニフェストとアイコン） ----
     if (path === "/admin.webmanifest" && method === "GET") {
       return new Response(JSON.stringify({
-        name: "SalonBase オーナー管理",
-        short_name: "SalonBase",
+        name: "SHARE SALON オーナー管理",
+        short_name: "SHARE SALON",
         start_url: "/admin",
         scope: "/",
         display: "standalone",
@@ -903,7 +903,7 @@ if (path === "/api/owner/login" && method === "POST") {
         if (!acct) {
           const created = await stripeV2("POST", "/core/accounts", {
             contact_email: ow.email || undefined,
-            display_name: ow.salon_name || "SalonBase Owner",
+            display_name: ow.salon_name || "SHARE SALON Owner",
             dashboard: "express",
             identity: { country: "jp" },
             defaults: {
@@ -1115,7 +1115,7 @@ if (path === "/api/owner/login" && method === "POST") {
             const guestText = [
               `${bk.guest_name} 様`, "", "ご予約とお支払いが完了しました。", "",
               `予約番号: ${bk.booking_code}`, `サロン: ${bk.salon_name}`, `ご利用日時: ${when}`,
-              `お支払い金額: ¥${Number(bk.amount_jpy).toLocaleString()}`, "", "※ このメールは送信専用です。", "SalonBase",
+              `お支払い金額: ¥${Number(bk.amount_jpy).toLocaleString()}`, "", "※ このメールは送信専用です。", "SHARE SALON",
             ].join("\n");
             const ownerText = [
               "新しい予約（お支払い済み）が入りました。", "",
@@ -1123,13 +1123,13 @@ if (path === "/api/owner/login" && method === "POST") {
               `お支払い金額: ¥${Number(bk.amount_jpy).toLocaleString()}`,
               `運営手数料: ¥${Number(bk.fee_jpy).toLocaleString()}`,
               `お受け取り予定額: ¥${(Number(bk.amount_jpy) - Number(bk.fee_jpy)).toLocaleString()}`, "",
-              `お客様: ${bk.guest_name} 様`, `メール: ${bk.guest_email}`, bk.guest_phone ? `電話: ${bk.guest_phone}` : "", "", "SalonBase",
+              `お客様: ${bk.guest_name} 様`, `メール: ${bk.guest_email}`, bk.guest_phone ? `電話: ${bk.guest_phone}` : "", "", "SHARE SALON",
             ].filter((x) => x !== "").join("\n");
-            await sendMail(env, bk.guest_email, "【SalonBase】ご予約・お支払いが完了しました", guestText);
+            await sendMail(env, bk.guest_email, "【SHARE SALON】ご予約・お支払いが完了しました", guestText);
             const adminEmail = env.NOTIFY_EMAIL || "";
             const toOwner = bk.owner_email || adminEmail;
-            if (toOwner) await sendMail(env, toOwner, `【SalonBase】新規予約（支払い済み）：${bk.salon_name}`, ownerText);
-            if (adminEmail && adminEmail !== toOwner) await sendMail(env, adminEmail, `【SalonBase】（運営控え）新規予約：${bk.salon_name}`, ownerText);
+            if (toOwner) await sendMail(env, toOwner, `【SHARE SALON】新規予約（支払い済み）：${bk.salon_name}`, ownerText);
+            if (adminEmail && adminEmail !== toOwner) await sendMail(env, adminEmail, `【SHARE SALON】（運営控え）新規予約：${bk.salon_name}`, ownerText);
           }
         }
         return json({ ok: true });
@@ -1358,7 +1358,7 @@ if (path === "/api/owner/login" && method === "POST") {
           message ? `ご要望: ${message}` : "",
           "",
           "※ このメールは送信専用です。",
-          "SalonBase",
+          "SHARE SALON",
         ].filter((x) => x !== "").join("\n");
 
         const ownerText = [
@@ -1373,16 +1373,16 @@ if (path === "/api/owner/login" && method === "POST") {
           message ? `ご要望: ${message}` : "",
           "",
           "ご都合を確認のうえ、お客様のメールアドレスへご連絡ください。",
-          "SalonBase",
+          "SHARE SALON",
         ].filter((x) => x !== "").join("\n");
 
         const results = [];
-        results.push(await sendMail(env, guestEmail, "【SalonBase】無料見学のリクエストを受け付けました", guestText));
+        results.push(await sendMail(env, guestEmail, "【SHARE SALON】無料見学のリクエストを受け付けました", guestText));
         if (toOwner) {
-          results.push(await sendMail(env, toOwner, `【SalonBase】無料見学のリクエスト：${salonName}`, ownerText));
+          results.push(await sendMail(env, toOwner, `【SHARE SALON】無料見学のリクエスト：${salonName}`, ownerText));
         }
         if (adminEmail && adminEmail !== toOwner) {
-          results.push(await sendMail(env, adminEmail, `【SalonBase】（運営控え）無料見学リクエスト：${salonName}`, ownerText));
+          results.push(await sendMail(env, adminEmail, `【SHARE SALON】（運営控え）無料見学リクエスト：${salonName}`, ownerText));
         }
 
         return json({ ok: true, mail_sent: results.every(Boolean) });
@@ -1444,11 +1444,11 @@ if (path === "/api/owner/login" && method === "POST") {
         const adminEmail = env.NOTIFY_EMAIL || "";
         const toOwner = ownerEmail || adminEmail;
 
-        const guestSubject = `【SalonBase】予約リクエストを受け付けました：${salonName}`;
+        const guestSubject = `【SHARE SALON】予約リクエストを受け付けました：${salonName}`;
         const guestText = [
           `${guestName} 様`,
           "",
-          "SalonBase より、サロン予約リクエストを受け付けました。",
+          "SHARE SALON より、サロン予約リクエストを受け付けました。",
           "サロンオーナーからの連絡が来るまで今しばらくお待ちください。",
           "",
           "■ ご予約リクエスト内容",
@@ -1460,7 +1460,7 @@ if (path === "/api/owner/login" && method === "POST") {
           guestPhone ? `電話番号: ${guestPhone}` : "",
           "",
           "※ このメールは送信専用です。",
-          "SalonBase",
+          "SHARE SALON",
         ]
           .filter((x) => x !== "")
           .join("\n");
@@ -1483,7 +1483,7 @@ if (path === "/api/owner/login" && method === "POST") {
             guestPhone ? `電話: ${guestPhone}` : "",
             "",
             "内容をご確認のうえ、ご予約者へご連絡をお願いいたします。",
-            "SalonBase",
+            "SHARE SALON",
           ]
             .filter((x) => x !== "")
             .join("\n");
@@ -1491,7 +1491,7 @@ if (path === "/api/owner/login" && method === "POST") {
           await sendMail(
             env,
             toOwner,
-            `【SalonBase】新規予約リクエスト：${salonName}（${date} ${timesStr}）`,
+            `【SHARE SALON】新規予約リクエスト：${salonName}（${date} ${timesStr}）`,
             ownerText
           );
         }
@@ -1516,7 +1516,7 @@ if (path === "/api/owner/login" && method === "POST") {
           await sendMail(
             env,
             adminEmail,
-            `【SalonBase】（運営控え）予約リクエスト：${salonName}`,
+            `【SHARE SALON】（運営控え）予約リクエスト：${salonName}`,
             adminText
           );
         }
@@ -1650,7 +1650,7 @@ if (path === "/api/owner/login" && method === "POST") {
               await sendMail(
                 env,
                 toAddr,
-                `【SalonBase】新規予約通知：${space.title || space_id}（${start_at}）`,
+                `【SHARE SALON】新規予約通知：${space.title || space_id}（${start_at}）`,
                 noticeText
               );
             }
