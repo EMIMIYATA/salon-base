@@ -351,12 +351,8 @@ export default {
           (photoMap[p.salon_id] ||= []).push(`/api/images/${encodeURIComponent(p.image_key)}`);
         }
 
-        const ownRows = await env.DB.prepare("SELECT email, owner_code FROM owner_entries ORDER BY id ASC").all();
-        const memberMap = {};
-        for (const o of ownRows.results || []) { if (o.email && !memberMap[o.email]) memberMap[o.email] = o.owner_code; }
         const salons = (rows.results || []).map((r) => ({
           id: `db_${r.id}`,
-          memberNo: memberMap[r.owner_email || ""] || "",
           name: r.name,
           area: r.area,
           station: r.station,
