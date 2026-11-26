@@ -1,2454 +1,2120 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SHARE SALON（シェアサロン）｜サロン特化型レンタルスペース予約＆掲載プラットフォーム</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Noto Sans JP & Noto Serif JP & Cormorant Garamond -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&family=Noto+Serif+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        base: {
-                            bg: '#FAF7F2',        // ウォームアイボリーベージュ（背景）
-                            surface: '#FFFFFF',   // ピュアホワイト（カード・面）
-                            sand: '#F3ECE1',      // ソフトサンドベージュ（サブ背景）
-                            border: '#E6DDD0',    // シャンパンサンド（ボーダー）
-                            sage: '#5C7A6B',      // ソフトセージ（空き状況バッジ等の控えめなアクセント）
-                            sageDark: '#486355',  // ホバー用セージ
-                            sageLight: '#EBF2EE', // 薄いセージ背景
-                            terra: '#C4826E',     // くすみローズゴールド / テラコッタ（メインブランドカラー）
-                            terraDark: '#B06F5B', // ホバー用テラコッタ
-                            terraLight: '#F9EFEA',// 薄いローズベージュ背景
-                            charcoal: '#3D352E',  // ディープエスプレッソブラウン（メインテキスト）
-                            muted: '#7A6F66',     // ミュートトープ（サブテキスト）
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['"Noto Sans JP"', 'sans-serif'],
-                        serif: ['"Noto Serif JP"', 'serif'],
-                        en: ['"Cormorant Garamond"', 'serif'],
-                    },
-                    boxShadow: {
-                        'soft': '0 12px 32px -6px rgba(61, 53, 46, 0.07)',
-                        'card': '0 4px 20px -2px rgba(61, 53, 46, 0.05)',
-                    }
-                }
-            }
-        }
-    </script>
-      <style>
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      background:
-        linear-gradient(rgba(250, 247, 242, 0.75), rgba(250, 247, 242, 0.75)),
-        url('/bg3.jpg') center / cover no-repeat;
-    }
-
-    body {
-      color: #3D352E;
-      font-family: 'Noto Sans JP', sans-serif;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* カスタムレンジスライダー（オーナー向け収益シミュレーター） */
-    input[type=range] {
-      -webkit-appearance: none;
-      width: 100%;
-      background: transparent;
-    }
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      height: 24px;
-      width: 24px;
-      border-radius: 50%;
-      background: #C4826E;
-      border: 3px solid #FFFFFF;
-      box-shadow: 0 2px 8px rgba(61, 53, 46, 0.25);
-      cursor: pointer;
-      margin-top: -9px;
-      transition: transform 0.15s ease;
-    }
-
-   input[type=range]::-webkit-slider-thumb:hover {
-            transform: scale(1.12);
-            background: #B06F5B;
-        }
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 6px;
-            cursor: pointer;
-            background: #E6DDD0;
-            border-radius: 999px;
-        }
-        .fade-in {
-            animation: fadeIn 0.35s ease-out forwards;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
-</head>
-<body class="min-h-screen flex flex-col">
-
-    <!-- ==================== 1. 共通グローバルヘッダー ==================== -->
-    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-base-border shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between py-3 lg:h-20 gap-3">
-                
-                <!-- ブランドロゴ -->
-                <div class="flex items-center justify-between">
-                    <a href="#" onclick="switchView('guest'); return false;" class="flex items-center gap-3 group">
-                        <div class="w-10 h-10 rounded-2xl bg-base-terra flex items-center justify-center text-white shadow-sm group-hover:bg-base-terraDark transition">
-                            <i class="fa-solid fa-spa text-base"></i>
-                        </div>
-                        <div>
-                            <div class="flex items-baseline gap-2">
-                                <span style="font-family: 'Cormorant Garamond', serif; font-size: 24px; line-height: 1.1; letter-spacing: 0.08em;" class="font-bold text-base-charcoal">SHARE SALON</span>
-                                <span class="text-xs font-medium text-base-terra hidden sm:inline">シェアサロン</span>
-                            </div>
-                            <span class="text-[11px] text-base-muted tracking-wider block mt-0.5">サロン特化型レンタルスペース</span>
-                        </div>
-                    </a>
-
-                    
-                    
-                </div>
-
-                <!-- 画面切り替えタブ（ピル型スイッチ） -->
-                <div class="bg-base-sand p-1.5 rounded-full flex items-center border border-base-border w-full lg:w-auto shadow-inner">
-                    <button id="tab-guest" onclick="switchView('guest')" 
-                            class="flex-1 lg:flex-initial px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 bg-base-terra text-white shadow-sm">
-                        <span>🔍 サロンを探す</span>
-                        <span class="hidden sm:inline text-[11px] font-normal opacity-90">（借り手向け画面）</span>
-                    </button>
-                    <button id="tab-owner" onclick="switchView('owner')" 
-                            class="flex-1 lg:flex-initial px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 text-base-muted hover:text-base-charcoal">
-                        <span>✨ スペースを掲載する</span>
-                        <span class="hidden sm:inline text-[11px] font-normal opacity-90">（オーナー向け募集LP）</span>
-                    </button>
-                </div>
-
-                <!-- オーナーログイン -->
-                <a href="/admin" class="self-end lg:self-auto inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-base-border bg-white text-xs font-bold text-base-charcoal hover:bg-base-sand transition">
-                    <i class="fa-solid fa-key text-base-terra"></i>オーナーログイン
-                </a>
-
-                <!-- 右側サポートメニュー（PC表示） -->
-                <div class="hidden xl:flex items-center gap-4 text-xs">
-                    <button onclick="showToast('セラピスト本人確認・資格審査ガイド（モック）')" class="text-base-muted hover:text-base-terra font-medium transition">
-                        ご利用ガイド
-                    </button>
-                    <button onclick="switchView('owner'); setTimeout(()=>scrollToElement('owner-entry-form'), 120);" 
-                            class="px-4 py-2.5 rounded-full bg-base-terraLight text-base-terraDark hover:bg-base-terra hover:text-white font-semibold transition border border-base-terra/30">
-                        初期費用0円で掲載相談
-                    </button>
-                </div>
-
-            </div>
-        </div>
-    </header>
-
-    <!-- ==================== メインコンテンツ領域 ==================== -->
-    <main class="flex-grow">
-
-        <!-- =========================================================================
-             VIEW 1: 【借り手向け】トップページ＆検索・予約画面
-             ========================================================================= -->
-        <div id="view-guest" class="fade-in">
-            
-            <!-- ヒーローセクション -->
-            <section class="relative bg-base-sand overflow-hidden border-b border-base-border">
-                <!-- 背景写真＋グラデーションオーバーレイ -->
-                <div class="absolute inset-0 pointer-events-none">
-                    <img src="https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&w=1920&q=80" 
-                         onerror="this.style.display='none'" 
-                         alt="落ち着いたプライベートサロン内装" class="w-full h-full object-cover object-center opacity-25">
-                    <div class="absolute inset-0 bg-gradient-to-b from-base-bg/85 via-base-sand/85 to-base-bg"></div>
-                </div>
-
-                <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-14 md:pt-16 md:pb-20 text-center">
-                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/95 border border-base-border text-base-terraDark text-xs font-semibold tracking-wider mb-5 shadow-sm">
-                        <i class="fa-solid fa-sparkles text-base-terra"></i> エステサロン・美容室の空き時間活用も大歓迎
-                    </span>
-                    <h1 class="font-serif text-2xl sm:text-4xl md:text-5xl font-bold text-base-charcoal leading-snug tracking-wide mb-4">
-                        サロンの空き時間を、<br class="sm:hidden">新しい収益に。
-                    </h1>
-                    <p class="text-sm sm:text-base text-base-muted max-w-2xl mx-auto mb-9 leading-relaxed">
-                        「予約が少ない日や空き時間だけレンタルしたい」エステサロン・美容室も大歓迎。施術ベッド・タオルウォーマー完備の空間を、1時間から気軽に貸し借りできます。<br class="hidden sm:inline">
-                    
-                    </p>
-
-                    <!-- 検索バー -->
-                    <div class="bg-white p-3 sm:p-4 rounded-3xl lg:rounded-full shadow-soft border border-base-border max-w-4xl mx-auto">
-                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-0 items-center">
-                            
-                            <!-- エリア/駅名入力 -->
-                            <div class="lg:col-span-4 px-4 py-2 text-left lg:border-r border-base-border">
-                                <label for="search-area" class="block text-[11px] font-bold text-base-terraDark tracking-wider mb-1">
-                                    <i class="fa-solid fa-location-dot text-base-terra mr-1"></i>エリア・駅名
-                                </label>
-                                <input type="text" id="search-area" oninput="applyFilters()" placeholder="例：表参道、恵比寿、新宿、心斎橋" 
-                                       class="w-full text-sm text-base-charcoal placeholder-gray-400 focus:outline-none bg-transparent">
-                            </div>
-
-                            <!-- 利用日選択 -->
-                            <div class="lg:col-span-3 px-4 py-2 text-left lg:border-r border-base-border">
-                                <label for="search-date" class="block text-[11px] font-bold text-base-terraDark tracking-wider mb-1">
-                                    <i class="fa-regular fa-calendar text-base-terra mr-1"></i>利用日
-                                </label>
-                                <input type="date" id="search-date" 
-                                       class="w-full text-sm text-base-charcoal focus:outline-none bg-transparent cursor-pointer">
-                            </div>
-
-                            <!-- 施術ジャンル選択 -->
-                            <div class="lg:col-span-3 px-4 py-2 text-left">
-                                <label for="search-genre" class="block text-[11px] font-bold text-base-terraDark tracking-wider mb-1">
-                                    <i class="fa-solid fa-wand-magic-sparkles text-base-terra mr-1"></i>施術ジャンル
-                                </label>
-                                <select id="search-genre" onchange="applyFilters()" class="w-full text-sm text-base-charcoal focus:outline-none bg-transparent cursor-pointer">
-                                    <option value="all">すべて</option>
-                                    <option value="エステ・リラク">エステ・リラク</option>
-                                    <option value="ネイル">ネイル</option>
-                                    <option value="マツエク">マツエク</option>
-                                    <option value="整体・ストレッチ">整体・ストレッチ</option>
-                                    <option value="ヘアメイク">ヘアメイク</option>
-                                </select>
-                            </div>
-
-                            <!-- 検索ボタン -->
-                            <div class="lg:col-span-2 lg:pl-2">
-                                <button onclick="applyFilters(); scrollToElement('results-section');" 
-                                        class="w-full py-3.5 px-5 rounded-2xl lg:rounded-full bg-base-terra hover:bg-base-terraDark text-white font-semibold text-sm transition shadow-sm flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-magnifying-glass"></i>
-                                    <span>検索する</span>
-                                </button>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <!-- 人気エリア クイック検索チップ -->
-                    <div class="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs text-base-muted">
-                        <span class="font-medium">注目エリア：</span>
-                        <button onclick="quickArea('表参道')" class="px-3 py-1 rounded-full bg-white/90 hover:bg-white border border-base-border hover:border-base-terra transition">表参道</button>
-                        <button onclick="quickArea('恵比寿')" class="px-3 py-1 rounded-full bg-white/90 hover:bg-white border border-base-border hover:border-base-terra transition">恵比寿</button>
-                        <button onclick="quickArea('新宿')" class="px-3 py-1 rounded-full bg-white/90 hover:bg-white border border-base-border hover:border-base-terra transition">新宿</button>
-                        <button onclick="quickArea('銀座')" class="px-3 py-1 rounded-full bg-white/90 hover:bg-white border border-base-border hover:border-base-terra transition">銀座</button>
-                        <button onclick="quickArea('心斎橋')" class="px-3 py-1 rounded-full bg-white/90 hover:bg-white border border-base-border hover:border-base-terra transition">心斎橋</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 設備タグフィルター＆検索結果一覧セクション -->
-            <section id="results-section" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
-                
-                <!-- サロン専用設備タグフィルター（複数選択・リアルタイム絞り込み） -->
-                <div class="bg-white p-5 sm:p-6 rounded-2xl border border-base-border shadow-card mb-8">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3.5">
-                        <div class="flex items-center gap-2">
-                            <span class="w-7 h-7 rounded-lg bg-base-terraLight text-base-terra flex items-center justify-center text-xs">
-                                <i class="fa-solid fa-sliders"></i>
-                            </span>
-                            <h2 class="text-sm font-bold text-base-charcoal">サロン専用設備・こだわり条件で絞り込み（複数選択可）</h2>
-                        </div>
-                        <button id="clear-filters-btn" onclick="resetAllFilters()" class="hidden text-xs font-medium text-base-terra hover:text-base-terraDark underline self-start sm:self-auto">
-                            <i class="fa-solid fa-rotate-left mr-1"></i>すべての条件をクリア
-                        </button>
-                    </div>
-
-                    <div id="equipment-filter-list" class="flex flex-wrap gap-2">
-                        <button type="button" data-equip="電動昇降ベッド" onclick="toggleEquipFilter(this)" class="equip-btn px-3.5 py-2 rounded-full text-xs font-medium border border-base-border bg-base-bg text-base-charcoal hover:border-base-terra transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-bed text-base-terra"></i><span>電動昇降ベッド</span>
-                        </button>
-                        <button type="button" data-equip="折り畳みベッド" onclick="toggleEquipFilter(this)" class="equip-btn px-3.5 py-2 rounded-full text-xs font-medium border border-base-border bg-base-bg text-base-charcoal hover:border-base-terra transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-mattress-pillow text-base-terra"></i><span>折り畳みベッド</span>
-                        </button>
-                        <button type="button" data-equip="完全個室" onclick="toggleEquipFilter(this)" class="equip-btn px-3.5 py-2 rounded-full text-xs font-medium border border-base-border bg-base-bg text-base-charcoal hover:border-base-terra transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-door-closed text-base-terra"></i><span>完全個室</span>
-                        </button>
-                        <button type="button" data-equip="タオルウォーマー" onclick="toggleEquipFilter(this)" class="equip-btn px-3.5 py-2 rounded-full text-xs font-medium border border-base-border bg-base-bg text-base-charcoal hover:border-base-terra transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-temperature-high text-base-terra"></i><span>タオルウォーマー</span>
-                        </button>
-                        <button type="button" data-equip="ドレッサー・三面鏡" onclick="toggleEquipFilter(this)" class="equip-btn px-3.5 py-2 rounded-full text-xs font-medium border border-base-border bg-base-bg text-base-charcoal hover:border-base-terra transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-wand-sparkles text-base-terra"></i><span>ドレッサー・三面鏡</span>
-                        </button>
-                        <button type="button" data-equip="シャワー完備" onclick="toggleEquipFilter(this)" class="equip-btn px-3.5 py-2 rounded-full text-xs font-medium border border-base-border bg-base-bg text-base-charcoal hover:border-base-terra transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-shower text-base-terra"></i><span>シャワー完備</span>
-                        </button>
-                        <button type="button" data-equip="リングライト" onclick="toggleEquipFilter(this)" class="equip-btn px-3.5 py-2 rounded-full text-xs font-medium border border-base-border bg-base-bg text-base-charcoal hover:border-base-terra transition flex items-center gap-1.5">
-                            <i class="fa-regular fa-lightbulb text-base-terra"></i><span>リングライト</span>
-                        </button>
-                        <button type="button" data-equip="駅徒歩5分以内" onclick="toggleEquipFilter(this)" class="equip-btn px-3.5 py-2 rounded-full text-xs font-medium border border-base-border bg-base-bg text-base-charcoal hover:border-base-terra transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-person-walking text-base-terra"></i><span>駅徒歩5分以内</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 検索結果ヘッダー -->
-                <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-2">
-                    <div>
-                        <span class="font-en text-base-terra text-sm font-semibold tracking-widest uppercase block">Selected Private Salons</span>
-                        <h2 class="font-serif text-xl sm:text-2xl font-bold text-base-charcoal">掲載レンタルサロン一覧</h2>
-                    </div>
-                    <p class="text-sm text-base-muted">
-                        該当スペース：<span id="result-count" class="font-bold text-base-terraDark text-lg">6</span> 件
-                    </p>
-                </div>
-
-                <!-- サロンカード一覧グリッド -->
-                <div id="salon-list-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                    <!-- JSで動的に描画 -->
-                </div>
-
-                <!-- 0件時のエンプティステート -->
-                <div id="no-results-box" class="hidden text-center py-16 bg-white rounded-3xl border border-base-border shadow-card">
-                    <div class="w-16 h-16 rounded-full bg-base-sand text-base-muted flex items-center justify-center mx-auto mb-4 text-2xl">
-                        <i class="fa-regular fa-face-meh"></i>
-                    </div>
-                    <h3 class="font-serif text-lg font-bold text-base-charcoal mb-2">条件に一致するサロンが見つかりませんでした</h3>
-                    <p class="text-sm text-base-muted mb-6">選択中の設備タグやエリア条件を緩めて再度お試しください。</p>
-                    <button onclick="resetAllFilters()" class="px-6 py-3 rounded-full bg-base-terra text-white text-sm font-semibold hover:bg-base-terraDark transition">
-                        すべてのサロンを表示する
-                    </button>
-                </div>
-
-            </section>
-        </div>
-
-
-        <!-- =========================================================================
-             VIEW 2: 【オーナー向け】初期掲載スペース募集LP
-             ========================================================================= -->
-        <div id="view-owner" class="hidden fade-in">
-            
-            <!-- ファーストビュー（ヒーロー：ベージュ系ラグジュアリー） -->
-            <section class="relative bg-base-sand text-base-charcoal overflow-hidden border-b border-base-border">
-                <div class="absolute inset-0 pointer-events-none">
-                    <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1920&q=80" 
-                         onerror="this.style.display='none'" 
-                         alt="洗練されたサロンスペース" class="w-full h-full object-cover opacity-20">
-                    <div class="absolute inset-0 bg-gradient-to-r from-base-bg via-base-sand/95 to-base-sand/75"></div>
-                </div>
-
-                <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-24">
-                    <div class="max-w-3xl">
-                        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/95 border border-base-terra/40 text-base-terraDark text-xs font-semibold mb-6 shadow-xs">
-                            <span class="w-2 h-2 rounded-full bg-base-terra animate-ping"></span>
-                            <span>初期掲載オーナー様限定：手数料0円キャンペーン中</span>
-                        </div>
-
-                        <h1 class="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-base-charcoal leading-tight tracking-wide mb-6">
-                            サロンの『空き時間・空きベッド』を、<br>
-                            <span class="text-base-terra">新しい収益源</span>に。
-                        </h1>
-
-                        <p class="text-sm sm:text-base text-base-muted leading-relaxed mb-9 max-w-2xl">
-                            本人確認・資格チェック済みの厳選セラピストのみ利用可能。予約受付から決済、鍵の受け渡しまで完全自動化で、普段の施術業務を邪魔しません。
-                        </p>
-
-                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                            <button onclick="scrollToElement('owner-entry-form')" 
-                                    class="px-8 py-4 rounded-full bg-base-terra hover:bg-base-terraDark text-white font-bold text-sm sm:text-base shadow-md transition flex items-center justify-center gap-2">
-                                <span>無料で掲載相談・エントリーする（1分で完了）</span>
-                                <i class="fa-solid fa-arrow-down"></i>
-                            </button>
-                            <button onclick="scrollToElement('owner-simulator')" 
-                                    class="px-6 py-4 rounded-full bg-white hover:bg-base-terraLight border border-base-border text-base-charcoal font-semibold text-sm transition shadow-xs flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-calculator text-base-terra"></i>
-                                <span>見込み収益を計算する</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- オーナーの3つの不安を解消する安心ポイントセクション -->
-            <section class="py-16 md:py-20 bg-base-bg border-b border-base-border">
-                <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="text-center mb-12">
-                        <span class="font-en text-base-terra text-sm font-semibold tracking-widest uppercase">3 Reasons for Owners</span>
-                        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-base-charcoal mt-1">オーナー様の3つの不安を解消する安心の仕組み</h2>
-                        <p class="text-sm text-base-muted mt-2">大切なサロン空間を安心してお貸しいただけるよう、サロン専用に設計された運営システムを提供します。</p>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <!-- ① 休眠時間の収益化 -->
-                        <div class="bg-white rounded-3xl p-7 border border-base-border shadow-card relative overflow-hidden">
-                            <span class="font-en text-6xl font-bold text-base-terra/15 absolute top-3 right-5">01</span>
-                            <div class="w-12 h-12 rounded-2xl bg-base-terraLight text-base-terra flex items-center justify-center text-xl mb-5">
-                                <i class="fa-solid fa-coins"></i>
-                            </div>
-                            <h3 class="font-serif text-lg font-bold text-base-charcoal mb-3 leading-snug">
-                                休眠時間の収益化と<br>準備インターバル自動確保
-                            </h3>
-                            <p class="text-sm text-base-muted leading-relaxed">
-                                定休日やスタッフ不在の空きベッド時間を収益化。予約の前後には清掃・換気用のインターバル時間（30分〜）を自動確保できるため、本業の営業を妨げません。
-                            </p>
-                        </div>
-
-                        <!-- ② 審査制・本人確認による安心感 -->
-                        <div class="bg-white rounded-3xl p-7 border border-base-border shadow-card relative overflow-hidden">
-                            <span class="font-en text-6xl font-bold text-base-terra/15 absolute top-3 right-5">02</span>
-                            <div class="w-12 h-12 rounded-2xl bg-base-sand text-base-charcoal flex items-center justify-center text-xl mb-5">
-                                <i class="fa-solid fa-user-shield"></i>
-                            </div>
-                            <h3 class="font-serif text-lg font-bold text-base-charcoal mb-3 leading-snug">
-                                審査制・本人確認による<br>高い安心感と清潔感
-                            </h3>
-                            <p class="text-sm text-base-muted leading-relaxed">
-                                公的身分証による本人確認に加え、施術資格や活動実績の事前審査を通過したセラピストのみ予約可能。サロンの品位と清潔感が守られます。
-                            </p>
-                        </div>
-
-                        <!-- ③ 手間ゼロの自動運用 -->
-                        <div class="bg-white rounded-3xl p-7 border border-base-border shadow-card relative overflow-hidden">
-                            <span class="font-en text-6xl font-bold text-base-terra/15 absolute top-3 right-5">03</span>
-                            <div class="w-12 h-12 rounded-2xl bg-base-terraLight text-base-terra flex items-center justify-center text-xl mb-5">
-                                <i class="fa-solid fa-robot"></i>
-                            </div>
-                            <h3 class="font-serif text-lg font-bold text-base-charcoal mb-3 leading-snug">
-                                予約・決済・スマートロックの<br>手間ゼロ自動運用
-                            </h3>
-                            <p class="text-sm text-base-muted leading-relaxed">
-                                空き枠のカレンダー公開、事前クレジットカード決済、直前キャンセル料の自動徴収、スマートロック暗証番号の自動発行までシステムが完結します。
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- インタラクティブ収益シミュレーター -->
-            <section id="owner-simulator" class="py-16 md:py-20 bg-white border-b border-base-border">
-                <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="text-center mb-10">
-                        <span class="font-en text-base-terra text-sm font-semibold tracking-widest uppercase">Income Simulator</span>
-                        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-base-charcoal mt-1">インタラクティブ収益シミュレーター</h2>
-                        <p class="text-sm text-base-muted mt-2">3つのスライダーを動かして、あなたのサロンの見込み副収入を試算できます。</p>
-                    </div>
-
-                    <div class="bg-base-bg rounded-3xl p-6 sm:p-10 border border-base-border shadow-soft">
-                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                            
-                            <!-- 左側：3つのスライダー -->
-                            <div class="lg:col-span-7 space-y-7">
-                                
-                                <!-- スライダー1：1時間あたりの貸出料金 -->
-                                <div>
-                                    <div class="flex justify-between items-end mb-2.5">
-                                        <label for="sim-rate" class="text-sm font-bold text-base-charcoal flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-base-terra text-white text-xs flex items-center justify-center">1</span>
-                                            1時間あたりの貸出料金
-                                        </label>
-                                        <div>
-                                            <span class="text-xs text-base-muted mr-1">¥</span>
-                                            <span id="val-rate" class="font-serif text-2xl sm:text-3xl font-bold text-base-terraDark">1,500</span>
-                                            <span class="text-xs text-base-muted"> / 時間</span>
-                                        </div>
-                                    </div>
-                                    <input type="range" id="sim-rate" min="800" max="3000" step="100" value="1500" oninput="updateSimulator()">
-                                    <div class="flex justify-between text-[11px] text-base-muted mt-1">
-                                        <span>¥800</span>
-                                        <span>¥1,500（標準相場）</span>
-                                        <span>¥3,000</span>
-                                    </div>
-                                </div>
-
-                                <!-- スライダー2：週あたりの貸出時間 -->
-                                <div>
-                                    <div class="flex justify-between items-end mb-2.5">
-                                        <label for="sim-hours" class="text-sm font-bold text-base-charcoal flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-base-terra text-white text-xs flex items-center justify-center">2</span>
-                                            週あたりの貸出時間（1ベッドあたり）
-                                        </label>
-                                        <div>
-                                            <span id="val-hours" class="font-serif text-2xl sm:text-3xl font-bold text-base-terraDark">15</span>
-                                            <span class="text-xs text-base-muted"> 時間 / 週</span>
-                                        </div>
-                                    </div>
-                                    <input type="range" id="sim-hours" min="5" max="50" step="1" value="15" oninput="updateSimulator()">
-                                    <div class="flex justify-between text-[11px] text-base-muted mt-1">
-                                        <span>5時間（週末・夜間のみ）</span>
-                                        <span>25時間</span>
-                                        <span>50時間（フル稼働）</span>
-                                    </div>
-                                </div>
-
-                                <!-- スライダー3：貸出ベッド数 -->
-                                <div>
-                                    <div class="flex justify-between items-end mb-2.5">
-                                        <label for="sim-beds" class="text-sm font-bold text-base-charcoal flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-base-terra text-white text-xs flex items-center justify-center">3</span>
-                                            貸出ベッド・個室数
-                                        </label>
-                                        <div>
-                                            <span id="val-beds" class="font-serif text-2xl sm:text-3xl font-bold text-base-terraDark">1</span>
-                                            <span class="text-xs text-base-muted"> 台</span>
-                                        </div>
-                                    </div>
-                                    <input type="range" id="sim-beds" min="1" max="3" step="1" value="1" oninput="updateSimulator()">
-                                    <div class="flex justify-between text-[11px] text-base-muted mt-1">
-                                        <span>1台（空きベッド1つ）</span>
-                                        <span>2台</span>
-                                        <span>3台（複数個室）</span>
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <!-- 右側：手取り試算結果カード -->
-                            <div class="lg:col-span-5">
-                                <div class="bg-base-sand rounded-2xl p-6 sm:p-8 border-2 border-base-terra/35 shadow-card text-center relative overflow-hidden">
-                                    <div class="bg-base-terra text-white text-[11px] font-bold py-1.5 px-4 -mx-8 -mt-8 mb-6 tracking-wider">
-                                        システム手数料（15%）差し引き後の手取り額
-                                    </div>
-
-                                    <p class="text-xs font-bold text-base-muted mb-1">月間見込み副収入（手取り）</p>
-                                    <div class="my-2">
-                                        <span class="text-base font-bold text-base-charcoal">約 </span>
-                                        <span id="res-monthly" class="font-serif text-4xl sm:text-5xl font-bold text-base-terraDark tracking-tight">82,238</span>
-                                        <span class="text-sm font-bold text-base-charcoal"> 円 / 月</span>
-                                    </div>
-
-                                    <div class="mt-5 pt-5 border-t border-base-border">
-                                        <p class="text-xs text-base-muted mb-1">年間見込み副収入（手取り）</p>
-                                        <p class="font-serif text-2xl font-bold text-base-charcoal">
-                                            約 <span id="res-yearly">986,850</span> <span class="text-xs font-normal text-base-charcoal">円 / 年</span>
-                                        </p>
-                                    </div>
-
-                                    <p class="text-[11px] text-base-muted mt-4 leading-relaxed">
-                                        ※1ヶ月＝4.3週として算出。初期掲載オーナー様限定の優遇手数料率（15%）を適用した目安金額です。
-                                    </p>
-
-                                    <button onclick="scrollToElement('owner-entry-form')" 
-                                            class="w-full mt-5 py-3.5 rounded-full bg-base-terra hover:bg-base-terraDark text-white text-sm font-bold transition shadow-sm">
-                                        この条件で無料エントリーする
-                                    </button>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 掲載までの3ステップ -->
-            <section class="py-16 md:py-20 bg-base-bg border-b border-base-border">
-                <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="text-center mb-12">
-                        <span class="font-en text-base-terra text-sm font-semibold tracking-widest uppercase">How to Start</span>
-                        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-base-charcoal mt-1">掲載開始までの簡単3ステップ</h2>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-white p-7 rounded-2xl border border-base-border shadow-card text-center">
-                            <span class="inline-block px-3.5 py-1 rounded-full bg-base-terraLight text-base-terraDark text-xs font-bold mb-4">STEP 1</span>
-                            <h3 class="font-serif text-lg font-bold text-base-charcoal mb-2.5">無料エントリー</h3>
-                            <p class="text-sm text-base-muted leading-relaxed">
-                                下記フォームからサロンの基本情報を1分で送信。初期費用・月額固定費は一切かかりません。
-                            </p>
-                        </div>
-                        <div class="bg-white p-7 rounded-2xl border border-base-border shadow-card text-center">
-                            <span class="inline-block px-3.5 py-1 rounded-full bg-base-sand text-base-charcoal text-xs font-bold mb-4">STEP 2</span>
-                            <h3 class="font-serif text-lg font-bold text-base-charcoal mb-2.5">AIアシストでかんたんページ作成
-</h3>
-                            <p class="text-sm text-base-muted leading-relaxed">
-                            写真をアップして設備を選ぶだけ。AIが魅力の伝わるサロン紹介文を自動で提案するので、ご自身ですぐに公開ページを作成・編集できます。
-
-                            </p>
-                        </div>
-                        <div class="bg-white p-7 rounded-2xl border border-base-border shadow-card text-center">
-                            <span class="inline-block px-3.5 py-1 rounded-full bg-base-terraLight text-base-terraDark text-xs font-bold mb-4">STEP 3</span>
-                            <h3 class="font-serif text-lg font-bold text-base-charcoal mb-2.5">公開・予約受付スタート</h3>
-                            <p class="text-sm text-base-muted leading-relaxed">
-                                貸し出したい曜日・時間帯を設定して公開。予約が入ると自動決済され、毎月指定口座へお振り込みします。
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 初期オーナー無料掲載エントリーフォーム -->
-            <section id="owner-entry-form" class="py-16 md:py-24 bg-base-sand">
-                <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="bg-white rounded-3xl shadow-soft border border-base-border p-6 sm:p-10">
-                            <div class="text-center mb-8 space-y-3">
-          <div>
-            <span class="inline-block px-3.5 py-1 rounded-full bg-base-terraLight text-base-terraDark text-xs sm:text-sm font-medium">
-              先着30サロン限定・掲載ページ作成代行無料
-            </span>
-          </div>
-
-          <h2 class="font-serif text-2xl sm:text-3xl font-bold text-base-charcoal leading-snug">
-            初期オーナー無料掲載<br class="sm:hidden">エントリー
-          </h2>
-
-          <p class="text-xs sm:text-sm text-base-muted leading-relaxed max-w-md mx-auto">
-            まずは掲載可否のご相談・資料請求だけでも<br class="sm:hidden">お気軽にお申し込みください。
-          </p>
-        </div>
-                        <form id="entry-form-body" onsubmit="handleOwnerSubmit(event)" class="space-y-5">
-                            <div>
-                                <label class="block text-xs font-bold text-base-charcoal mb-1.5">サロン名 <span class="text-base-terra">*</span></label>
-                                <input type="text" id="owner-salon-name" required placeholder="例：Private Salon Lilia（リリア）" 
-                                       class="w-full px-4 py-3 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-sm bg-base-bg/50">
-                            
-
-                            <div>
-<div>
-  <label class="block text-xs font-bold text-base-charcoal mb-1.5">エリア（都道府県・最寄駅） <span class="text-base-terra">*</span></label>
-  <input type="text" id="owner-area" required placeholder="例：東京都港区南青山・表参道駅徒歩3分" class="w-full px-4 py-3 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-sm bg-base-bg/50">
-</div>
-                            <div>
-                                <label class="block text-xs font-bold text-base-charcoal mb-2">空きスペースのタイプ <span class="text-base-terra">*</span></label>
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs sm:text-sm">
-                                    <label class="flex items-center gap-2 p-3 rounded-xl border border-base-border cursor-pointer hover:border-base-terra bg-base-bg/40">
-                                        <input type="radio" name="space_type" value="完全個室" checked class="accent-base-terra">
-                                        <span class="font-medium">完全個室</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 p-3 rounded-xl border border-base-border cursor-pointer hover:border-base-terra bg-base-bg/40">
-                                        <input type="radio" name="space_type" value="空きベッド1台" class="accent-base-terra">
-                                        <span class="font-medium">空きベッド1台</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 p-3 rounded-xl border border-base-border cursor-pointer hover:border-base-terra bg-base-bg/40">
-                                        <input type="radio" name="space_type" value="定休日丸ごと貸し" class="accent-base-terra">
-                                        <span class="font-medium">定休日丸ごと貸し</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold text-base-charcoal mb-1.5">お名前（ご担当者様） <span class="text-base-terra">*</span></label>
-                                <input type="text" id="owner-person-name" required placeholder="例：佐藤 美咲" 
-                                       class="w-full px-4 py-3 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-sm bg-base-bg/50">
-                            </div>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-xs font-bold text-base-charcoal mb-1.5">メールアドレス <span class="text-base-terra">*</span></label>
-                                     <input type="email" id="owner-email" required placeholder="salon@example.com"
-                                           class="w-full px-4 py-3 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-sm bg-base-bg/50">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-base-charcoal mb-1.5">電話番号 <span class="text-base-terra">*</span></label>
-                                     <input type="tel" id="owner-phone" required placeholder="例：090-1234-5678"
-                                           class="w-full px-4 py-3 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-sm bg-base-bg/50">
-                                </div>
-                            </div><div>
-    <label for="owner-salon-image" class="block text-xs font-bold text-base-charcoal mb-1.5">
-        サロン写真（任意・掲載ページ作成サポート用）
-    </label>
-    <input type="file" id="owner-salon-image" accept="image/*" onchange="previewOwnerImage(this)"
-           class="w-full px-4 py-2.5 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-xs sm:text-sm bg-base-bg/50 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-base-terraLight file:text-base-terraDark hover:file:bg-base-terra hover:file:text-white">
-    <div id="owner-image-preview-wrap" class="hidden mt-3">
-        <img id="owner-image-preview" src="" alt="選択中のサロン写真プレビュー"
-             class="w-full max-h-52 object-cover rounded-2xl border border-base-border">
-    </div>
-</div>
-<div>
-    <label for="owner-password" class="block text-xs font-bold text-base-charcoal mb-1.5">
-        オーナー管理画面ログイン用パスワード <span class="text-base-terra">*</span>
-    </label>
-    <input type="password" id="owner-password" required minlength="6" autocomplete="new-password"
-           placeholder="6文字以上で設定してください"
-           class="w-full px-4 py-3 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-sm bg-base-bg/50">
-</div>
-
-
-                            <button type="submit" 
-                                    class="w-full py-4 rounded-full bg-base-terra hover:bg-base-terraDark text-white font-bold text-base shadow-md transition mt-2">
-                                無料で掲載エントリーを送信する
-                            </button>
-                        </form>
-
-                        <!-- 受付完了メッセージ -->
-                        <div id="entry-form-complete" class="hidden text-center py-8 fade-in">
-                            <div class="w-16 h-16 rounded-full bg-base-terraLight text-base-terra flex items-center justify-center mx-auto mb-5 text-2xl">
-                                <i class="fa-solid fa-check"></i>
-                            </div>
-                            <h3 class="font-serif text-xl sm:text-2xl font-bold text-base-charcoal mb-3">
-                                初期オーナー掲載エントリーを受け付けました
-                            </h3>
-                            <p id="complete-owner-text" class="text-sm text-base-muted leading-relaxed mb-6">
-                                ご応募ありがとうございます。専任スタッフより1営業日以内に、掲載案内資料および無料ページ作成サポートの日程調整メールをお送りいたします。
-                            </p>
-                            <button onclick="resetEntryForm()" class="px-6 py-2.5 rounded-full border border-base-border text-xs font-medium text-base-muted hover:text-base-charcoal transition">
-                                入力フォームに戻る
-                            </button>
-                        </div>
-
-                    </div>
-                </div>
-            </section>
-
-        </div>
-          <!--
-                    let adminConsoleToken = '';
-        let adminBookingsCache = [];
-        let adminManagedSalons = [];
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const dateInput = document.getElementById('admin-schedule-date');
-            if (dateInput && !dateInput.value) {
-                dateInput.value = new Date().toISOString().split('T')[0];
-            }
-            const hours = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
-            renderAdminDateTimeSchedule(dateInput?.value || '', hours, [], []);
-        });
-
-                const ADMIN_TOKEN_KEY = 'salonbase_admin_token';
-
-        async function loginAdminConsole() {
-            const pw = document.getElementById('console-admin-password')?.value || '';
-            const rememberEl = document.getElementById('remember-admin-login');
-            const shouldRemember = rememberEl ? rememberEl.checked : true;
-
-            if (!pw) {
-                openNotifModal('入力エラー', '管理者パスワードを入力してください。');
-                return;
-            }
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'content-type': 'application/json' },
-                body: JSON.stringify({ password: pw })
-            });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok || !data.token) {
-                openNotifModal('ログインエラー', data.error || 'ログインに失敗しました。');
-                return;
-            }
-            adminConsoleToken = data.token;
-
-            try {
-                if (shouldRemember) {
-                    localStorage.setItem(ADMIN_TOKEN_KEY, data.token);
-                } else {
-                    localStorage.removeItem(ADMIN_TOKEN_KEY);
-                }
-            } catch {}
-
-            await refreshAdminConsoleData();
-        }
-
-
-        async function refreshAdminConsoleData() {
-            if (!adminConsoleToken) return;
-
-            const [myRes, bkgRes] = await Promise.all([
-                fetch('/api/my-salons', { headers: { Authorization: `Bearer ${adminConsoleToken}` } }),
-                fetch('/api/admin/bookings', { headers: { Authorization: `Bearer ${adminConsoleToken}` } })
-            ]);
-
-            const myData = await myRes.json().catch(() => ({}));
-            const bkgData = await bkgRes.json().catch(() => ({}));
-
-            adminManagedSalons = myData.salons || [];
-            adminBookingsCache = bkgData.bookings || [];
-
-            // 登録済みサロンがある場合は新規登録フォームを隠し、「変更」ボタンを表示
-            syncSalonFormMode(adminManagedSalons);
-
-            const selectEl = document.getElementById('admin-salon-select');
-            if (selectEl) {
-                selectEl.innerHTML = adminManagedSalons.map(sItem =>
-                    `<option value="${sItem.id}">${sItem.name}（ID: ${sItem.id}）</option>`
-                ).join('');
-            }
-
-            await loadAdminScheduleForSelectedDate();
-        }
-
-                const SALON_REGISTERED_KEY = 'salonbase_registered_once';
-
-        function hasRegisteredSalon(ownerSalons = []) {
-            if (Array.isArray(ownerSalons) && ownerSalons.length > 0) {
-                return true;
-            }
-            try {
-                return localStorage.getItem(SALON_REGISTERED_KEY) === '1';
-            } catch {
-                return false;
-            }
-        }
-
-        function markSalonAsRegistered() {
-            try {
-                localStorage.setItem(SALON_REGISTERED_KEY, '1');
-            } catch {}
-        }
-
-        function syncSalonFormMode(ownerSalons = []) {
-            const createFormEl = document.getElementById('entry-form-body');
-            const editBtnEl = document.getElementById('open-salon-edit-btn');
-            const summaryEl = document.getElementById('registered-salon-summary');
-            const isRegistered = hasRegisteredSalon(ownerSalons);
-
-            if (isRegistered) {
-                // 登録済み：新規登録フォームは非表示にし、「変更」ボタンのみ表示
-                if (createFormEl) createFormEl.classList.add('hidden');
-                if (editBtnEl) editBtnEl.classList.remove('hidden');
-                const salonTitle = ownerSalons[0]?.name || '登録済みサロン';
-                if (summaryEl) {
-                    summaryEl.textContent = `${salonTitle}（掲載済み：内容を変更したいときのみ「変更」ボタンを押してください）`;
-                }
-            } else {
-                // 初回未登録のみ表示
-                if (createFormEl) createFormEl.classList.remove('hidden');
-                if (editBtnEl) editBtnEl.classList.add('hidden');
-                if (summaryEl) {
-                    summaryEl.textContent = '初回のみ掲載登録を行えます。登録後は「変更」ボタンから更新します。';
-                }
-            }
-        }
-                    
-        function openSalonEditMode() {
-            const target = adminManagedSalons[0];
-            if (!target) return;
-            const fullSalon = salons.find(sItem => String(sItem.id).replace(/^db_/, '') === String(target.id)) || target;
-
-            const editSection = document.getElementById('salon-edit-section');
-            editSection.classList.remove('hidden');
-            editSection.dataset.editingSalonId = target.id;
-
-            document.getElementById('edit-salon-name').value = fullSalon.name || '';
-            document.getElementById('edit-salon-price').value = fullSalon.pricePerHour || '';
-            document.getElementById('edit-salon-description').value = fullSalon.description || '';
-        }
-
-        async function submitSalonUpdate() {
-            const editSection = document.getElementById('salon-edit-section');
-            const rawId = String(editSection?.dataset.editingSalonId || '').replace(/^db_/, '');
-            if (!rawId || !adminConsoleToken) return;
-
-            const payload = {
-                name: document.getElementById('edit-salon-name')?.value || '',
-                pricePerHour: Number(document.getElementById('edit-salon-price')?.value || 0),
-                description: document.getElementById('edit-salon-description')?.value || ''
-            };
-
-            const res = await fetch(`/api/salons/${rawId}`, {
-                method: 'PUT',
-                headers: {
-                    'content-type': 'application/json',
-                    Authorization: `Bearer ${adminConsoleToken}`
-                },
-                body: JSON.stringify(payload)
-            });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok || data.ok === false) {
-                openNotifModal('更新エラー', data.error || 'サロン詳細の変更に失敗しました。');
-                return;
-            }
-
-            openNotifModal('変更完了', 'サロン詳細を更新しました。');
-            editSection.classList.add('hidden');
-            await refreshAdminConsoleData();
-        }
-
-        async function loadAdminScheduleForSelectedDate() {
-            const sid = document.getElementById('admin-salon-select')?.value;
-            const dateStr = document.getElementById('admin-schedule-date')?.value || '';
-            const hours = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
-
-            let closedHours = [];
-            if (sid && dateStr) {
-                try {
-                    const r = await fetch(`/api/closures?salon_id=${encodeURIComponent(sid)}&date=${encodeURIComponent(dateStr)}`);
-                    const d = await r.json().catch(() => ({}));
-                    if (r.ok && Array.isArray(d.hours)) closedHours = d.hours;
-                } catch {}
-            }
-
-            renderAdminDateTimeSchedule(dateStr, hours, adminBookingsCache, closedHours);
-        }
-
-        function renderAdminDateTimeSchedule(dateStr, hoursList, bookings = [], closedHours = []) {
-            const container = document.getElementById('admin-schedule-by-date');
-            if (!container) return;
-
-            const closedSet = new Set(closedHours);
-            const bookedBySlot = new Map();
-
-            for (const b of bookings) {
-                const startRaw = String(b.start_at || b.desired_date || '');
-                if (!dateStr || !startRaw.startsWith(dateStr)) continue;
-                const dObj = new Date(b.start_at);
-                const slotLabel = Number.isNaN(dObj.getTime())
-                    ? String(b.desired_time || '').slice(0, 5)
-                    : dObj.toLocaleTimeString('ja-JP', {
-                        timeZone: 'Asia/Tokyo',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false
-                    });
-                if (slotLabel) bookedBySlot.set(slotLabel, b);
-            }
-
-            container.innerHTML = `
-                <div class="text-xs font-bold text-base-charcoal mb-2">${dateStr} の時間帯スケジュール</div>
-                <div class="divide-y divide-base-border border border-base-border rounded-xl bg-white overflow-hidden">
-                    ${hoursList.map(hhmm => {
-                        const booking = bookedBySlot.get(hhmm);
-                        const isClosed = closedSet.has(hhmm);
-                        let badge = `<span class="text-emerald-700 font-semibold">空き</span>`;
-                        let detail = `利用可能`;
-
-                        if (booking) {
-                            badge = `<span class="text-base-terra font-bold">予約あり</span>`;
-                            detail = `${booking.booking_code || booking.id || '予約'}（${booking.status || 'confirmed'}）`;
-                        } else if (isClosed) {
-                            badge = `<span class="text-gray-500 font-semibold">休み枠</span>`;
-                            detail = `受付停止中`;
-                        }
-
-                        return `
-                            <div class="flex items-center justify-between px-3.5 py-2.5 text-xs">
-                                <div class="font-mono font-bold text-base-charcoal w-16">${hhmm}</div>
-                                <div class="flex-1 text-base-muted truncate pr-2">${detail}</div>
-                                <div>${badge}</div>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            `;
-        }
-      -->          
-    </main>
-
-    <!-- ==================== フッター ==================== -->
-    <footer class="bg-base-charcoal text-gray-300 py-12 border-t border-base-border">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-8 border-b border-white/10">
-                <div>
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-xl bg-base-terra flex items-center justify-center text-white text-xs">
-                            <i class="fa-solid fa-spa"></i>
-                        </div>
-                        <span class="font-en text-2xl font-bold text-white tracking-wider">SHARE SALON</span>
-                        <span class="text-xs text-gray-400">シェアサロン</span>
-                    </div>
-                    <p class="text-xs text-gray-400 mt-2">セラピストの独立開業とサロンの空き時間収益化をつなぐ、サロン特化型レンタルプラットフォーム</p>
-                </div>
-                <div class="flex flex-wrap gap-6 text-xs">
-                    <a href="#" onclick="switchView('guest'); return false;" class="hover:text-white transition">サロンを探す</a>
-                    <a href="#" onclick="switchView('owner'); return false;" class="hover:text-white transition">スペースを掲載する</a>
-                    <a href="/admin" class="hover:text-white transition">オーナーログイン</a>
-                    <a href="#" onclick="showToast('特定商取引法に基づく表記（モック）'); return false;" class="hover:text-white transition">運営会社・特商法</a>
-                    <a href="#" onclick="showToast('利用規約・プライバシーポリシー（モック）'); return false;" class="hover:text-white transition">利用規約</a>
-                </div>
-            </div>
-            <div class="pt-6 text-xs text-gray-400 flex flex-col sm:flex-row justify-between items-center gap-2">
-                <p>&copy; 2026 SHARE SALON All Rights Reserved.</p>
-                <p>Interactive UI Mockup for Salon Rental Marketplace</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- ==================== サロン詳細＆予約モーダル ==================== -->
-    <div id="salon-detail-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl max-w-3xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-base-border relative fade-in">
-            
-            <!-- 閉じるボタン -->
-            <button onclick="closeSalonModal()" aria-label="閉じる"
-                    class="sticky top-4 float-right mr-4 mt-4 z-20 w-10 h-10 rounded-full bg-white/95 hover:bg-white text-base-charcoal shadow-md flex items-center justify-center transition border border-base-border">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
-
-            <!-- モーダル内動的コンテンツ -->
-            <div id="modal-dynamic-body" class="clear-both"></div>
-        </div>
-    </div>
-
-    <!-- ==================== 予約完了／通知メッセージボックス（alert代替） ==================== -->
-    <div id="notification-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-base-border text-center fade-in">
-            <div class="w-16 h-16 rounded-full bg-base-terraLight text-base-terra flex items-center justify-center mx-auto mb-4 text-2xl">
-                <i class="fa-solid fa-circle-check"></i>
-            </div>
-            <h3 id="notif-title" class="font-serif text-xl font-bold text-base-charcoal mb-2">予約リクエスト完了</h3>
-            <p id="notif-body" class="text-sm text-base-muted leading-relaxed mb-6">メッセージ</p>
-            <button onclick="closeNotifModal()" class="w-full py-3 rounded-full bg-base-terra hover:bg-base-terraDark text-white text-sm font-bold transition">
-                閉じる
-            </button>
-        </div>
-    </div>
-    <!-- ==================== 無料見学リクエスト入力 ==================== -->
-    <div id="tour-modal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4 bg-black/50">
-        <div class="bg-white rounded-3xl max-w-md w-full max-h-[92vh] overflow-y-auto p-6 shadow-2xl border border-base-border">
-            <h3 class="font-serif text-lg font-bold text-base-charcoal mb-1">無料見学（30分）のリクエスト</h3>
-            <p id="tour-salon-name" class="text-xs text-base-terraDark font-semibold mb-4"></p>
-            <form onsubmit="submitTour(event)" class="space-y-3">
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-base-charcoal mb-1">希望日 *</label>
-                        <input type="date" id="tour-date" required class="w-full px-3 py-2.5 rounded-xl border border-base-border text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-base-charcoal mb-1">希望時間 *</label>
-                        <select id="tour-time" required class="w-full px-3 py-2.5 rounded-xl border border-base-border text-sm bg-white"></select>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-base-charcoal mb-1">お名前 *</label>
-                    <input type="text" id="tour-name" required class="w-full px-3 py-2.5 rounded-xl border border-base-border text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-base-charcoal mb-1">メールアドレス *</label>
-                    <input type="email" id="tour-email" required class="w-full px-3 py-2.5 rounded-xl border border-base-border text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-base-charcoal mb-1">電話番号（任意）</label>
-                    <input type="tel" id="tour-phone" class="w-full px-3 py-2.5 rounded-xl border border-base-border text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-base-charcoal mb-1">ご要望（任意）</label>
-                    <textarea id="tour-message" rows="3" maxlength="500" class="w-full px-3 py-2.5 rounded-xl border border-base-border text-sm"></textarea>
-                </div>
-                <p class="text-[11px] text-base-muted">入力したお名前・連絡先は、見学の調整のためオーナーに共有されます。</p>
-                <div id="tour-error" class="hidden text-xs font-bold rounded-xl px-3 py-2 bg-red-50 text-red-700 border border-red-200"></div>
-                <div class="flex gap-3 pt-1">
-                    <button type="button" onclick="closeTourModal()" class="flex-1 py-3 rounded-full border border-base-border text-sm font-bold text-base-muted">戻る</button>
-                    <button type="submit" id="tour-submit-btn" class="flex-1 py-3 rounded-full bg-base-terra hover:bg-base-terraDark text-white text-sm font-bold">リクエストを送る</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ==================== 軽量トースト通知 ==================== -->       
-    <div id="toast-box" class="fixed bottom-5 right-5 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
-        <div class="bg-base-charcoal text-white px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 text-xs sm:text-sm border border-white/10">
-            <i class="fa-solid fa-circle-info text-base-terra"></i>
-            <span id="toast-text">通知テキスト</span>
-        </div>
-    </div>
-
-    <!-- ==================== JavaScript アプリケーションロジック ==================== -->
-    <script>
-        // 1. リアルなダミーサロンデータ（6件）
-        let salons = [
-            {
-                id: 1,
-                name: "Atelier Lumière（アトリエ・ルミエール）表参道",
-                area: "表参道",
-                station: "表参道駅 B2出口 徒歩3分",
-                pricePerHour: 1540,
-                rating: 4.9,
-                reviewCount: 54,
-                availabilityBadge: "本日空きあり",
-                genres: ["エステ・リラク", "マツエク", "整体・ストレッチ"],
-                equipment: ["電動昇降ベッド", "完全個室", "タオルウォーマー", "ドレッサー・三面鏡", "駅徒歩5分以内"],
-                image: "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=900&q=80",
-                description: "自然光が柔らかく差し込む、白とセージグリーンを基調とした完全個室サロン。最高級電動昇降ベッドとタオルウォーマーを完備し、フェイシャル・ボディエステからアイラッシュまで幅広くご利用いただけます。",
-                freeAmenities: [
-                    "電動昇降施術ベッド（有孔）",
-                    "使い捨て紙シーツ・フェイスカバー",
-                    "施術用ワゴン・スツール",
-                    "大型タオルウォーマー",
-                    "ドレッサー・女優ミラー",
-                    "Bluetoothスピーカー",
-                    "高速Wi-Fi・加湿空気清浄機",
-                    "電気ケトル・ウェルカムティーセット"
-                ],
-                entryRules: "スマートロック（RemoteLOCK）対応。予約確定後に発行される暗証番号で、予約開始5分前から入室可能です。退室時はベッドのアルコール除菌と原状回復をお願いいたします。",
-                bookedHours: ["12:00", "16:00", "17:00"] // 予約済み枠（デモ用）
-            },
-            {
-                id: 2,
-                name: "Salon de Rosé（サロン・ド・ロゼ）恵比寿",
-                area: "恵比寿",
-                station: "恵比寿駅 西口 徒歩4分",
-                pricePerHour: 1320,
-                rating: 4.8,
-                reviewCount: 41,
-                availabilityBadge: "残りわずか",
-                genres: ["ネイル", "ヘアメイク"],
-                equipment: ["完全個室", "ドレッサー・三面鏡", "リングライト", "駅徒歩5分以内"],
-                image: "https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&w=900&q=80",
-                description: "ネイル専用デスクとフット施術用リクライニングチェアを備えた上品なプライベート空間。撮影用リングライト完備で、施術後のSNS用ネイル写真撮影にも最適です。",
-                freeAmenities: [
-                    "ネイル専用デスク＆アームレスト",
-                    "フット施術リクライニングソファ",
-                    "UV/LEDネイルライト・集塵機",
-                    "撮影用リングライト",
-                    "三面鏡ドレッサー",
-                    "施術用ワゴン",
-                    "高速Wi-Fi・ドリンクサーバー"
-                ],
-                entryRules: "キーボックス解錠方式（予約完了メールにて暗証番号をご案内）。ダストの清掃と換気扇の稼働確認をしてご退室ください。",
-                bookedHours: ["10:00", "11:00", "14:00", "15:00", "19:00"]
-            },
-            {
-                id: 3,
-                name: "THE CALM SPA（ザ・カームスパ）銀座",
-                area: "銀座",
-                station: "銀座駅 A13出口 徒歩2分",
-                pricePerHour: 2200,
-                rating: 5.0,
-                reviewCount: 68,
-                availabilityBadge: "本日空きあり",
-                genres: ["エステ・リラク", "整体・ストレッチ"],
-                equipment: ["電動昇降ベッド", "完全個室", "タオルウォーマー", "シャワー完備", "駅徒歩5分以内"],
-                image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=900&q=80",
-                description: "専用シャワールーム完備のラグジュアリー完全個室。オイルトリートメントや痩身エステなど、高単価メニューを提供するセラピスト様に選ばれている人気サロンです。",
-                freeAmenities: [
-                    "ワイド電動昇降ベッド（ヒートマット付）",
-                    "専用シャワールーム（ドライヤー完備）",
-                    "大型タオルウォーマー",
-                    "紙シーツ・ペーパーショーツ（1枚無料）",
-                    "調光機能付き間接照明",
-                    "カウンセリングソファ",
-                    "Bluetoothスピーカー・冷蔵庫"
-                ],
-                entryRules: "スマートロック対応。シャワールームをご利用の際は、退室前に簡易水切りワイパーのご使用をお願いいたします。",
-                bookedHours: ["13:00", "14:00", "18:00"]
-            },
-            {
-                id: 4,
-                name: "Blanc Eyelash & Beauty 新宿南口",
-                area: "新宿",
-                station: "新宿駅 南口 徒歩5分",
-                pricePerHour: 1210,
-                rating: 4.7,
-                reviewCount: 33,
-                availabilityBadge: "本日空きあり",
-                genres: ["マツエク", "ネイル", "ヘアメイク"],
-                equipment: ["折り畳みベッド", "完全個室", "ドレッサー・三面鏡", "リングライト", "駅徒歩5分以内"],
-                image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=900&q=80",
-                description: "新宿駅南口から徒歩5分の好立地で、お客様も迷わず来店できる完全個室サロン。アイラッシュ専用LEDライトやドレッサーを備え、週末副業セラピスト様にも好評です。",
-                freeAmenities: [
-                    "フルフラット施術ベッド（折り畳み収納可）",
-                    "施術用LEDアームライト",
-                    "メイク直し用ドレッサー・三面鏡",
-                    "リングライト",
-                    "施術ワゴン・スツール",
-                    "荷物ロッカー・空気清浄機"
-                ],
-                entryRules: "スマートロック対応。グルー等の揮発性商材を使用される場合は、必ず換気扇を強にして換気を行ってください。",
-                bookedHours: ["11:00", "15:00", "16:00", "20:00"]
-            },
-            {
-                id: 5,
-                name: "Maison de Repos（メゾン・ド・ルポ）心斎橋",
-                area: "心斎橋",
-                station: "心斎橋駅 3番出口 徒歩4分",
-                pricePerHour: 1380,
-                rating: 4.9,
-                reviewCount: 47,
-                availabilityBadge: "本日空きあり",
-                genres: ["エステ・リラク", "整体・ストレッチ", "ヘアメイク"],
-                equipment: ["電動昇降ベッド", "完全個室", "タオルウォーマー", "ドレッサー・三面鏡", "駅徒歩5分以内"],
-                image: "https://images.unsplash.com/photo-1600334129128-685c5582fd35?auto=format&fit=crop&w=900&q=80",
-                description: "観葉植物とナチュラルウッドに囲まれた心斎橋の隠れ家プライベートサロン。電動昇降ベッドと独立洗面台を完備し、丁寧なカウンセリングから施術まで心地よく行えます。",
-                freeAmenities: [
-                    "電動昇降施術ベッド",
-                    "タオルウォーマー",
-                    "三面鏡ドレッサー・大型姿見",
-                    "紙シーツ・胸当てマクラ",
-                    "施術用ワゴン・スツール",
-                    "Bluetoothスピーカー・アロマディフューザー"
-                ],
-                entryRules: "スマートロック対応。建物共用部（廊下・エントランス）での待機はご遠慮いただき、ご予約時間に合わせてご入室ください。",
-                bookedHours: ["10:00", "13:00", "17:00"]
-            },
-            {
-                id: 6,
-                name: "Serenity Room（セレニティルーム）代官山",
-                area: "恵比寿",
-                station: "代官山駅 徒歩6分 / 恵比寿駅 徒歩8分",
-                pricePerHour: 1100,
-                rating: 4.8,
-                reviewCount: 29,
-                availabilityBadge: "本日空きあり",
-                genres: ["整体・ストレッチ", "エステ・リラク", "マツエク"],
-                equipment: ["折り畳みベッド", "完全個室", "タオルウォーマー", "シャワー完備"],
-                image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=900&q=80",
-                description: "1時間1,100円のリーズナブルな価格で、定期利用や開業準備中のセラピスト様に大人気。ベッドを折り畳めばストレッチやヨガのパーソナルレッスン空間としても活用可能です。",
-                freeAmenities: [
-                    "高反発折り畳み施術ベッド",
-                    "ストレッチマット",
-                    "タオルウォーマー",
-                    "シャワールーム",
-                    "着替えカーテン・ハンガーラック",
-                    "Bluetoothスピーカー・Wi-Fi"
-                ],
-                entryRules: "暗証番号式スマートロック対応。次のご利用者のため、前後30分の清掃インターバル時間内に原状回復をお願いいたします。",
-                bookedHours: ["12:00", "18:00", "19:00"]
-            }
-        ];
-
-        // 選択中の設備フィルター（Setで管理）
-        const selectedEquipments = new Set();
-        // モーダル内で選択中の時間帯配列
-        let modalSelectedHours = [];
-        let currentModalSalon = null;
-
-        // 初期化処理
-window.addEventListener('DOMContentLoaded', async () => {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('search-date').value = today;
-
-    try {
-        const res = await fetch('/api/salons');
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data.ok && Array.isArray(data.salons) && data.salons.length > 0) {
-            salons = [...data.salons, ...salons];
-        }
-    } catch (e) {
-        console.error('サロン一覧の取得エラー:', e);
-    }
-
-    renderSalonCards(salons);
-        try {
-        const want = new URLSearchParams(location.search).get('salon');
-                try {
-        const qp = new URLSearchParams(location.search);
-        if (qp.get('paid')) {
-            openNotifModal('お支払いが完了しました', `予約番号：${qp.get('paid')}　ご予約の内容をメールでお送りします。`);
-        } else if (qp.get('canceled')) {
-            openNotifModal('お支払いは完了していません', 'お支払いがキャンセルされました。もう一度お試しいただけます。');
-        }
-    } catch (e) {}
-        if (want) openSalonModal(want);
-    } catch (e) {}
-
-    updateSimulator();
-});
-
-        // 2. ビュー切り替え（借り手向け画面 ⇔ オーナー向け募集LP）
-        function switchView(target) {
-            const guestView = document.getElementById('view-guest');
-            const ownerView = document.getElementById('view-owner');
-            const tabGuest = document.getElementById('tab-guest');
-            const tabOwner = document.getElementById('tab-owner');
-
-            if (target === 'guest') {
-                guestView.classList.remove('hidden');
-                ownerView.classList.add('hidden');
-                tabGuest.className = "flex-1 lg:flex-initial px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 bg-base-terra text-white shadow-sm";
-                tabOwner.className = "flex-1 lg:flex-initial px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 text-base-muted hover:text-base-charcoal";
-            } else {
-                guestView.classList.add('hidden');
-                ownerView.classList.remove('hidden');
-                tabOwner.className = "flex-1 lg:flex-initial px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 bg-base-terra text-white shadow-sm";
-                tabGuest.className = "flex-1 lg:flex-initial px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 text-base-muted hover:text-base-charcoal";
-            }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // スムーススクロール補助
-        function scrollToElement(id) {
-            const el = document.getElementById(id);
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        // 3. サロンカード一覧の描画
-       // 3. サロンカード一覧の描画
-     function renderSalonCards(list) {
-         const grid = document.getElementById('salon-list-grid');
-         const emptyBox = document.getElementById('no-results-box');
-         const countEl = document.getElementById('result-count');
-
-         countEl.textContent = list.length;
-
-         if (list.length === 0) {
-             grid.innerHTML = '';
-             emptyBox.classList.remove('hidden');
-             return;
-         }
-
-         emptyBox.classList.add('hidden');
-         grid.innerHTML = list.map(salon => {
-             const safeId = String(salon.id).replace(/'/g, "\\'");
-             const price = Number(salon.pricePerHour) || 0;
-             const rating = Number(salon.rating) || 4.8;
-             const reviewCount = Number(salon.reviewCount) || 0;
-             const badge = salon.availabilityBadge || '空きあり';
-             const genres = Array.isArray(salon.genres) ? salon.genres : [];
-             const equipment = Array.isArray(salon.equipment) ? salon.equipment : [];
-
-             return `
-             <article onclick="openSalonModal('${safeId}')" 
-                      class="group bg-white rounded-3xl overflow-hidden border border-base-border shadow-card hover:shadow-soft transition-all duration-300 cursor-pointer flex flex-col">
-
-                 <!-- サロン写真 -->
-                 <div class="relative h-52 overflow-hidden bg-gradient-to-br from-base-sand to-base-terraLight">
-                     <img src="${salon.image || ''}" 
-                          onerror="this.style.display='none'" 
-                          alt="${salon.name || ''}" 
-                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-
-                     <!-- 空き状況バッジ（控えめなセージアクセント） -->
-                     <div class="absolute top-3 left-3 px-3 py-1 rounded-full bg-base-sage/95 text-white text-[11px] font-semibold shadow-sm flex items-center gap-1.5">
-                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-200"></span>
-                         <span>${badge}</span>
-                     </div>
-
-                     <!-- 評価バッジ -->
-                     <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-xs text-xs font-bold text-base-charcoal shadow-sm flex items-center gap-1">
-                         <i class="fa-solid fa-star text-amber-500"></i>
-                         <span>${rating.toFixed(1)}</span>
-                         <span class="text-base-muted font-normal text-[11px]">(${reviewCount})</span>
-                     </div>
-
-                     <!-- 1時間あたりの料金 -->
-                     <div class="absolute bottom-3 left-3 px-3.5 py-1.5 rounded-2xl bg-base-charcoal/90 backdrop-blur-xs text-white shadow-sm">
-                         <span class="font-serif text-lg font-bold">¥${price.toLocaleString()}</span>
-                         <span class="text-[11px] text-gray-300"> / 時間</span>
-                     </div>
-                 </div>
-
-                 <!-- カード情報 -->
-                 <div class="p-5 flex-grow flex flex-col justify-between">
-                     <div>
-                         <!-- エリア・駅徒歩 -->
-                         <p class="text-xs text-base-terraDark font-semibold mb-1.5 flex items-center gap-1.5">
-                             <i class="fa-solid fa-location-dot text-base-terra"></i>
-                             <span>${salon.station || salon.area || ''}</span>
-                         </p>
-
-                         <!-- サロン名 -->
-                         <h3 class="font-serif text-base sm:text-lg font-bold text-base-charcoal group-hover:text-base-terra transition line-clamp-1 mb-1">
-                             ${salon.name || ''}
-                         </h3>
-                         <div class="mb-2"></div>
-
-                         <!-- 対応施術ジャンルバッジ -->
-                         <div class="flex flex-wrap gap-1.5 mb-3.5">
-                             ${genres.map(g => `
-                                 <span class="px-2.5 py-0.5 rounded-md bg-base-terraLight text-base-terraDark text-[11px] font-semibold">
-                                     ${g}
-                                 </span>
-                             `).join('')}
-                         </div>
-                     </div>
-
-                     <!-- 設備アイコンタグ -->
-                     <div class="pt-3 border-t border-base-border/70 flex flex-wrap gap-1.5">
-                         ${equipment.map(eq => `
-                             <span class="text-[11px] text-base-muted bg-base-bg px-2.5 py-0.5 rounded-full border border-base-border/70">
-                                 ${eq}
-                             </span>
-                         `).join('')}
-                     </div>
-                 </div>
-             </article>
-         `;
-         }).join('');
-     }
-
-
-        // 4. 設備タグフィルターのON/OFF切り替え
-        function toggleEquipFilter(btn) {
-            const equip = btn.dataset.equip;
-            if (selectedEquipments.has(equip)) {
-                selectedEquipments.delete(equip);
-                btn.className = "equip-btn px-3.5 py-2 rounded-full text-xs font-medium border border-base-border bg-base-bg text-base-charcoal hover:border-base-terra transition flex items-center gap-1.5";
-            } else {
-                selectedEquipments.add(equip);
-                btn.className = "equip-btn px-3.5 py-2 rounded-full text-xs font-semibold border border-base-terra bg-base-terra text-white shadow-xs transition flex items-center gap-1.5";
-            }
-            applyFilters();
-        }
-
-        // 統合絞り込みロジック
-        function applyFilters() {
-            const areaKeyword = document.getElementById('search-area').value.trim();
-            const genreVal = document.getElementById('search-genre').value;
-
-            const filtered = salons.filter(salon => {
-                const matchArea = areaKeyword === '' || 
-                                  salon.area.includes(areaKeyword) || 
-                                  salon.station.includes(areaKeyword) || 
-                                  salon.name.includes(areaKeyword);
-                const matchGenre = genreVal === 'all' || salon.genres.includes(genreVal);
-                
-                // 選択されたすべての設備タグを含むかチェック
-                let matchEquip = true;
-                for (const reqEquip of selectedEquipments) {
-                    if (!salon.equipment.includes(reqEquip)) {
-                        matchEquip = false;
-                        break;
-                    }
-                }
-                return matchArea && matchGenre && matchEquip;
-            });
-
-            renderSalonCards(filtered);
-
-            // クリアボタン表示制御
-            const clearBtn = document.getElementById('clear-filters-btn');
-            if (areaKeyword !== '' || genreVal !== 'all' || selectedEquipments.size > 0) {
-                clearBtn.classList.remove('hidden');
-            } else {
-                clearBtn.classList.add('hidden');
-            }
-        }
-
-        // クイックエリア検索
-        function quickArea(name) {
-            document.getElementById('search-area').value = name;
-            applyFilters();
-            scrollToElement('results-section');
-        }
-
-        // すべての条件をリセット
-        function resetAllFilters() {
-            document.getElementById('search-area').value = '';
-            document.getElementById('search-genre').value = 'all';
-            selectedEquipments.clear();
-            document.querySelectorAll('.equip-btn').forEach(btn => {
-                btn.className = "equip-btn px-3.5 py-2 rounded-full text-xs font-medium border border-base-border bg-base-bg text-base-charcoal hover:border-base-terra transition flex items-center gap-1.5";
-            });
-            applyFilters();
-        }
-
-        // 5. サロン詳細＆予約モーダル制御
-        function openSalonModal(salonId) {
-        const salon = salons.find(s => String(s.id) === String(salonId));
-            if (!salon) return;
-
-            currentModalSalon = salon;
-            modalSelectedHours = [];
-
-            const selectedDate = document.getElementById('search-date').value || '2026-11-20';
-            const allTimeSlots = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"];
-
-            const body = document.getElementById('modal-dynamic-body');
-            body.innerHTML = `
-                <div class="-mt-14">
-                    <!-- ヘッダー画像 -->
-                    <div class="h-60 sm:h-72 w-full bg-gradient-to-br from-base-sand to-base-charcoal relative">
-                        <img src="${salon.image}" 
-                             onerror="this.style.display='none'" 
-                             alt="${salon.name}" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
-                        <div class="absolute bottom-5 left-6 right-6 text-white">
-                            <span class="inline-block px-3 py-1 rounded-full bg-base-terra text-white text-xs font-semibold mb-2">
-                                <i class="fa-solid fa-location-dot mr-1"></i>${salon.station}
-                            </span>
-                            <h3 class="font-serif text-xl sm:text-2xl font-bold leading-snug">${salon.name}</h3>
-                        </div>
-                    </div>
-
-                    <div class="p-6 sm:p-8 space-y-6">
-                        <!-- 基本料金＆無料見学ボタン -->
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-base-border">
-                            <div>
-                                <span class="text-xs text-base-muted block">基本利用料金（備品使用料込み）</span>
-                                <span class="font-serif text-2xl sm:text-3xl font-bold text-base-charcoal">¥${salon.pricePerHour.toLocaleString()}</span>
-                                <span class="text-sm text-base-muted"> / 1時間（税込）</span>
-                            </div>
-                            <button type="button" onclick="triggerTourBooking()" 
-                                    class="px-5 py-2.5 rounded-full border-2 border-base-terra text-base-terraDark hover:bg-base-terraLight text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2">
-                                <i class="fa-regular fa-eye"></i>
-                                <span>無料見学（30分）を予約する</span>
-                            </button>
-                        </div>
-
-                        <!-- サロン詳細説明 -->
-                        <div>
-                            <h4 class="text-xs font-bold text-base-terraDark uppercase tracking-wider mb-2">サロン空間について</h4>
-                            <p class="text-sm text-base-charcoal leading-relaxed">${salon.description}</p>
-                        </div>
-
-                        <!-- 無料備品リスト -->
-                        <div>
-                            <h4 class="text-xs font-bold text-base-terraDark uppercase tracking-wider mb-2.5">無料で使えるサロン設備・備品</h4>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                ${salon.freeAmenities.map(item => `
-                                    <div class="flex items-center gap-2 text-xs text-base-charcoal bg-base-bg px-3.5 py-2.5 rounded-xl border border-base-border/70">
-                                        <i class="fa-solid fa-check text-base-terra"></i>
-                                        <span>${item}</span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-
-                        <!-- 入室ルール -->
-                        <div class="bg-base-sand/80 p-4 rounded-2xl border border-base-border">
-                            <h4 class="text-xs font-bold text-base-charcoal mb-1.5 flex items-center gap-1.5">
-                                <i class="fa-solid fa-key text-base-terra"></i>
-                                <span>入室方法・ご利用ルール</span>
-                            </h4>
-                            <p class="text-xs text-base-charcoal leading-relaxed">${salon.entryRules}</p>
-                        </div>
-
-                        <!-- 1時間単位の空き時間スロット選択（複数選択可能） -->
-                        <div class="bg-base-sand/70 p-5 sm:p-6 rounded-2xl border border-base-border">
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
-                                <h4 class="text-sm font-bold text-base-charcoal">
-                                    <i class="fa-regular fa-clock text-base-terra mr-1.5"></i>利用時間を選択（${selectedDate}）
-                                </h4>
-                                <span class="text-[11px] text-base-muted">※複数時間の連続・飛び枠選択が可能です</span>
-                            </div>
-
-                            <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-5">
-                                ${allTimeSlots.map(time => {
-                                    const isBooked = salon.bookedHours.includes(time);
-                                    if (isBooked) {
-                                        return `
-                                            <button type="button" disabled 
-                                                    class="py-2.5 px-2 rounded-xl border border-gray-200 bg-gray-100 text-gray-400 text-xs font-medium cursor-not-allowed text-center line-through">
-                                                ${time}（満枠）
-                                            </button>
-                                        `;
-                                    }
-                                    return `
-                                        <button type="button" data-time="${time}" onclick="toggleModalTimeSlot(this)" 
-                                                class="modal-slot-btn py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal hover:border-base-terra text-xs sm:text-sm font-medium transition text-center">
-                                            ${time}〜
-                                        </button>
-                                    `;
-                                }).join('')}
-                            </div>
-
-                            <!-- 料金自動計算内訳ボックス -->
-                            <div class="bg-white p-4 rounded-xl border border-base-border mb-4 space-y-1.5 text-xs">
-                                <div class="flex justify-between text-base-muted">
-                                    <span>選択中の時間枠：</span>
-                                    <span id="calc-selected-times" class="font-semibold text-base-charcoal">未選択（0時間）</span>
-                                </div>
-                                <div class="flex justify-between text-base-muted">
-                                    <span>スペース利用料（¥${salon.pricePerHour.toLocaleString()} × <span id="calc-hours-count">0</span>時間）：</span>
-                                    <span id="calc-base-price">¥0</span>
-                                </div>
-                                <div class="flex justify-between text-base-muted">
-                                    <span>システム利用料（5%）：</span>
-                                    <span id="calc-service-fee">¥0</span>
-                                </div>
-                                <div class="flex justify-between items-baseline pt-2 border-t border-base-border text-sm font-bold text-base-charcoal">
-                                    <span>お支払い合計（税込）：</span>
-                                    <span id="calc-total-price" class="font-serif text-xl text-base-terraDark">¥0</span>
-                                </div>
-                            </div>
-                            <!-- 予約者情報入力欄 -->
-                            <div class="bg-white p-4 rounded-xl border border-base-border mb-4 space-y-3">
-                                <h5 class="text-xs font-bold text-base-charcoal">
-                                    <i class="fa-regular fa-user text-base-terra mr-1.5"></i>ご予約者情報（確認メール送信先）
-                                </h5>
-                                <div>
-                                    <label for="booking-guest-name" class="block text-[11px] font-bold text-base-charcoal mb-1">
-                                        お名前 <span class="text-base-terra">*</span>
-                                    </label>
-                                    <input type="text" id="booking-guest-name" required placeholder="例：山田 花子"
-                                           class="w-full px-3.5 py-2.5 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-xs sm:text-sm bg-base-bg/50">
-                                </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <div>
-                                        <label for="booking-guest-email" class="block text-[11px] font-bold text-base-charcoal mb-1">
-                                            メールアドレス <span class="text-base-terra">*</span>
-                                        </label>
-                                        <input type="email" id="booking-guest-email" required placeholder="therapist@example.com"
-                                               class="w-full px-3.5 py-2.5 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-xs sm:text-sm bg-base-bg/50">
-                                    </div>
-                                    <div>
-                                        <label for="booking-guest-phone" class="block text-[11px] font-bold text-base-charcoal mb-1">
-                                            電話番号（任意）
-                                        </label>
-                                        <input type="tel" id="booking-guest-phone" placeholder="例：090-1234-5678"
-                                               class="w-full px-3.5 py-2.5 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-xs sm:text-sm bg-base-bg/50">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 予約リクエスト送信ボタン -->
-                            <button type="button" id="submit-booking-btn" onclick="triggerSalonBooking()" disabled
-                                    class="w-full py-4 rounded-full bg-gray-300 text-white font-bold text-sm sm:text-base transition cursor-not-allowed">
-                                時間を選択してください
-                            </button>
-
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            const modal = document.getElementById('salon-detail-modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function closeSalonModal() {
-            const modal = document.getElementById('salon-detail-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-
-        // モーダル内タイムスロットの複数選択＆料金計算
-        function toggleModalTimeSlot(btn) {
-            const time = btn.dataset.time;
-            const idx = modalSelectedHours.indexOf(time);
-
-            if (idx > -1) {
-                modalSelectedHours.splice(idx, 1);
-                btn.className = "modal-slot-btn py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal hover:border-base-terra text-xs sm:text-sm font-medium transition text-center";
-            } else {
-                modalSelectedHours.push(time);
-                modalSelectedHours.sort();
-                btn.className = "modal-slot-btn py-2.5 px-2 rounded-xl border-2 border-base-terra bg-base-terraLight text-base-terraDark text-xs sm:text-sm font-bold shadow-xs transition text-center";
-            }
-
-            // 金額計算
-            const count = modalSelectedHours.length;
-            const basePrice = count * currentModalSalon.pricePerHour;
-            const serviceFee = Math.round(basePrice * 0.05);
-            const total = basePrice + serviceFee;
-
-            document.getElementById('calc-selected-times').textContent = count > 0 
-                ? `${modalSelectedHours.join(', ')}（計${count}時間）` 
-                : '未選択（0時間）';
-            document.getElementById('calc-hours-count').textContent = count;
-            document.getElementById('calc-base-price').textContent = `¥${basePrice.toLocaleString()}`;
-            document.getElementById('calc-service-fee').textContent = `¥${serviceFee.toLocaleString()}`;
-            document.getElementById('calc-total-price').textContent = `¥${total.toLocaleString()}`;
-
-            const submitBtn = document.getElementById('submit-booking-btn');
-            if (count > 0) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = "この内容で予約リクエストを送る";
-                submitBtn.className = "w-full py-4 rounded-full bg-base-terra hover:bg-base-terraDark text-white font-bold text-sm sm:text-base shadow-md transition cursor-pointer";
-            } else {
-                submitBtn.disabled = true;
-                submitBtn.textContent = "時間を選択してください";
-                submitBtn.className = "w-full py-4 rounded-full bg-gray-300 text-white font-bold text-sm sm:text-base transition cursor-not-allowed";
-            }
-        }
-
-        // 無料見学（30分）予約完了
-        function triggerTourBooking() {
-            const salonName = currentModalSalon.name;
-            closeSalonModal();
-            openNotifModal(
-                "無料見学（30分）のリクエストを受け付けました",
-                `「${salonName}」のオーナーへ30分無料見学のリクエストを送信しました。候補日時のご案内メールをお送りいたしますので少々お待ちください。`
-            );
-        }
-
-                       // サロン予約リクエスト送信（/api/booking へPOST）
-       async function triggerSalonBooking() {
-  if (modalSelectedHours.length === 0) return;
-
-  const guestName = (document.getElementById('booking-guest-name')?.value || '').trim();
-  const guestEmail = (document.getElementById('booking-guest-email')?.value || '').trim();
-  const guestPhone = (document.getElementById('booking-guest-phone')?.value || '').trim();
-
-  if (!guestName) {
-    openNotifModal('入力エラー', 'ご予約者のお名前を入力してください。');
-    return;
+const json = (obj, status = 200) =>
+  new Response(JSON.stringify(obj), {
+    status,
+    headers: { "content-type": "application/json; charset=UTF-8" },
+  });
+
+const s = (v, n = 300) => String(v || "").trim().slice(0, n);
+
+const FEE_RATE_BPS = {
+  attended: 2000,
+  unattended_card: 2500,
+};
+
+function makeId(prefix) {
+  return `${prefix}_${crypto.randomUUID()}`;
+}
+
+function makeBookingCode() {
+  const ymd = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const rand = Math.floor(1000 + Math.random() * 9000);
+  return `SB-${ymd}-${rand}`;
+}
+
+function makeReceiptNo() {
+  const ymd = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const rand = Math.floor(1000 + Math.random() * 9000);
+  return `RCP-${ymd}-${rand}`;
+}
+
+function calcFeeJpy(amountJpy, rateBps) {
+  return Math.floor((amountJpy * rateBps) / 10000);
+}
+
+function resolveReceiptPeriod(billingCycle, anchorDateStr) {
+  const m = String(anchorDateStr || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return null;
+  const year = Number(m[1]);
+  const month = Number(m[2]);
+  const day = Number(m[3]);
+  const check = new Date(Date.UTC(year, month - 1, day));
+  if (
+    check.getUTCFullYear() !== year ||
+    check.getUTCMonth() !== month - 1 ||
+    check.getUTCDate() !== day
+  ) {
+    return null;
   }
-  if (!guestEmail || !guestEmail.includes('@')) {
-    openNotifModal('入力エラー', '有効なメールアドレスを入力してください。');
-    return;
+  const mm = String(month).padStart(2, "0");
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const ddLast = String(lastDay).padStart(2, "0");
+
+  if (billingCycle === "per_booking") {
+    const dd = String(day).padStart(2, "0");
+    const d = `${year}-${mm}-${dd}`;
+    return { periodStartDate: d, periodEndDate: d };
   }
-
-  const salonId = String(currentModalSalon?.id || '');
-  const dateVal = (document.getElementById('search-date')?.value || '').trim();
-  const submitBtn = document.getElementById('submit-booking-btn');
-
-  // バックエンド（/api/checkout）は db_123 のようなDBサロンIDを前提にしています
-  if (!/^db_\d+$/.test(salonId)) {
-    openNotifModal(
-      'ご案内',
-      'サンプル掲載サロンはオンライン決済の対象外です。登録済みサロンの詳細からお試しください。'
-    );
-    return;
+  if (billingCycle === "half_month") {
+    if (day <= 15) {
+      return { periodStartDate: `${year}-${mm}-01`, periodEndDate: `${year}-${mm}-15` };
+    }
+    return { periodStartDate: `${year}-${mm}-16`, periodEndDate: `${year}-${mm}-${ddLast}` };
   }
+  if (billingCycle === "monthly") {
+    return { periodStartDate: `${year}-${mm}-01`, periodEndDate: `${year}-${mm}-${ddLast}` };
+  }
+  return null;
+}
 
+function formatReceiptItemRow(row) {
+  const baseAmount = Number(row.amount_jpy || 0);
+  const code = row.booking_code || row.booking_id || "";
+  if (row.tx_type === "prepay_fee") {
+    return { signedAmountJpy: Math.abs(baseAmount), description: `予約先払い手数料（${code}）` };
+  }
+  if (row.tx_type === "penalty_capture") {
+    return { signedAmountJpy: Math.abs(baseAmount), description: `キャンセル料・ペナルティ（${code}）` };
+  }
+  if (row.tx_type === "refund") {
+    return { signedAmountJpy: -Math.abs(baseAmount), description: `返金調整（${code}）` };
+  }
+  return {
+    signedAmountJpy: baseAmount,
+    description: `利用明細（${row.tx_type || "payment"} / ${code}）`,
+  };
+}
+
+function safeJsonArray(str, fallback = []) {
   try {
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.textContent = '決済画面へ移動中...';
-    }
-
-    const res = await fetch('/api/checkout', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        salon_id: salonId,
-        date: dateVal,
-        hours: modalSelectedHours,
-        guest_name: guestName,
-        guest_email: guestEmail,
-        guest_phone: guestPhone
-      })
-    });
-
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || data.ok === false || !data.url) {
-      throw new Error(data.error || '決済画面の作成に失敗しました。');
-    }
-
-    location.href = data.url;
-  } catch (err) {
-    openNotifModal(
-      '決済エラー',
-      err.message || '通信中にエラーが発生しました。時間をおいて再度お試しください。'
-    );
-  } finally {
-    if (submitBtn && modalSelectedHours.length > 0) {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'この内容で予約リクエストを送る';
-    }
+    const parsed = JSON.parse(str || "[]");
+    return Array.isArray(parsed) ? parsed : fallback;
+  } catch {
+    return fallback;
   }
 }
 
-
-
-        // 6. オーナー向けインタラクティブ収益シミュレーター
-        function updateSimulator() {
-            const rate = parseInt(document.getElementById('sim-rate').value, 10);
-            const hours = parseInt(document.getElementById('sim-hours').value, 10);
-            const beds = parseInt(document.getElementById('sim-beds').value, 10);
-
-            document.getElementById('val-rate').textContent = rate.toLocaleString();
-            document.getElementById('val-hours').textContent = hours;
-            document.getElementById('val-beds').textContent = beds;
-
-            // 月間見込み手取り = 単価 × 週時間 × ベッド数 × 4.3週 × 0.85（手数料15%差し引き後）
-            const monthlyNet = Math.round(rate * hours * beds * 4.3 * 0.85);
-            const yearlyNet = monthlyNet * 12;
-
-            document.getElementById('res-monthly').textContent = monthlyNet.toLocaleString();
-            document.getElementById('res-yearly').textContent = yearlyNet.toLocaleString();
-        }
-
-        // 7. 初期オーナー無料掲載エントリーフォーム送信
-    function previewOwnerImage(input) {
-    const wrap = document.getElementById('owner-image-preview-wrap');
-    const img = document.getElementById('owner-image-preview');
-    const file = input.files && input.files[0];
-
-    if (!file) {
-        wrap.classList.add('hidden');
-        img.src = '';
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function (ev) {
-        img.src = ev.target.result;
-        wrap.classList.remove('hidden');
-    };
-    reader.readAsDataURL(file);
+// ---- 管理者認証（パスワードと秘密鍵はCloudflareの変数のみ） ----
+function getAdminSecret(env) {
+  return String(env.ADMIN_TOKEN_SECRET || "");
 }
 
-async function handleOwnerSubmit(e) {
-    e.preventDefault();
-    const salonName = document.getElementById('owner-salon-name').value.trim();
-    const personName = document.getElementById('owner-person-name').value.trim();
-    const password = (document.getElementById('owner-password')?.value || '').trim();
-    const fileInput = document.getElementById('owner-salon-image');
-    const file = fileInput && fileInput.files ? fileInput.files[0] : null;
-    const submitBtn = e.target.querySelector('button[type="submit"]');
+function verifyAdminPassword(password, env) {
+  const input = String(password || "");
+  const expected = String(env.ADMIN_PASSWORD || "");
+  if (!expected || !input) return false;
+  if (input.length !== expected.length) return false;
+  let diff = 0;
+  for (let i = 0; i < input.length; i++) {
+    diff |= input.charCodeAt(i) ^ expected.charCodeAt(i);
+  }
+  return diff === 0;
+}
+async function hmacKey(secret, usage) {
+  return crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    [usage]
+  );
+}
 
-    if (password.length < 6) {
-        openNotifModal('送信エラー', 'ログインパスワードは6文字以上で設定してください');
-        return;
+async function createAdminToken(env, role = "admin", extra = {}) {
+  const secret = getAdminSecret(env);
+  if (!secret) throw new Error("ADMIN_TOKEN_SECRET が未設定です");
+  const now = Date.now();
+  const payload = btoa(
+  JSON.stringify({
+    ...extra,
+    role,
+    exp: now + ((role === "owner") ? 30 : 1) * 24 * 60 * 60 * 1000,
+  })
+);
+
+ 
+  const key = await hmacKey(secret, "sign");
+  const sigBuf = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
+  const sigHex = Array.from(new Uint8Array(sigBuf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return `${payload}.${sigHex}`;
+}
+
+async function verifyAdminToken(request, env) {
+  try {
+    const secret = getAdminSecret(env);
+    if (!secret) return false;
+    const auth = request.headers.get("Authorization") || "";
+    const match = auth.match(/^Bearer\s+(.+)$/i);
+    if (!match) return false;
+    const parts = match[1].trim().split(".");
+    if (parts.length !== 2) return false;
+    const [payload, sigHex] = parts;
+
+    const key = await hmacKey(secret, "verify");
+    const sigBytes = new Uint8Array(
+      (sigHex.match(/.{1,2}/g) || []).map((h) => parseInt(h, 16))
+    );
+    const valid = await crypto.subtle.verify(
+      "HMAC",
+      key,
+      sigBytes,
+      new TextEncoder().encode(payload)
+    );
+    if (!valid) return false;
+
+        const data = JSON.parse(atob(payload));
+    const isValidRole = data?.role === "admin" || data?.role === "owner";
+    return isValidRole && Number(data.exp) > Date.now();
+  } catch {
+    return false;
+  }
+}
+
+async function sendMail(env, to, subject, text) {
+  const r = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      from: "SHARE SALON <noreply@weblavo-tokyo.com>",
+      to: [to],
+      subject,
+      text,
+    }),
+  });
+  if (!r.ok) console.log("resend error", r.status, await r.text());
+  return r.ok;
+}// パスワードをソルト付きSHA-256でハッシュ化するヘルパー
+async function hashPassword(password, saltHex = null) {
+  const saltBytes = saltHex
+    ? Uint8Array.from(saltHex.match(/.{1,2}/g).map((b) => parseInt(b, 16)))
+    : crypto.getRandomValues(new Uint8Array(16));
+
+  const resolvedSaltHex = Array.from(saltBytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  const enc = new TextEncoder();
+  const data = enc.encode(`${resolvedSaltHex}:${password}`);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  const hashHex = Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  return { saltHex: resolvedSaltHex, hashHex };
+}
+
+// 振り分け番号を生成するヘルパー（例: SB-2026-4821）
+function generateOwnerCode() {
+  const year = new Date().getFullYear();
+  const rand = Math.floor(1000 + Math.random() * 9000);
+  return `SB-${year}-${rand}`;
+}
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const path = url.pathname;
+    const method = request.method;
+
+        // ---- ログイン ----
+    if (path === "/api/auth/login" && method === "POST") {
+      try {
+        const body = await request.json().catch(() => ({}));
+        if (!verifyAdminPassword(body.password, env)) {
+          return json({ ok: false, error: "パスワードが正しくありません" }, 401);
+        }
+        const token = await createAdminToken(env);
+        return json({ ok: true, token });
+      } catch (err) {
+        return json({ ok: false, error: "ログイン処理に失敗しました" }, 500);
+      }
     }
 
-    let uploadedKey = '';
-
-    try {
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.textContent = '送信中...';
-        }
-
-        if (file) {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('salon_id', salonName);
-
-            const res = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData
-            });
-            const data = await res.json().catch(() => ({}));
-
-            if (!res.ok || data.ok === false) {
-                throw new Error(data.error || '画像のアップロードに失敗しました。');
-            }
-            uploadedKey = data.key || '';
-        }
-
-        const entryRes = await fetch('/api/entry', {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({
-                salon_name: salonName,
-                person_name: personName,
-                area: document.getElementById('owner-area').value,
-                email: document.getElementById('owner-email').value,
-                phone: document.getElementById('owner-phone').value,
-                password: password,
-                space_type: (document.querySelector('input[name="space_type"]:checked') || {}).value || '',
-                image_key: uploadedKey
-            })
+    // ---- 画像アップロード ----
+    if (path === "/api/upload" && method === "POST") {
+      try {
+        const form = await request.formData();
+        const file = form.get("file");
+        const salon = String(form.get("salon_id") || "");
+        if (!file || typeof file === "string")
+          return json({ ok: false, error: "ファイルがありません" }, 400);
+        if (!file.type.startsWith("image/"))
+          return json({ ok: false, error: "画像を選んでください" }, 400);
+        if (file.size > 10 * 1024 * 1024)
+          return json({ ok: false, error: "10MB以下の画像にしてください" }, 400);
+        const ext = (file.type.split("/")[1] || "jpg").replace(/[^a-z0-9]/gi, "");
+        const key = `owners/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+        await env.IMAGES_BUCKET.put(key, file.stream(), {
+          httpMetadata: { contentType: file.type },
+          customMetadata: { salon: encodeURIComponent(salon).slice(0, 200) },
         });
-        const entryData = await entryRes.json().catch(() => ({}));
-        if (!entryRes.ok || entryData.ok === false) {
-            throw new Error(entryData.error || '送信に失敗しました。');
+        return json({ ok: true, key });
+      } catch (e) {
+        return json({ ok: false, error: "保存に失敗しました" }, 500);
+      }
+    }
+        // ---- AI文章生成 ----
+    if (path === "/api/ai/generate-copy" && method === "POST") {
+      try {
+        if (!env.AI) {
+          return json({ ok: false, error: "Workers AI (env.AI) が設定されていません" }, 500);
         }
+        const body = await request.json().catch(() => ({}));
+        const target = body.target === "rules" ? "rules" : "description";
+        const salon = body.salon || {};
 
-        const codeNote = entryData.owner_code
-            ? `\n会員番号：${entryData.owner_code}`
-            : '';
-        const imageNote = uploadedKey
-            ? `\n（アップロード済み画像キー: ${uploadedKey}）`
-            : '';
+        const prompt =
+          target === "rules"
+            ? `レンタルサロンの「入室方法・ご利用ルール」を、箇条書き5〜7項目の日本語で作成してください。
+サロン名: ${salon.name || ""}
+エリア: ${salon.area || ""}
+設備: ${salon.amenities || ""}
+オーナーのメモ: ${salon.rules || ""}`
+            : `レンタルサロンの「お部屋・空間の紹介文」を、上品で信頼感のある日本語で150〜250文字で作成してください。
+サロン名: ${salon.name || ""}
+エリア・最寄駅: ${salon.area || ""} ${salon.station || ""}
+1時間料金: ${salon.price || ""}円
+ジャンル: ${salon.genre || ""}
+設備: ${salon.amenities || ""}
+オーナーのメモ: ${salon.description || ""}`;
 
-        document.getElementById('complete-owner-text').innerText =
-            `${salonName} ${personName}様、初期掲載オーナーへのエントリーありがとうございます。1営業日以内に担当者よりご連絡し、無料ページ作成サポートのご案内をお送りいたします。${codeNote}${imageNote}`;
+        const systemPrompt = `あなたはレンタルサロンの掲載文を書く日本語のライターです。
+- オーナーのメモがある場合は、その意味と事実を変えずに、読みやすく上品な文章に整えてください。
+- 入力にない設備・条件・事実を勝手に付け足さないでください。誇張もしないでください。
+- 前置きや解説は書かず、本文のみを出力してください。`;
 
-        document.getElementById('entry-form-body').classList.add('hidden');
-        document.getElementById('entry-form-complete').classList.remove('hidden');
-    } catch (err) {
-        openNotifModal(
-            '送信エラー',
-            err.message || '通信中にエラーが発生しました。時間をおいて再度お試しください。'
+        const result = await env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", {
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: prompt },
+          ],
+          max_tokens: 500,
+        });
+
+        const text = String(
+          result?.response ??
+            result?.output_text ??
+            result?.result?.response ??
+            result?.choices?.[0]?.message?.content ??
+            ""
+        ).trim();
+
+        if (!text) {
+          console.log("ai raw", JSON.stringify(result));
+          return json({ ok: false, error: "文章を生成できませんでした。" }, 500);
+        }
+        return json({ ok: true, text });
+      } catch (err) {
+        console.log("ai error", String(err));
+        return json(
+          { ok: false, error: `AI生成エラー: ${err?.message || String(err)}` },
+          500
         );
-    } finally {
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = '無料で掲載エントリーを送信する';
-        }
+      }
     }
-}
 
-function resetEntryForm() {
-    document.getElementById('entry-form-body').reset();
-    document.getElementById('owner-image-preview-wrap').classList.add('hidden');
-    document.getElementById('owner-image-preview').src = '';
-    document.getElementById('entry-form-complete').classList.add('hidden');
-    document.getElementById('entry-form-body').classList.remove('hidden');
-}
-        // 8. 完了通知モーダル＆トースト制御
-        function openNotifModal(title, bodyText) {
-            document.getElementById('notif-title').textContent = title;
-            document.getElementById('notif-body').innerText = bodyText;
-            const modal = document.getElementById('notification-modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+    // ---- 画像配信 ----
+    if (path.startsWith("/api/images/") && method === "GET") {
+      try {
+        const key = decodeURIComponent(path.replace(/^\/api\/images\//, ""));
+        if (!key || key.includes("..")) {
+          return json({ ok: false, error: "不正なキーです" }, 400);
+        }
+        const obj = await env.IMAGES_BUCKET.get(key);
+        if (!obj) return json({ ok: false, error: "画像が見つかりません" }, 404);
+        const headers = new Headers();
+        if (obj.httpMetadata?.contentType) {
+          headers.set("Content-Type", obj.httpMetadata.contentType);
+        }
+        headers.set("Cache-Control", "public, max-age=3600");
+        return new Response(obj.body, { status: 200, headers });
+      } catch {
+        return json({ ok: false, error: "画像取得に失敗しました" }, 500);
+      }
+    }
+
+    // ---- サロン一覧 ----
+    if (path === "/api/salons" && method === "GET") {
+      try {
+        const rows = await env.DB.prepare(
+          `SELECT * FROM published_salons ORDER BY id DESC`
+        ).all();
+                const photoRows = await env.DB.prepare(
+          `SELECT salon_id, image_key FROM salon_photos ORDER BY salon_id, sort_order ASC`
+        ).all();
+        const photoMap = {};
+        for (const p of photoRows.results || []) {
+          (photoMap[p.salon_id] ||= []).push(`/api/images/${encodeURIComponent(p.image_key)}`);
         }
 
-        function closeNotifModal() {
-            const modal = document.getElementById('notification-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
+        const salons = (rows.results || []).map((r) => ({
+          id: `db_${r.id}`,
+          name: r.name,
+          area: r.area,
+          station: r.station,
+          pricePerHour: Number(r.price_per_hour || 1500),
+          rating: Number(r.rating || 4.9),
+          reviewCount: Number(r.review_count || 1),
+          availabilityBadge: r.availability_badge || "本日空きあり",
+          genres: safeJsonArray(r.genres_json, ["エステ・リラク"]),
+          equipment: safeJsonArray(r.equipment_json, ["完全個室"]),
+          image:
+            r.image_url ||
+            (r.image_key ? `/api/images/${encodeURIComponent(r.image_key)}` : ""),
+          image_key: r.image_key || "",
+                    images: photoMap[r.id] || (r.image_key ? [`/api/images/${encodeURIComponent(r.image_key)}`] : []),
+          description: r.description || "",
+          freeAmenities: safeJsonArray(r.free_amenities_json, []),
+          entryRules: r.entry_rules || "",
+          bookedHours: safeJsonArray(r.booked_hours_json, []),
+        }));
+        return json({ ok: true, salons });
+      } catch (e) {
+        return json({ ok: false, error: "サロン一覧の取得に失敗しました" }, 500);
+      }
+    }
 
-        let toastTimer;
-        function showToast(msg) {
-            const box = document.getElementById('toast-box');
-            document.getElementById('toast-text').textContent = msg;
-            box.classList.remove('translate-y-24', 'opacity-0');
-            clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => {
-                box.classList.add('translate-y-24', 'opacity-0');
-            }, 3500);
+    // ---- サロン登録（ログイン必須） ----
+    if (path === "/api/salons" && method === "POST") {
+      try {
+        if (!(await verifyAdminToken(request, env))) {
+          return json({ ok: false, error: "認証が必要です。再ログインしてください。" }, 401);
         }
-        function triggerTourBooking() {
-            if (!currentModalSalon) return;
-            document.getElementById('tour-salon-name').textContent = currentModalSalon.name;
+        const b = await request.json();
+        const name = s(b.name, 120);
+        const area = s(b.area, 80);
+        const station = s(b.station, 120);
+        const pricePerHour = Number(b.pricePerHour);
+        if (!name || !area || !station || !Number.isFinite(pricePerHour) || pricePerHour <= 0) {
+          return json({ ok: false, error: "サロン名・エリア・最寄り駅・1時間料金は必須です" }, 400);
+        }
+        const genres =
+          Array.isArray(b.genres) && b.genres.length
+            ? b.genres.map((x) => s(x, 50))
+            : ["エステ・リラク"];
+        const equipment = Array.isArray(b.equipment) ? b.equipment.map((x) => s(x, 50)) : [];
+        const freeAmenities =
+          Array.isArray(b.freeAmenities) && b.freeAmenities.length
+            ? b.freeAmenities.map((x) => s(x, 120))
+            : ["施術スペース設備完備"];
+        const bookedHours = Array.isArray(b.bookedHours)
+          ? b.bookedHours.map((x) => s(x, 20))
+          : [];
+                const imageKeys = Array.isArray(b.image_keys)
+          ? b.image_keys.map((x) => s(x, 250)).filter(Boolean).slice(0, 20)
+          : [];
+        const imageKey = s(b.image_key, 250) || imageKeys[0] || "";
+        const rawImage = s(b.image, 500);
+        const imageUrl =
+          rawImage || (imageKey ? `/api/images/${encodeURIComponent(imageKey)}` : "");
+        const nowIso = new Date().toISOString();
 
-            const today = new Date().toISOString().split('T')[0];
-            const dateEl = document.getElementById('tour-date');
-            dateEl.min = today;
-            dateEl.value = document.getElementById('search-date').value || today;
-            refreshTourTimes();
-             
-        
-document.getElementById('tour-error').classList.add('hidden');
-            const m = document.getElementById('tour-modal');
-            m.classList.remove('hidden');
-            m.classList.add('flex');
-        }
-        const TOUR_SLOTS = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
-        async function refreshTourTimes() {
-            const sel = document.getElementById('tour-time');
-            const date = document.getElementById('tour-date').value;
-            const salon = currentModalSalon;
-            if (!salon) return;
-            let closed = (salon.bookedHours || []).slice();
-            const m = String(salon.id).match(/^db_(\d+)$/);
-            if (m && date) {
+        const ins = await env.DB.prepare(
+          `INSERT INTO published_salons (
+            name, area, station, price_per_hour, rating, review_count,
+            availability_badge, genres_json, equipment_json, image_url, image_key,
+            description, free_amenities_json, entry_rules, booked_hours_json,
+            created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        )
+          .bind(
+            name,
+            area,
+            station,
+            Math.round(pricePerHour),
+            Number(b.rating) || 4.9,
+            Number(b.reviewCount) || 1,
+            s(b.availabilityBadge, 40) || "本日空きあり",
+            JSON.stringify(genres),
+            JSON.stringify(equipment),
+            imageUrl,
+            imageKey,
+            s(b.description, 1000) || "プライベートサロン空間です。",
+            JSON.stringify(freeAmenities),
+            s(b.entryRules, 1000) || "ご予約時間に合わせてご入室・ご退室ください。",
+            JSON.stringify(bookedHours),
+            nowIso,
+            nowIso
+          )
+          .run();
+        const newId = ins.meta?.last_row_id;
                 try {
-                    const res = await fetch('/api/closures?salon_id=' + m[1] + '&date=' + date);
-                    const data = await res.json();
-                    closed = closed.concat(data.hours || []);
-                } catch (e) {}
+          const rawTok = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").split(".")[0];
+          const tokData = JSON.parse(atob(rawTok));
+          if (tokData.owner_id) {
+            const ow = await env.DB.prepare("SELECT email FROM owner_entries WHERE id = ?").bind(tokData.owner_id).first();
+            if (ow?.email) {
+              await env.DB.prepare("UPDATE published_salons SET owner_email = ? WHERE id = ?").bind(ow.email, newId).run();
             }
-            const opts = TOUR_SLOTS.filter(t => !closed.includes(t));
-            sel.innerHTML = opts.length
-                ? opts.map(t => `<option value="${t}">${t}〜</option>`).join('')
-                : '<option value="">この日は満枠です</option>';
+          }
+        } catch (e) {
+          console.log("owner email save skipped", String(e));
         }
-        document.getElementById('tour-date').addEventListener('change', refreshTourTimes);
-
-        function closeTourModal() {
-            const m = document.getElementById('tour-modal');
-            m.classList.add('hidden');
-            m.classList.remove('flex');
+        for (let i = 0; i < imageKeys.length; i++) {
+          await env.DB.prepare(
+            `INSERT INTO salon_photos (salon_id, image_key, sort_order, created_at) VALUES (?, ?, ?, ?)`
+          ).bind(newId, imageKeys[i], i, nowIso).run();
         }
 
-        async function submitTour(e) {
-            e.preventDefault();
-            const errBox = document.getElementById('tour-error');
-            const btn = document.getElementById('tour-submit-btn');
-            const payload = {
-                salon_id: currentModalSalon.id,
-                salon_name: currentModalSalon.name,
-                date: document.getElementById('tour-date').value,
-                time: document.getElementById('tour-time').value,
-                name: document.getElementById('tour-name').value.trim(),
-                email: document.getElementById('tour-email').value.trim(),
-                phone: document.getElementById('tour-phone').value.trim(),
-                message: document.getElementById('tour-message').value.trim(),
-            };
-            errBox.classList.add('hidden');
-            btn.disabled = true;
-            const orig = btn.textContent;
-            btn.textContent = '送信中...';
-            try {
-                const res = await fetch('/api/tours', {
-                    method: 'POST',
-                    headers: { 'content-type': 'application/json' },
-                    body: JSON.stringify(payload),
-                });
-                const data = await res.json().catch(() => ({}));
-                if (!res.ok || data.ok === false) throw new Error(data.error || '送信に失敗しました');
-
-                const [yy, mm, dd] = payload.date.split('-');
-                const salonName = currentModalSalon.name;
-                closeTourModal();
-                closeSalonModal();
-                e.target.reset();
-                openNotifModal(
-                    '無料見学のリクエストを送信しました',
-                    `「${salonName}」\n希望日時：${yy}年${Number(mm)}月${Number(dd)}日 ${payload.time}〜\n\nご入力のメールアドレスに確認メールをお送りしました。オーナーからのご連絡をお待ちください。`
-                );
-            } catch (err) {
-                errBox.textContent = err.message || '送信に失敗しました';
-                errBox.classList.remove('hidden');
-            } finally {
-                btn.disabled = false;
-                btn.textContent = orig;
-            }
-        }
-
-        // モーダル背景クリックで閉じる
-        document.getElementById('salon-detail-modal').addEventListener('click', function(e) {
-            if (e.target === this) closeSalonModal();
-        });
-        document.getElementById('notification-modal').addEventListener('click', function(e) {
-            if (e.target === this) closeNotifModal();
-        });
-          /*
-          let adminConsoleToken = '';
-        let adminBookingsCache = [];
-        let adminManagedSalons = [];
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const dateInput = document.getElementById('admin-schedule-date');
-            if (dateInput && !dateInput.value) {
-                dateInput.value = new Date().toISOString().split('T')[0];
-            }
-            const hours = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
-            renderAdminDateTimeSchedule(dateInput?.value || '', hours, [], []);
-        });
-
-        async function loginAdminConsole() {
-            const pw = document.getElementById('console-admin-password')?.value || '';
-            if (!pw) {
-                openNotifModal('入力エラー', '管理者パスワードを入力してください。');
-                return;
-            }
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'content-type': 'application/json' },
-                body: JSON.stringify({ password: pw })
-            });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok || !data.token) {
-                openNotifModal('ログインエラー', data.error || 'ログインに失敗しました。');
-                return;
-            }
-            adminConsoleToken = data.token;
-            await refreshAdminConsoleData();
-        }
-
-        async function refreshAdminConsoleData() {
-            if (!adminConsoleToken) return;
-
-            const [myRes, bkgRes] = await Promise.all([
-                fetch('/api/my-salons', { headers: { Authorization: `Bearer ${adminConsoleToken}` } }),
-                fetch('/api/admin/bookings', { headers: { Authorization: `Bearer ${adminConsoleToken}` } })
-            ]);
-
-            const myData = await myRes.json().catch(() => ({}));
-            const bkgData = await bkgRes.json().catch(() => ({}));
-
-            adminManagedSalons = myData.salons || [];
-            adminBookingsCache = bkgData.bookings || [];
-
-            syncSalonFormMode(adminManagedSalons);
-
-            const selectEl = document.getElementById('admin-salon-select');
-            if (selectEl) {
-                selectEl.innerHTML = adminManagedSalons.map(sItem =>
-                    `<option value="${sItem.id}">${sItem.name}（ID: ${sItem.id}）</option>`
-                ).join('');
-            }
-
-            await loadAdminScheduleForSelectedDate();
-        }
-
-        function syncSalonFormMode(ownerSalons = []) {
-            const createFormEl = document.getElementById('entry-form-body');
-            const editBtnEl = document.getElementById('open-salon-edit-btn');
-            const summaryEl = document.getElementById('registered-salon-summary');
-            const hasSalon = Array.isArray(ownerSalons) && ownerSalons.length > 0;
-
-            if (hasSalon) {
-                if (createFormEl) createFormEl.classList.add('hidden');
-                if (editBtnEl) editBtnEl.classList.remove('hidden');
-                if (summaryEl) summaryEl.textContent = `登録済み：${ownerSalons[0].name}（詳細の変更は「変更」ボタンから行えます）`;
-            } else {
-                if (createFormEl) createFormEl.classList.remove('hidden');
-                if (editBtnEl) editBtnEl.classList.add('hidden');
-                if (summaryEl) summaryEl.textContent = 'まだサロンが登録されていません。';
-            }
-        }
-
-        function openSalonEditMode() {
-            const target = adminManagedSalons[0];
-            if (!target) return;
-            const fullSalon = salons.find(sItem => String(sItem.id).replace(/^db_/, '') === String(target.id)) || target;
-
-            const editSection = document.getElementById('salon-edit-section');
-            editSection.classList.remove('hidden');
-            editSection.dataset.editingSalonId = target.id;
-
-            document.getElementById('edit-salon-name').value = fullSalon.name || '';
-            document.getElementById('edit-salon-price').value = fullSalon.pricePerHour || '';
-            document.getElementById('edit-salon-description').value = fullSalon.description || '';
-        }
-
-        async function submitSalonUpdate() {
-            const editSection = document.getElementById('salon-edit-section');
-            const rawId = String(editSection?.dataset.editingSalonId || '').replace(/^db_/, '');
-            if (!rawId || !adminConsoleToken) return;
-
-            const payload = {
-                name: document.getElementById('edit-salon-name')?.value || '',
-                pricePerHour: Number(document.getElementById('edit-salon-price')?.value || 0),
-                description: document.getElementById('edit-salon-description')?.value || ''
-            };
-
-            const res = await fetch(`/api/salons/${rawId}`, {
-                method: 'PUT',
-                headers: {
-                    'content-type': 'application/json',
-                    Authorization: `Bearer ${adminConsoleToken}`
-                },
-                body: JSON.stringify(payload)
-            });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok || data.ok === false) {
-                openNotifModal('更新エラー', data.error || 'サロン詳細の変更に失敗しました。');
-                return;
-            }
-
-            openNotifModal('変更完了', 'サロン詳細を更新しました。');
-            editSection.classList.add('hidden');
-            await refreshAdminConsoleData();
-        }
-
-        async function loadAdminScheduleForSelectedDate() {
-            const sid = document.getElementById('admin-salon-select')?.value;
-            const dateStr = document.getElementById('admin-schedule-date')?.value || '';
-            const hours = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
-
-            let closedHours = [];
-            if (sid && dateStr) {
-                try {
-                    const r = await fetch(`/api/closures?salon_id=${encodeURIComponent(sid)}&date=${encodeURIComponent(dateStr)}`);
-                    const d = await r.json().catch(() => ({}));
-                    if (r.ok && Array.isArray(d.hours)) closedHours = d.hours;
-                } catch {}
-            }
-
-            renderAdminDateTimeSchedule(dateStr, hours, adminBookingsCache, closedHours);
-        }
-
-        function renderAdminDateTimeSchedule(dateStr, hoursList, bookings = [], closedHours = []) {
-            const container = document.getElementById('admin-schedule-by-date');
-            if (!container) return;
-
-            const closedSet = new Set(closedHours);
-            const bookedBySlot = new Map();
-
-            for (const b of bookings) {
-                const startRaw = String(b.start_at || b.desired_date || '');
-                if (!dateStr || !startRaw.startsWith(dateStr)) continue;
-                const dObj = new Date(b.start_at);
-                const slotLabel = Number.isNaN(dObj.getTime())
-                    ? String(b.desired_time || '').slice(0, 5)
-                    : dObj.toLocaleTimeString('ja-JP', {
-                        timeZone: 'Asia/Tokyo',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false
-                    });
-                if (slotLabel) bookedBySlot.set(slotLabel, b);
-            }
-
-            container.innerHTML = `
-                <div class="text-xs font-bold text-base-charcoal mb-2">${dateStr} の時間帯スケジュール</div>
-                <div class="divide-y divide-base-border border border-base-border rounded-xl bg-white overflow-hidden">
-                    ${hoursList.map(hhmm => {
-                        const booking = bookedBySlot.get(hhmm);
-                        const isClosed = closedSet.has(hhmm);
-                        let badge = `<span class="text-emerald-700 font-semibold">空き</span>`;
-                        let detail = `利用可能`;
-
-                        if (booking) {
-                            badge = `<span class="text-base-terra font-bold">予約あり</span>`;
-                            detail = `${booking.booking_code || booking.id || '予約'}（${booking.status || 'confirmed'}）`;
-                        } else if (isClosed) {
-                            badge = `<span class="text-gray-500 font-semibold">休み枠</span>`;
-                            detail = `受付停止中`;
-                        }
-
-                        return `
-                            <div class="flex items-center justify-between px-3.5 py-2.5 text-xs">
-                                <div class="font-mono font-bold text-base-charcoal w-16">${hhmm}</div>
-                                <div class="flex-1 text-base-muted truncate pr-2">${detail}</div>
-                                <div>${badge}</div>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            `;
-        const ADMIN_TOKEN_KEY = 'salonbase_admin_token';
-        const ADMIN_PW_KEY = 'salonbase_admin_pw';
-        const SALON_REGISTERED_KEY = 'salonbase_registered_once';
-
-        let adminConsoleToken = '';
-        let adminBookingsCache = [];
-        let adminManagedSalons = [];
-
-        function restoreSavedPasswordInput() {
-            try {
-                const pwInput = document.getElementById('console-admin-password');
-                const rememberEl = document.getElementById('remember-admin-login');
-                const savedPw = localStorage.getItem(ADMIN_PW_KEY);
-                if (savedPw && pwInput) {
-                    pwInput.value = savedPw;
-                    if (rememberEl) rememberEl.checked = true;
-                }
-            } catch {}
-        }
-
-        function saveOrClearPasswordInput(pw, shouldRemember) {
-            try {
-                if (shouldRemember && pw) {
-                    localStorage.setItem(ADMIN_PW_KEY, pw);
-                } else {
-                    localStorage.removeItem(ADMIN_PW_KEY);
-                }
-            } catch {}
-        }
-
-        function hasRegisteredSalon(ownerSalons = []) {
-            if (Array.isArray(ownerSalons) && ownerSalons.length > 0) return true;
-            try {
-                return localStorage.getItem(SALON_REGISTERED_KEY) === '1';
-            } catch {
-                return false;
-            }
-        }
-
-        function markSalonAsRegistered() {
-            try {
-                localStorage.setItem(SALON_REGISTERED_KEY, '1');
-            } catch {}
-        }
-
-        function syncSalonFormMode(ownerSalons = []) {
-            const createFormEl = document.getElementById('entry-form-body');
-            const editBtnEl = document.getElementById('open-salon-edit-btn');
-            const summaryEl = document.getElementById('registered-salon-summary');
-            const isRegistered = hasRegisteredSalon(ownerSalons);
-
-            if (isRegistered) {
-                if (createFormEl) createFormEl.classList.add('hidden');
-                if (editBtnEl) editBtnEl.classList.remove('hidden');
-                const salonTitle = ownerSalons[0]?.name || '登録済みサロン';
-                if (summaryEl) {
-                    summaryEl.textContent = `${salonTitle}（掲載済み：内容を変更したいときのみ「変更」ボタンを押してください）`;
-                }
-            } else {
-                if (createFormEl) createFormEl.classList.remove('hidden');
-                if (editBtnEl) editBtnEl.classList.add('hidden');
-                if (summaryEl) {
-                    summaryEl.textContent = '初回のみ掲載登録を行えます。登録後は「変更」ボタンから更新します。';
-                }
-            }
-        }
-
-        async function loginAdminConsole() {
-            const pw = document.getElementById('console-admin-password')?.value || '';
-            const rememberEl = document.getElementById('remember-admin-login');
-            const shouldRemember = rememberEl ? rememberEl.checked : true;
-
-            if (!pw) {
-                openNotifModal('入力エラー', '管理者パスワードを入力してください。');
-                return;
-            }
-
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'content-type': 'application/json' },
-                body: JSON.stringify({ password: pw })
-            });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok || !data.token) {
-                openNotifModal('ログインエラー', data.error || 'ログインに失敗しました。');
-                return;
-            }
-
-            adminConsoleToken = data.token;
-            saveOrClearPasswordInput(pw, shouldRemember);
-
-            try {
-                if (shouldRemember) {
-                    localStorage.setItem(ADMIN_TOKEN_KEY, data.token);
-                } else {
-                    localStorage.removeItem(ADMIN_TOKEN_KEY);
-                }
-            } catch {}
-
-            await refreshAdminConsoleData();
-        }
-
-        async function restoreAdminSession() {
-            try {
-                const savedToken = localStorage.getItem(ADMIN_TOKEN_KEY);
-                if (!savedToken) return;
-                adminConsoleToken = savedToken;
-                await refreshAdminConsoleData();
-            } catch {}
-        }
-
-        async function refreshAdminConsoleData() {
-            if (!adminConsoleToken) return;
-
-            const [myRes, bkgRes] = await Promise.all([
-                fetch('/api/my-salons', { headers: { Authorization: `Bearer ${adminConsoleToken}` } }),
-                fetch('/api/admin/bookings', { headers: { Authorization: `Bearer ${adminConsoleToken}` } })
-            ]);
-
-            if (myRes.status === 401 || bkgRes.status === 401) {
-                adminConsoleToken = '';
-                try { localStorage.removeItem(ADMIN_TOKEN_KEY); } catch {}
-                return;
-            }
-
-            const myData = await myRes.json().catch(() => ({}));
-            const bkgData = await bkgRes.json().catch(() => ({}));
-
-            adminManagedSalons = myData.salons || [];
-            adminBookingsCache = bkgData.bookings || [];
-
-            if (adminManagedSalons.length > 0) markSalonAsRegistered();
-            syncSalonFormMode(adminManagedSalons);
-
-            const selectEl = document.getElementById('admin-salon-select');
-            if (selectEl) {
-                selectEl.innerHTML = adminManagedSalons.map(sItem =>
-                    `<option value="${sItem.id}">${sItem.name}（ID: ${sItem.id}）</option>`
-                ).join('');
-            }
-
-            await loadAdminScheduleForSelectedDate();
-        }
-
-        function openSalonEditMode() {
-            const target = adminManagedSalons[0];
-            if (!target) return;
-
-            const targetIdStr = String(target.id);
-            const targetNumId = targetIdStr.replace(/^db_/, '');
-            const fullSalon = salons.find(
-                (sItem) => String(sItem.id) === targetIdStr || String(sItem.id).replace(/^db_/, '') === targetNumId
-            ) || {};
-
-            const editSection = document.getElementById('salon-edit-section');
-            editSection.classList.remove('hidden');
-            editSection.dataset.editingSalonId = targetNumId;
-
-            document.getElementById('edit-salon-name').value = target.name || target.salon_name || fullSalon.name || '';
-            document.getElementById('edit-salon-price').value = target.pricePerHour ?? target.price_per_hour ?? fullSalon.pricePerHour ?? '';
-            document.getElementById('edit-salon-description').value
-                document.getElementById('edit-salon-description').value = target.description || target.salon_description || fullSalon.description || '';
-        }
-
-        async function submitSalonUpdate() {
-            const editSection = document.getElementById('salon-edit-section');
-            const rawId = String(editSection?.dataset.editingSalonId || '').replace(/^db_/, '');
-            if (!rawId || !adminConsoleToken) return;
-
-            const payload = {
-                name: document.getElementById('edit-salon-name')?.value || '',
-                pricePerHour: Number(document.getElementById('edit-salon-price')?.value || 0),
-                description: document.getElementById('edit-salon-description')?.value || ''
-            };
-
-               function openSalonEditMode() {
-        const target = adminManagedSalons[0];
-        if (!target) return;
-
-        const targetIdStr = String(target.id);
-        const targetNumId = targetIdStr.replace(/^db_/, '');
-        const fullSalon = salons.find(
-            (sItem) => String(sItem.id) === targetIdStr || String(sItem.id).replace(/^db_/, '') === targetNumId
-        ) || {};
-
-        const editSection = document.getElementById('salon-edit-section');
-        editSection.classList.remove('hidden');
-        editSection.dataset.editingSalonId = targetNumId;
-
-        document.getElementById('edit-salon-name').value = target.name || target.salon_name || fullSalon.name || '';
-        document.getElementById('edit-salon-price').value = target.pricePerHour ?? target.price_per_hour ?? fullSalon.pricePerHour ?? '';
-        document.getElementById('edit-salon-description').value = target.description || target.salon_description || fullSalon.description || '';
+        return json({ ok: true, id: ins.meta?.last_row_id, imageUrl }, 201);
+      } catch (e) {
+        return json({ ok: false, error: "サロン情報の保存に失敗しました" }, 500);
+      }
     }
 
-    async function submitSalonUpdate() {
-        const editSection = document.getElementById('salon-edit-section');
-        const rawId = String(editSection?.dataset.editingSalonId || '').replace(/^db_/, '');
-        if (!rawId || !adminConsoleToken) return;
+    // ---- 掲載エントリー＋メール通知 ----
+    if (path === "/api/entry" && method === "POST") {
+  try {
+    const b = await request.json();
+    const salon = s(b.salon_name, 100);
+    const person = s(b.person_name, 100);
+    const email = s(b.email, 200);
+    const phone = s(b.phone, 50);
+    const rawPassword = String(b.password || "");
 
-        const payload = {
-            name: document.getElementById('edit-salon-name')?.value || '',
-            pricePerHour: Number(document.getElementById('edit-salon-price')?.value || 0),
-            description: document.getElementById('edit-salon-description')?.value || ''
-        };
-
-        const res = await fetch(`/api/salons/${rawId}`, {
-            method: 'PUT',
-            headers: {
-                'content-type': 'application/json',
-                Authorization: `Bearer ${adminConsoleToken}`
-            },
-            body: JSON.stringify(payload)
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok || data.ok === false) {
-            openNotifModal('更新エラー', data.error || 'サロン詳細の変更に失敗しました。');
-            return;
-        }
-
-        openNotifModal('変更完了', 'サロン詳細を更新しました。');
-        editSection.classList.add('hidden');
-        await refreshAdminConsoleData();
+    if (!salon || !person || !email || !phone) {
+      return json({ ok: false, error: "必須項目が未入力です" }, 400);
+    }
+    if (rawPassword.length < 6) {
+      return json({ ok: false, error: "ログインパスワードは6文字以上で設定してください" }, 400);
     }
 
-    async function loadAdminScheduleForSelectedDate() {
-        const sid = document.getElementById('admin-salon-select')?.value;
-        const dateStr = document.getElementById('admin-schedule-date')?.value || '';
-        const hours = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
+    const ownerCode = generateOwnerCode();
+    const { saltHex, hashHex } = await hashPassword(rawPassword);
+    const createdAt = new Date().toISOString();
 
-        let closedHours = [];
-        if (sid && dateStr) {
-            try {
-                const r = await fetch(`/api/closures?salon_id=${encodeURIComponent(sid)}&date=${encodeURIComponent(dateStr)}`);
-                const d = await r.json().catch(() => ({}));
-                if (r.ok && Array.isArray(d.hours)) closedHours = d.hours;
-            } catch {}
-        }
+    await env.DB.prepare(
+      `INSERT INTO owner_entries
+        (created_at, salon_name, area, space_type, person_name, email, phone, image_key, owner_code, password_hash, password_salt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+      .bind(
+        createdAt,
+        salon,
+        s(b.area, 200),
+        s(b.space_type, 50),
+        person,
+        email,
+        phone,
+        s(b.image_key, 200),
+        ownerCode,
+        hashHex,
+        saltHex
+      )
+      .run();
 
-        renderAdminDateTimeSchedule(dateStr, hours, adminBookingsCache, closedHours);
+    const adminUrl = "https://salon-base.emikurekura.workers.dev/admin.html";
+
+    // 運営宛て通知メール（パスワードは記載せず、番号と管理画面URLを案内）
+    try {
+      if (env.RESEND_API_KEY && env.NOTIFY_EMAIL) {
+        const adminText = [
+          "新しい掲載エントリーが届きました。",
+          "",
+          `会員番号: ${ownerCode}`,
+          `サロン名: ${salon}`,
+          `担当者: ${person}`,
+          `エリア: ${s(b.area, 200)}`,
+          `メール: ${email}`,
+          `電話: ${phone}`,
+          "",
+          "▼ 管理画面（SHARE SALON Owner Console）",
+          adminUrl
+        ].join("\n");
+
+        await sendMail(env, env.NOTIFY_EMAIL, `【SHARE SALON】新規エントリー（${ownerCode}）：${salon}`, adminText);
+      }
+    } catch (mailErr) {
+      console.error("Notify mail error:", mailErr);
     }
 
-    function renderAdminDateTimeSchedule(dateStr, hoursList, bookings = [], closedHours = []) {
-        const container = document.getElementById('admin-schedule-by-date');
-        if (!container) return;
-
-        const closedSet = new Set(closedHours);
-        const bookedBySlot = new Map();
-
-        for (const b of bookings) {
-            const startRaw = String(b.start_at || b.desired_date || '');
-            if (!dateStr || !startRaw.startsWith(dateStr)) continue;
-            const dObj = new Date(b.start_at);
-            const slotLabel = Number.isNaN(dObj.getTime())
-                ? String(b.desired_time || '').slice(0, 5)
-                : dObj.toLocaleTimeString('ja-JP', {
-                    timeZone: 'Asia/Tokyo',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false
-                });
-            if (slotLabel) bookedBySlot.set(slotLabel, b);
-        }
-
-        container.innerHTML = `
-            <div class="text-xs font-bold text-base-charcoal mb-2">${dateStr} の時間帯スケジュール</div>
-            <div class="divide-y divide-base-border border border-base-border rounded-xl bg-white overflow-hidden">
-                ${hoursList.map(hhmm => {
-                    const booking = bookedBySlot.get(hhmm);
-                    const isClosed = closedSet.has(hhmm);
-                    let badge = `<span class="text-emerald-700 font-semibold">空き</span>`;
-                    let detail = `利用可能`;
-
-                    if (booking) {
-                        badge = `<span class="text-base-terra font-bold">予約あり</span>`;
-                        detail = `${booking.booking_code || booking.id || '予約'}（${booking.status || 'confirmed'}）`;
-                    } else if (isClosed) {
-                        badge = `<span class="text-gray-500 font-semibold">休み枠</span>`;
-                        detail = `受付停止中`;
-                    }
-
-                    return `
-                        <div class="flex items-center justify-between px-3.5 py-2.5 text-xs">
-                            <div class="font-mono font-bold text-base-charcoal w-16">${hhmm}</div>
-                            <div class="flex-1 text-base-muted truncate pr-2">${detail}</div>
-                            <div>${badge}</div>
-                        </div>
-                    `;
-                }).join('')}
-            </div>
-        `;
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const dateInput = document.getElementById('admin-schedule-date');
-        if (dateInput && !dateInput.value) {
-            dateInput.value = new Date().toISOString().split('T')[0];
-        }
-        const hours = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
-        renderAdminDateTimeSchedule(dateInput?.value || '', hours, [], []);
-        restoreSavedPasswordInput();
-        syncSalonFormMode([]);
-        restoreAdminSession();
+    // フロント側へ「会員番号」と「管理画面URL」を返して誘導しやすくする
+    return json({
+      ok: true,
+      owner_code: ownerCode,
+      admin_url: adminUrl
     });
-*/
-        
-</script>
-</body>
-</html>
+  } catch (err) {
+    return json({ ok: false, error: String(err?.message || err) }, 500);
+  }
+}
+// ---- オーナーの退会（番号＋パスワード確認） ----
+if (path === "/api/owner/withdraw" && method === "POST") {
+  try {
+    const b = await request.json().catch(() => ({}));
+    const ownerCode = String(b.owner_code || "").trim().toUpperCase();
+    const rawPassword = String(b.password || "");
+    if (!ownerCode || !rawPassword) {
+      return json({ ok: false, error: "番号とパスワードを入力してください" }, 400);
+    }
+    const row = await env.DB.prepare(
+      "SELECT id, email, owner_code, salon_name, person_name, password_hash, password_salt FROM owner_entries WHERE owner_code = ? LIMIT 1"
+    ).bind(ownerCode).first();
+    if (!row || !row.password_hash || !row.password_salt) {
+      return json({ ok: false, error: "番号またはパスワードが正しくありません" }, 401);
+    }
+    const { hashHex } = await hashPassword(rawPassword, row.password_salt);
+    if (hashHex !== row.password_hash) {
+      return json({ ok: false, error: "番号またはパスワードが正しくありません" }, 401);
+    }
+    // 今日以降の支払い済み予約があれば退会できない（日本時間）
+    const today = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+    const future = await env.DB.prepare(
+      "SELECT COUNT(*) AS n FROM salon_bookings WHERE owner_email = ? AND status = 'paid' AND date >= ?"
+    ).bind(row.email || "", today).first();
+    if (Number(future?.n || 0) > 0) {
+      return json({
+        ok: false,
+        error: "これからの日程で支払い済みの予約が " + future.n + " 件あります。予約日を過ぎてから、または運営へご連絡のうえ退会してください。",
+      }, 409);
+    }
+    // サロンと関連データを削除し、オーナー登録を削除
+    const sals = await env.DB.prepare("SELECT id FROM published_salons WHERE owner_email = ?").bind(row.email || "").all();
+    for (const sl of sals?.results || []) {
+      await env.DB.prepare("DELETE FROM salon_photos WHERE salon_id = ?").bind(sl.id).run();
+      await env.DB.prepare("DELETE FROM salon_closures WHERE salon_id = ?").bind(sl.id).run();
+      await env.DB.prepare("DELETE FROM published_salons WHERE id = ?").bind(sl.id).run();
+    }
+    await env.DB.prepare("DELETE FROM owner_entries WHERE id = ?").bind(row.id).run();
+    // 確認メール（オーナー・運営）
+    try {
+      if (env.RESEND_API_KEY) {
+        const body = [
+          "SHARE SALON の退会手続きが完了しました。",
+          "",
+          "オーナー番号: " + row.owner_code,
+          "サロン名: " + (row.salon_name || ""),
+          "担当者: " + (row.person_name || ""),
+          "",
+          "掲載していたサロン情報は削除されました。ご利用ありがとうございました。",
+        ].join("\n");
+        if (row.email) await sendMail(env, row.email, "【SHARE SALON】退会手続きが完了しました", body);
+        if (env.NOTIFY_EMAIL) await sendMail(env, env.NOTIFY_EMAIL, "【SHARE SALON】オーナーが退会しました（" + row.owner_code + "）", body);
+      }
+    } catch (e) { console.log("withdraw mail error", String(e)); }
+    return json({ ok: true });
+  } catch (err) {
+    return json({ ok: false, error: String(err?.message || err) }, 500);
+  }
+}
+
+if (path === "/api/owner/login" && method === "POST") {
+  try {
+    const b = await request.json();
+    const ownerCode = String(b.owner_code || "").trim().toUpperCase();
+    const rawPassword = String(b.password || "");
+
+    if (!ownerCode || !rawPassword) {
+      return json({ ok: false, error: "番号とパスワードを入力してください" }, 400);
+    }
+
+    const row = await env.DB.prepare(
+      "SELECT id, owner_code, salon_name, person_name, password_hash, password_salt FROM owner_entries WHERE owner_code = ? LIMIT 1"
+    )
+      .bind(ownerCode)
+      .first();
+
+    if (!row || !row.password_hash || !row.password_salt) {
+      return json({ ok: false, error: "番号またはパスワードが正しくありません" }, 401);
+    }
+
+    const { hashHex } = await hashPassword(rawPassword, row.password_salt);
+    if (hashHex !== row.password_hash) {
+      return json({ ok: false, error: "番号またはパスワードが正しくありません" }, 401);
+    }
+        const token = await createAdminToken(env, "owner", { owner_id: row.id });
+    return json({
+      ok: true,
+      token,
+      owner: {
+        id: row.id,
+        owner_code: row.owner_code,
+        salon_name: row.salon_name,
+        person_name: row.person_name
+      }
+    });
+
+  } catch (err) {
+    return json({ ok: false, error: String(err?.message || err) }, 500);
+  }
+}
+    // ---- 無料見学（30分）の予約＋応募者へのメール送信 ----
+    if (path === "/api/tour-bookings" && method === "POST") {
+      try {
+        const b = await request.json().catch(() => ({}));
+        const salonName = s(b.salon_name || b.salonName, 150);
+        const applicantName = s(b.name || b.applicant_name, 100);
+        const email = s(b.email, 200);
+        const phone = s(b.phone, 50);
+        const tourDate = s(b.tour_date || b.date, 30);
+        const tourTime = s(b.tour_time || b.time, 30);
+        const note = s(b.note || b.message, 500);
+
+        if (!salonName || !applicantName || !email || !tourDate || !tourTime) {
+          return json(
+            { ok: false, error: "サロン名・お名前・メールアドレス・希望日・希望時間を入力してください" },
+            400
+          );
+        }
+
+        const tourId = makeId("tour");
+        const createdAt = new Date().toISOString();
+
+        try {
+          await env.DB.prepare(
+            `INSERT INTO tour_bookings
+              (id, salon_name, applicant_name, email, phone, tour_date, tour_time, note, status, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'requested', ?)`
+          )
+            .bind(
+              tourId,
+              salonName,
+              applicantName,
+              email,
+              phone,
+              tourDate,
+              tourTime,
+              note,
+              createdAt
+            )
+            .run();
+        } catch (dbErr) {
+          console.log("tour_bookings insert skipped/error:", String(dbErr));
+        }
+
+        if (!env.RESEND_API_KEY) {
+          return json({ ok: false, error: "メール送信設定（RESEND_API_KEY）が未設定です" }, 500);
+        }
+
+        const guestSubject = `【SHARE SALON】無料見学（30分）のご予約受付完了：${salonName}`;
+        const guestText = [
+          `${applicantName} 様`,
+          "",
+          "SHARE SALON より、無料見学（30分）のご予約を受け付けました。",
+          "",
+          "■ ご予約内容",
+          `予約番号: ${tourId}`,
+          `サロン名: ${salonName}`,
+          `ご希望日時: ${tourDate} ${tourTime}`,
+          phone ? `電話番号: ${phone}` : "",
+          note ? `備考・ご質問: ${note}` : "",
+          "",
+          "担当者より当日のご案内をお送りいたします。",
+          "ご不明点がある場合は、このメールへご返信ください。",
+        ]
+          .filter(Boolean)
+          .join("\n");
+
+        const sentToGuest = await sendMail(env, email, guestSubject, guestText);
+
+        if (env.NOTIFY_EMAIL) {
+          const adminText = [
+            "新しい無料見学（30分）の予約が入りました。",
+            "",
+            `予約番号: ${tourId}`,
+            `サロン名: ${salonName}`,
+            `応募者: ${applicantName}`,
+            `メール: ${email}`,
+            phone ? `電話: ${phone}` : "",
+            `希望日時: ${tourDate} ${tourTime}`,
+            note ? `備考: ${note}` : "",
+          ]
+            .filter(Boolean)
+            .join("\n");
+
+          await sendMail(
+            env,
+            env.NOTIFY_EMAIL,
+            `【SHARE SALON】無料見学予約：${salonName}（${tourDate} ${tourTime}）`,
+            adminText
+          );
+        }
+
+        if (!sentToGuest) {
+          return json({ ok: false, error: "応募者へのメール送信に失敗しました" }, 500);
+        }
+
+        return json({ ok: true, id: tourId }, 201);
+      } catch (err) {
+        return json({ ok: false, error: err?.message || "見学予約の処理に失敗しました" }, 500);
+      }
+    }
+          // ---- 自分のサロン一覧（オーナー用） ----
+    if (path === "/api/my-salons" && method === "GET") {
+      if (!(await verifyAdminToken(request, env))) {
+        return json({ ok: false, error: "認証が必要です" }, 401);
+      }
+      try {
+        const rawTok = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").split(".")[0];
+        const tok = JSON.parse(atob(rawTok));
+        let rows;
+        if (tok.role === "admin") {
+          rows = await env.DB.prepare("SELECT id, name FROM published_salons ORDER BY id DESC LIMIT 100").all();
+        } else {
+          const ow = await env.DB.prepare("SELECT email FROM owner_entries WHERE id = ?").bind(tok.owner_id).first();
+          rows = await env.DB.prepare("SELECT id, name FROM published_salons WHERE owner_email = ? ORDER BY id DESC").bind(ow?.email || "").all();
+        }
+        return json({ ok: true, salons: rows.results || [] });
+      } catch (e) {
+        return json({ ok: false, error: "取得に失敗しました" }, 500);
+      }
+    }
+
+    // ---- 日付ごとの休み：取得（公開） ----
+    if (path === "/api/closures" && method === "GET") {
+      const u = new URL(request.url);
+      const sid = parseInt(String(u.searchParams.get("salon_id") || "").replace(/^db_/, ""), 10);
+      const date = u.searchParams.get("date");
+      if (!sid) return json({ ok: false, error: "salon_id が必要です" }, 400);
+      try {
+        if (date) {
+          const r = await env.DB.prepare("SELECT hours FROM salon_closures WHERE salon_id = ? AND date = ?").bind(sid, date).first();
+          return json({ ok: true, hours: r ? JSON.parse(r.hours || "[]") : [] });
+        }
+        const today = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+        const rows = await env.DB.prepare("SELECT date, hours FROM salon_closures WHERE salon_id = ? AND date >= ? ORDER BY date").bind(sid, today).all();
+        return json({ ok: true, closures: (rows.results || []).map((x) => ({ date: x.date, hours: JSON.parse(x.hours || "[]") })) });
+      } catch (e) {
+        return json({ ok: false, error: "取得に失敗しました" }, 500);
+      }
+    }
+
+    // ---- 日付ごとの休み：保存（ログイン必須） ----
+    if (path === "/api/closures" && method === "POST") {
+      if (!(await verifyAdminToken(request, env))) {
+        return json({ ok: false, error: "認証が必要です" }, 401);
+      }
+      try {
+        const body = await request.json();
+        const sid = parseInt(body.salon_id, 10);
+        const date = String(body.date || "");
+        const hours = Array.isArray(body.hours) ? body.hours.filter((h) => /^\d{2}:\d{2}$/.test(h)) : [];
+        if (!sid || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+          return json({ ok: false, error: "サロンと日付を選んでください" }, 400);
+        }
+        const rawTok = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").split(".")[0];
+        const tok = JSON.parse(atob(rawTok));
+        if (tok.role !== "admin") {
+          const ow = await env.DB.prepare("SELECT email FROM owner_entries WHERE id = ?").bind(tok.owner_id).first();
+          const sal = await env.DB.prepare("SELECT owner_email FROM published_salons WHERE id = ?").bind(sid).first();
+          if (!ow?.email || !sal || sal.owner_email !== ow.email) {
+            return json({ ok: false, error: "このサロンは編集できません" }, 403);
+          }
+        }
+        if (hours.length === 0) {
+          await env.DB.prepare("DELETE FROM salon_closures WHERE salon_id = ? AND date = ?").bind(sid, date).run();
+        } else {
+          await env.DB.prepare("INSERT OR REPLACE INTO salon_closures (salon_id, date, hours) VALUES (?, ?, ?)").bind(sid, date, JSON.stringify(hours)).run();
+        }
+        return json({ ok: true });
+      } catch (e) {
+        return json({ ok: false, error: "保存に失敗しました" }, 500);
+      }
+    }
+    // ---- 管理画面アプリ化（マニフェストとアイコン） ----
+    if (path === "/admin.webmanifest" && method === "GET") {
+      return new Response(JSON.stringify({
+        name: "SHARE SALON オーナー管理",
+        short_name: "SHARE SALON",
+        start_url: "/admin.html",
+        scope: "/",
+        display: "standalone",
+        background_color: "#FAF7F2",
+        theme_color: "#C4826E",
+        icons: [{ src: "/admin-icon.png", sizes: "256x256", type: "image/png", purpose: "any" }]
+      }), { headers: { "content-type": "application/manifest+json; charset=UTF-8" } });
+    }
+    if (path === "/admin-icon.png" && method === "GET") {
+      const bin = Uint8Array.from(atob("iVBORw0KGgoAAAANSUhEUgAAAQAAAAEABAMAAACuXLVVAAAAElBMVEX8+fjFgm7Egm/Egm7Egm3BfGfOeeMGAAAGXUlEQVR42u2dz28aRxTH3wyOZasClvpQqWpiwgZFVYVxvOm5lvIHtE3+TlttD721qnroxeVXUJVGLmSxq6hS5OwCapIqZqcHY4xhdnd+Lony9sSODe+z3/fmx5sZBuLBai8KCIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAAHzrAmt7bAwAorRAg8ACgUVoZQOgd+UAf9ciKYiC4d+QDRAdbwWoAmPu7DwAQ/bQXqn9K7lPlt45f+FOSP/eHK1CA1fzLl1E3XAHAuHn1ulfP3gXsk9bczds3G5krUJi/GWTvgvF383dv61kDsNr1e+UwVAUYNa/f97YzBiD+9fvIyRZg0QPqPlAEGL5cLHlWzBSA+oslUTlLAFZcBhiGWSpwa7noJEsFlkNAOQiooRBQDgI1gCIPYJgdALvFKz0Js1Mg4hX62SkwbvNKJ/XsFPCFZbEDUOAXD7ICYDFd7yjMSoFIwjE2AEZtfvlk205uuJQBx6aCznDxfcTRBmAjD4D1w1K61tc8ExDXATgbOLoA451GHypbe80rgthYY3P23UKrD5VcfaCZmLC7hwFA8PyN19+cVYJnMf98PktPAu+P3wKA4OX5q029ILxMwPoH3iwJj1WVXE1cHPWno+V7oRYA++LS39HBLAmP0hpI5h7N3vaDXjWcy3+iw/oFAYt/puk/jI994ZyJio++o+5FPR/HNjjT7mhU88XH61Qi/zk+DRObgWl0sJ1DiZyJyuQ/vd0wscmNAABYrimTMyUCsJsLBr4X6PLHHy0APg7VFViEP++GS1QLtljtl7jKqQCwVOF69RASJCXAxk25TpLKdXtRN2X0P6z5cp1kIgBHvOOPw4Shl89uH6Y7UsIFHPV+3k3sWv6SHStKD0iibjv+j5Oab39E1Ev6YzODIVkkPV43PSb0FeHkAZKaHJkrsSnERat3GoCMzNjYdlQVGJoBKGIMIIA6QNm+CXRBYnpemJgwQQbqeYGZGAjf4xgwglfWMBGaAGDqAKRrAqDmmMsN1WqBjpfL1lsaquE+wUtnhqSwq28/N7AnkIFamGYhtF0L0+aITvUBdhwtjcu2u1sKtquB3lStfjVIqQS6CmlXglQDoeVKkAagXw1SKkG6xGXLY861hJUqEFp1Stttc+nEkgwAC92p4bNCW0+B0fSMCdbkPwsXIHDdRuQDAC3Dnp4C+73LT/JYkycC8XhbJRv9q0eI9GqhP3tZ8ZqOEADLvfDtDIC/bTsiUTrO27EPUacusm7I7v5oKwd4ef56I12BcROsXZytn1Rgk5RBJyxvt1pW4DObidiv6QqM2jYBlldPqFwaoX056S7wbdqPUl1gaoYcRGfOqZV0UCJRxEkqamVOQmKISC3kQlJDxHcwBsrZmqNW5iQk8gxqY05CJlGj2VbMcro5M1NzIDxlRyHLKKQiRXmLQZDrqDFZDAGONZtBUBPKC5i1IOCtHHAACnu2ANyBEIA9H/DmzXkRl//Gjv0bHdEBycgOwLboiIicWglDyp0u4iqQtxKGbkd4TEi6FiSg/KUbfrNnQwK+ADEAFiSIESCu4TcvQYwAcQDGJYgTILbrMy1BnACxAIYliBUgvvPPV00CPOxI54ak/9Cc/WrfkU9Oi+acQGtDheyYmItDt+OopOeku2/G/lrS+nnSCDT/rxEn0K87qrvpJvdNADxoK++mIy0DNaF6prOBQT8M1mpaGxi0wyA5AASW7Sb3tQhocgAI5GGkpdUauGeO7jSd81gjEKs3if48YaGrTFCtDQxMVJK8KkG11nFMzJSqEgjZFzqFg6yf7r+WnUGld4Tsix0DQtZPvFd8ArodU/7oxlPH3Gk8pND4kva5D7Dr84orXkNw2VvwIBSy2Xd3n/Aaur/XORJU7zVLG4ZPYtl8/oITCHf+Wf/8Ccf9rZL5o2A210+8N8XrCPSr/8hpYaHs9oMbT0s2TmQixYbr0GjO55W9lgP5rfnooGWPNUoS6z5E6jcsWOg6vXBqr7K13SzB5fdbL4rIXtxGBTMAAAFslQGgAbnd2XeBA1JxJm3wACBqyR7SRaR/xYOFAFCByJ8zFQAtQ19pywlR+xkRFi4+aKC43UXxWDCyJHQJv1+AAAiAAAiAAAiAAAiAAAiAAAiAAAiAAAiAAAiAAAiAAAiAAAiAAAjwvgL8D1KSwEcXFX5+AAAAAElFTkSuQmCC"), (c) => c.charCodeAt(0));
+      return new Response(bin, { headers: { "content-type": "image/png", "cache-control": "public, max-age=86400" } });
+    }
+    // ================= Stripe 決済（Connect） =================
+    const stripeFetch = async (httpMethod, endpoint, params) => {
+      if (!env.STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY が未設定です");
+      const r = await fetch("https://api.stripe.com/v1" + endpoint, {
+        method: httpMethod,
+        headers: {
+          Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: params ? new URLSearchParams(params).toString() : undefined,
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j?.error?.message || "Stripe エラー");
+      return j;
+    };
+    const tokenOf = () => {
+      const rawTok = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").split(".")[0];
+      return JSON.parse(atob(rawTok));
+    };
+
+    // ---- Stripe Accounts v2（新しいConnect用） ----
+    const STRIPE_V2_VERSION = "2026-11-18.endive";
+    const stripeV2 = async (httpMethod, endpoint, bodyObj) => {
+      if (!env.STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY が未設定です");
+      const r = await fetch("https://api.stripe.com/v2" + endpoint, {
+        method: httpMethod,
+        headers: {
+          Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
+          "Stripe-Version": STRIPE_V2_VERSION,
+          "Content-Type": "application/json",
+        },
+        body: bodyObj ? JSON.stringify(bodyObj) : undefined,
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j?.error?.message || j?.message || "Stripe エラー(" + r.status + ")");
+      return j;
+    };
+    const getTransfersInfo = async (acctId) => {
+      let v2st = "", codes = "", v1st = "", note = "";
+      try {
+        const a = await stripeV2("GET", "/core/accounts/" + acctId + "?include[0]=configuration.recipient&include[1]=requirements");
+        const cap = a?.configuration?.recipient?.capabilities?.stripe_balance?.stripe_transfers;
+        v2st = cap?.status || "";
+        codes = (cap?.status_details || []).map((d) => d.code).join(",");
+        if (!a?.configuration?.recipient) note += " recipient設定なし(applied=" + (a?.applied_configurations || []).join(",") + ")";
+      } catch (e) {
+        note += " v2:" + String(e?.message || e).slice(0, 80);
+      }
+      try {
+        const x = await stripeFetch("GET", "/accounts/" + acctId);
+        v1st = x?.capabilities?.transfers || "";
+      } catch (e) {
+        note += " v1:" + String(e?.message || e).slice(0, 80);
+      }
+      const active = v2st === "active" || v1st === "active";
+      const detail = "v2=" + (v2st || "なし") + (codes ? "[" + codes + "]" : "") + " v1=" + (v1st || "なし") + note;
+      return { active, status: v2st || v1st, detail };
+    };
+
+    // ---- オーナーの受け取り口座の登録（v2・Stripeの画面へ移動） ----
+    if (path === "/api/stripe/connect" && method === "POST") {
+      if (!(await verifyAdminToken(request, env))) return json({ ok: false, error: "認証が必要です" }, 401);
+      try {
+        const tok = tokenOf();
+        if (tok.role !== "owner" || !tok.owner_id) return json({ ok: false, error: "オーナーでログインしてください" }, 403);
+        const ow = await env.DB.prepare("SELECT id, email, salon_name, stripe_account_id FROM owner_entries WHERE id = ?").bind(tok.owner_id).first();
+        if (!ow) return json({ ok: false, error: "オーナーが見つかりません" }, 404);
+        let acct = ow.stripe_account_id;
+        if (!acct) {
+          const created = await stripeV2("POST", "/core/accounts", {
+            contact_email: ow.email || undefined,
+            display_name: ow.salon_name || "SHARE SALON Owner",
+            dashboard: "express",
+            identity: { country: "jp" },
+            defaults: {
+              responsibilities: { fees_collector: "application", losses_collector: "application" },
+            },
+            configuration: {
+              recipient: {
+                capabilities: { stripe_balance: { stripe_transfers: { requested: true } } },
+              },
+            },
+            include: ["configuration.recipient", "identity", "requirements"],
+          });
+          acct = created.id;
+          await env.DB.prepare("UPDATE owner_entries SET stripe_account_id = ? WHERE id = ?").bind(acct, ow.id).run();
+        }
+        const link = await stripeV2("POST", "/core/account_links", {
+          account: acct,
+          use_case: {
+            type: "account_onboarding",
+            account_onboarding: {
+              refresh_url: `${url.origin}/admin?stripe=refresh`,
+              return_url: `${url.origin}/admin?stripe=return`,
+            },
+          },
+        });
+        return json({ ok: true, url: link.url });
+      } catch (e) {
+        console.log("stripe connect error", String(e));
+        return json({ ok: false, error: String(e?.message || e) }, 500);
+      }
+    }
+
+    // ---- 受け取り設定の状況（v2） ----
+    if (path === "/api/stripe/status" && method === "GET") {
+      if (!(await verifyAdminToken(request, env))) return json({ ok: false, error: "認証が必要です" }, 401);
+      try {
+        const tok = tokenOf();
+        if (tok.role !== "owner" || !tok.owner_id) return json({ ok: true, connected: false, charges_enabled: false });
+        const ow = await env.DB.prepare("SELECT stripe_account_id FROM owner_entries WHERE id = ?").bind(tok.owner_id).first();
+        if (!ow?.stripe_account_id) return json({ ok: true, connected: false, charges_enabled: false });
+        const info = await getTransfersInfo(ow.stripe_account_id);
+        return json({ ok: true, connected: true, charges_enabled: info.active, details_submitted: info.active, status: info.status });
+      } catch (e) {
+        return json({ ok: false, error: String(e?.message || e) }, 500);
+      }
+    }
+
+    // ---- オーナーの受け取り口座の登録（Stripeの画面へ移動） ----
+    if (path === "/api/stripe/connect" && method === "POST") {
+      if (!(await verifyAdminToken(request, env))) return json({ ok: false, error: "認証が必要です" }, 401);
+      try {
+        const tok = tokenOf();
+        if (tok.role !== "owner" || !tok.owner_id) return json({ ok: false, error: "オーナーでログインしてください" }, 403);
+        const ow = await env.DB.prepare("SELECT id, email, stripe_account_id FROM owner_entries WHERE id = ?").bind(tok.owner_id).first();
+        if (!ow) return json({ ok: false, error: "オーナーが見つかりません" }, 404);
+        let acct = ow.stripe_account_id;
+        if (!acct) {
+          const created = await stripeFetch("POST", "/accounts", {
+            "controller[stripe_dashboard][type]": "express",
+            "controller[fees][payer]": "application",
+            "controller[losses][payments]": "application",
+            country: "JP",
+            email: ow.email || "",
+            "capabilities[card_payments][requested]": "true",
+            "capabilities[transfers][requested]": "true",
+          });
+          acct = created.id;
+          await env.DB.prepare("UPDATE owner_entries SET stripe_account_id = ? WHERE id = ?").bind(acct, ow.id).run();
+        }
+        const link = await stripeFetch("POST", "/account_links", {
+          account: acct,
+          refresh_url: `${url.origin}/admin?stripe=refresh`,
+          return_url: `${url.origin}/admin?stripe=return`,
+          type: "account_onboarding",
+        });
+        return json({ ok: true, url: link.url });
+      } catch (e) {
+        return json({ ok: false, error: String(e?.message || e) }, 500);
+      }
+    }
+
+    // ---- 受け取り設定の状況 ----
+    if (path === "/api/stripe/status" && method === "GET") {
+      if (!(await verifyAdminToken(request, env))) return json({ ok: false, error: "認証が必要です" }, 401);
+      try {
+        const tok = tokenOf();
+        if (tok.role !== "owner" || !tok.owner_id) return json({ ok: true, connected: false, charges_enabled: false });
+        const ow = await env.DB.prepare("SELECT stripe_account_id FROM owner_entries WHERE id = ?").bind(tok.owner_id).first();
+        if (!ow?.stripe_account_id) return json({ ok: true, connected: false, charges_enabled: false });
+        const a = await stripeFetch("GET", "/accounts/" + ow.stripe_account_id);
+        return json({
+          ok: true,
+          connected: true,
+          charges_enabled: !!a.charges_enabled,
+          details_submitted: !!a.details_submitted,
+        });
+      } catch (e) {
+        return json({ ok: false, error: String(e?.message || e) }, 500);
+      }
+    }
+
+    // ---- お客様の予約＋カード決済（Stripe Checkout へ） ----
+    if (path === "/api/checkout" && method === "POST") {
+      try {
+        const b = await request.json().catch(() => ({}));
+        const m = String(b.salon_id || "").match(/^db_(\d+)$/);
+        const date = s(b.date, 10);
+        const hours = Array.isArray(b.hours) ? [...new Set(b.hours.map((h) => s(h, 5)))].filter((h) => /^\d{2}:00$/.test(h)).sort() : [];
+        const guestName = s(b.guest_name, 100);
+        const guestEmail = s(b.guest_email, 200);
+        const guestPhone = s(b.guest_phone, 50);
+        if (!m || !/^\d{4}-\d{2}-\d{2}$/.test(date) || hours.length === 0 || !guestName) {
+          return json({ ok: false, error: "サロン・日付・時間・お名前を確認してください" }, 400);
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) {
+          return json({ ok: false, error: "メールアドレスの形式が正しくありません" }, 400);
+        }
+        const salonId = Number(m[1]);
+        const salon = await env.DB.prepare("SELECT id, name, price_per_hour, owner_email, booked_hours_json FROM published_salons WHERE id = ?").bind(salonId).first();
+        if (!salon) return json({ ok: false, error: "サロンが見つかりません" }, 404);
+
+        const fixedClosed = safeJsonArray(salon.booked_hours_json, []);
+        const cl = await env.DB.prepare("SELECT hours FROM salon_closures WHERE salon_id = ? AND date = ?").bind(salonId, date).first();
+        const dayClosed = cl ? safeJsonArray(cl.hours, []) : [];
+        if (hours.some((h) => fixedClosed.includes(h) || dayClosed.includes(h))) {
+          return json({ ok: false, error: "選択した時間に、お受けできない枠があります" }, 409);
+        }
+        const holdSince = new Date(Date.now() - 35 * 60 * 1000).toISOString();
+        const taken = await env.DB.prepare(
+          "SELECT hours FROM salon_bookings WHERE salon_id = ? AND date = ? AND (status = 'paid' OR (status = 'pending' AND created_at > ?))"
+        ).bind(salonId, date, holdSince).all();
+        for (const row of taken.results || []) {
+          const used = safeJsonArray(row.hours, []);
+          if (hours.some((h) => used.includes(h))) {
+            return json({ ok: false, error: "選択した時間は、すでに予約されています" }, 409);
+          }
+        }
+
+        const ow = await env.DB.prepare("SELECT stripe_account_id FROM owner_entries WHERE email = ? AND stripe_account_id IS NOT NULL LIMIT 1").bind(salon.owner_email || "").first();
+        if (!ow?.stripe_account_id) {
+          return json({ ok: false, error: "このサロンは、現在オンライン決済に対応していません" }, 400);
+        }
+        const tinfo = await getTransfersInfo(ow.stripe_account_id);
+        if (!tinfo.active) {
+          return json({ ok: false, error: "このサロンの受け取り設定が、まだ完了していません（確認用：" + tinfo.detail + "）" }, 400);
+        }
+
+        const total = Number(salon.price_per_hour) * hours.length;
+        if (!Number.isFinite(total) || total < 50) return json({ ok: false, error: "金額が正しくありません" }, 400);
+        const fee = calcFeeJpy(total, FEE_RATE_BPS.attended);
+        const code = makeBookingCode();
+        const nowIso = new Date().toISOString();
+        const ins = await env.DB.prepare(
+          `INSERT INTO salon_bookings (booking_code, salon_id, salon_name, owner_email, date, hours, amount_jpy, fee_jpy, guest_name, guest_email, guest_phone, status, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`
+        ).bind(code, salonId, salon.name, salon.owner_email || "", date, JSON.stringify(hours), total, fee, guestName, guestEmail, guestPhone, nowIso).run();
+        const bookingId = ins.meta?.last_row_id;
+
+        const session = await stripeFetch("POST", "/checkout/sessions", {
+          mode: "payment",
+          "line_items[0][price_data][currency]": "jpy",
+          "line_items[0][price_data][product_data][name]": `${salon.name}（${date} ${hours.join("・")}）`,
+          "line_items[0][price_data][unit_amount]": String(total),
+          "line_items[0][quantity]": "1",
+          "payment_intent_data[application_fee_amount]": String(fee),
+          "payment_intent_data[transfer_data][destination]": ow.stripe_account_id,
+          customer_email: guestEmail,
+          "metadata[booking_id]": String(bookingId),
+          expires_at: String(Math.floor(Date.now() / 1000) + 31 * 60),
+          success_url: `${url.origin}/?paid=${encodeURIComponent(code)}`,
+          cancel_url: `${url.origin}/?canceled=1`,
+        });
+        await env.DB.prepare("UPDATE salon_bookings SET stripe_session_id = ? WHERE id = ?").bind(session.id, bookingId).run();
+        return json({ ok: true, url: session.url });
+      } catch (e) {
+        console.log("checkout error", String(e));
+        return json({ ok: false, error: "決済の準備に失敗しました。時間をおいてお試しください" }, 500);
+      }
+    }
+
+    // ---- Stripe からの支払い完了通知（Webhook） ----
+    if (path === "/api/stripe/webhook" && method === "POST") {
+      try {
+        const raw = await request.text();
+        const sigHeader = request.headers.get("Stripe-Signature") || "";
+        const parts = Object.fromEntries(sigHeader.split(",").map((kv) => kv.split("=")).filter((a) => a.length === 2));
+        const secret = String(env.STRIPE_WEBHOOK_SECRET || "");
+        if (!secret || !parts.t || !parts.v1) return json({ ok: false }, 400);
+        const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+        const sigBuf = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${parts.t}.${raw}`));
+        const expected = Array.from(new Uint8Array(sigBuf)).map((x) => x.toString(16).padStart(2, "0")).join("");
+        const fresh = Math.abs(Date.now() / 1000 - Number(parts.t)) < 300;
+        if (expected !== parts.v1 || !fresh) return json({ ok: false }, 400);
+
+        const event = JSON.parse(raw);
+        const obj = event?.data?.object || {};
+        const bookingId = Number(obj?.metadata?.booking_id || 0);
+
+        if (event.type === "checkout.session.expired" && bookingId) {
+          await env.DB.prepare("UPDATE salon_bookings SET status = 'expired' WHERE id = ? AND status = 'pending'").bind(bookingId).run();
+        }
+        if (event.type === "checkout.session.completed" && bookingId && obj.payment_status === "paid") {
+          const bk = await env.DB.prepare("SELECT * FROM salon_bookings WHERE id = ?").bind(bookingId).first();
+          if (bk && bk.status !== "paid") {
+            await env.DB.prepare("UPDATE salon_bookings SET status = 'paid' WHERE id = ?").bind(bookingId).run();
+            const hrs = safeJsonArray(bk.hours, []).join(" / ");
+            const [yy, mm, dd] = String(bk.date).split("-");
+            const when = `${yy}年${Number(mm)}月${Number(dd)}日 ${hrs}`;
+            const guestText = [
+              `${bk.guest_name} 様`, "", "ご予約とお支払いが完了しました。", "",
+              `予約番号: ${bk.booking_code}`, `サロン: ${bk.salon_name}`, `ご利用日時: ${when}`,
+              `お支払い金額: ¥${Number(bk.amount_jpy).toLocaleString()}`, "", "※ このメールは送信専用です。", "SHARE SALON",
+            ].join("\n");
+            const ownRow = await env.DB.prepare("SELECT owner_code FROM owner_entries WHERE email = ? ORDER BY id ASC LIMIT 1").bind(bk.owner_email || "").first();
+            const ownerText = [
+              "新しい予約（お支払い済み）が入りました。", "",
+              ownRow?.owner_code ? `会員番号: ${ownRow.owner_code}` : "",
+              `予約番号: ${bk.booking_code}`, `サロン: ${bk.salon_name}`, `ご利用日時: ${when}`,
+              `お支払い金額: ¥${Number(bk.amount_jpy).toLocaleString()}`,
+              `運営手数料: ¥${Number(bk.fee_jpy).toLocaleString()}`,
+              `お受け取り予定額: ¥${(Number(bk.amount_jpy) - Number(bk.fee_jpy)).toLocaleString()}`, "",
+              `お客様: ${bk.guest_name} 様`, `メール: ${bk.guest_email}`, bk.guest_phone ? `電話: ${bk.guest_phone}` : "", "", "SHARE SALON",
+            ].filter((x) => x !== "").join("\n");
+            await sendMail(env, bk.guest_email, "【SHARE SALON】ご予約・お支払いが完了しました", guestText);
+            const adminEmail = env.NOTIFY_EMAIL || "";
+            const toOwner = bk.owner_email || adminEmail;
+            if (toOwner) await sendMail(env, toOwner, `【SHARE SALON】新規予約（支払い済み）：${bk.salon_name}`, ownerText);
+            if (adminEmail && adminEmail !== toOwner) await sendMail(env, adminEmail, `【SHARE SALON】（運営控え）新規予約：${bk.salon_name}`, ownerText);
+          }
+        }
+        return json({ ok: true });
+      } catch (e) {
+        console.log("webhook error", String(e));
+        return json({ ok: false }, 500);
+      }
+    }
+
+
+    // ---- 見学リクエスト一覧（ログイン必須） ----
+    if (path === "/api/tours" && method === "GET") {
+      if (!(await verifyAdminToken(request, env))) {
+        return json({ ok: false, error: "認証が必要です" }, 401);
+      }
+      try {
+        const rawTok = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").split(".")[0];
+        const tok = JSON.parse(atob(rawTok));
+        let rows;
+        if (tok.role === "admin") {
+          rows = await env.DB.prepare("SELECT * FROM tour_requests ORDER BY id DESC LIMIT 100").all();
+        } else {
+          const ow = await env.DB.prepare("SELECT email FROM owner_entries WHERE id = ?").bind(tok.owner_id).first();
+          rows = await env.DB.prepare(
+            "SELECT * FROM tour_requests WHERE owner_email = ? ORDER BY id DESC LIMIT 100"
+          ).bind(ow?.email || "").all();
+        }
+        return json({ ok: true, tours: rows.results || [] });
+      } catch (e) {
+        return json({ ok: false, error: "取得に失敗しました" }, 500);
+      }
+    }
+
+    // ---- 自分のサロン（詳細つき・オーナー用） ----
+    if (path === "/api/owner/salons" && method === "GET") {
+      if (!(await verifyAdminToken(request, env))) {
+        return json({ ok: false, error: "認証が必要です" }, 401);
+      }
+      try {
+        const rawTok = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").split(".")[0];
+        const tok = JSON.parse(atob(rawTok));
+        let rows;
+        if (tok.role === "admin") {
+          rows = await env.DB.prepare("SELECT * FROM published_salons ORDER BY id DESC LIMIT 100").all();
+        } else {
+          const ow = await env.DB.prepare("SELECT email FROM owner_entries WHERE id = ?").bind(tok.owner_id).first();
+          rows = await env.DB.prepare("SELECT * FROM published_salons WHERE owner_email = ? ORDER BY id DESC").bind(ow?.email || "").all();
+        }
+        const list = rows.results || [];
+        const photoRows = await env.DB.prepare(
+          "SELECT salon_id, image_key FROM salon_photos ORDER BY salon_id, sort_order ASC"
+        ).all();
+        const photoMap = {};
+        for (const p of photoRows.results || []) {
+          (photoMap[p.salon_id] ||= []).push({ key: p.image_key, url: `/api/images/${encodeURIComponent(p.image_key)}` });
+        }
+        const salons = list.map((r) => ({
+          id: r.id,
+          name: r.name,
+          area: r.area,
+          station: r.station,
+          price: Number(r.price_per_hour || 0),
+          badge: r.availability_badge || "本日空きあり",
+          genres: safeJsonArray(r.genres_json, []),
+          equipment: safeJsonArray(r.equipment_json, []),
+          freeAmenities: safeJsonArray(r.free_amenities_json, []),
+          description: r.description || "",
+          entryRules: r.entry_rules || "",
+          bookedHours: safeJsonArray(r.booked_hours_json, []),
+          photos: photoMap[r.id] || (r.image_key ? [{ key: r.image_key, url: `/api/images/${encodeURIComponent(r.image_key)}` }] : []),
+        }));
+        return json({ ok: true, salons });
+      } catch (e) {
+        return json({ ok: false, error: "取得に失敗しました" }, 500);
+      }
+    }
+
+    // ---- サロン内容の変更・削除（ログイン必須） ----
+    const salonIdMatch = path.match(/^\/api\/salons\/(\d+)$/);
+    if (salonIdMatch && (method === "PUT" || method === "DELETE")) {
+      if (!(await verifyAdminToken(request, env))) {
+        return json({ ok: false, error: "認証が必要です" }, 401);
+      }
+      try {
+        const sid = Number(salonIdMatch[1]);
+        const rawTok = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").split(".")[0];
+        const tok = JSON.parse(atob(rawTok));
+        const sal = await env.DB.prepare("SELECT id, owner_email FROM published_salons WHERE id = ?").bind(sid).first();
+        if (!sal) return json({ ok: false, error: "サロンが見つかりません" }, 404);
+        if (tok.role !== "admin") {
+          const ow = await env.DB.prepare("SELECT email FROM owner_entries WHERE id = ?").bind(tok.owner_id).first();
+          if (!ow?.email || sal.owner_email !== ow.email) {
+            return json({ ok: false, error: "このサロンは編集できません" }, 403);
+          }
+        }
+
+        if (method === "DELETE") {
+          await env.DB.prepare("DELETE FROM salon_photos WHERE salon_id = ?").bind(sid).run();
+          await env.DB.prepare("DELETE FROM salon_closures WHERE salon_id = ?").bind(sid).run();
+          await env.DB.prepare("DELETE FROM published_salons WHERE id = ?").bind(sid).run();
+          return json({ ok: true });
+        }
+
+        const b = await request.json();
+        const name = s(b.name, 120);
+        const area = s(b.area, 80);
+        const station = s(b.station, 120) || area;
+        const pricePerHour = Number(b.pricePerHour);
+        if (!name || !area || !Number.isFinite(pricePerHour) || pricePerHour <= 0) {
+          return json({ ok: false, error: "サロン名・エリア・1時間料金は必須です" }, 400);
+        }
+        const genres = Array.isArray(b.genres) && b.genres.length ? b.genres.map((x) => s(x, 50)) : ["エステ・リラク"];
+        const equipment = Array.isArray(b.equipment) ? b.equipment.map((x) => s(x, 50)) : [];
+        const freeAmenities = Array.isArray(b.freeAmenities) ? b.freeAmenities.map((x) => s(x, 120)).filter(Boolean) : [];
+        const bookedHours = Array.isArray(b.bookedHours) ? b.bookedHours.map((x) => s(x, 20)) : [];
+        const nowIso = new Date().toISOString();
+
+        let imageKey = null;
+        let imageKeys = null;
+        if (Array.isArray(b.image_keys)) {
+          imageKeys = b.image_keys.map((x) => s(x, 250)).filter((x) => x.startsWith("owners/")).slice(0, 20);
+          imageKey = imageKeys[0] || "";
+        }
+
+        await env.DB.prepare(
+          `UPDATE published_salons SET
+            name = ?, area = ?, station = ?, price_per_hour = ?, availability_badge = ?,
+            genres_json = ?, equipment_json = ?, description = ?, free_amenities_json = ?,
+            entry_rules = ?, booked_hours_json = ?, updated_at = ?
+           WHERE id = ?`
+        ).bind(
+          name, area, station, Math.round(pricePerHour), s(b.availabilityBadge, 40) || "本日空きあり",
+          JSON.stringify(genres), JSON.stringify(equipment), s(b.description, 1000),
+          JSON.stringify(freeAmenities), s(b.entryRules, 1000), JSON.stringify(bookedHours),
+          nowIso, sid
+        ).run();
+
+        if (imageKeys) {
+          await env.DB.prepare("DELETE FROM salon_photos WHERE salon_id = ?").bind(sid).run();
+          for (let i = 0; i < imageKeys.length; i++) {
+            await env.DB.prepare(
+              "INSERT INTO salon_photos (salon_id, image_key, sort_order, created_at) VALUES (?, ?, ?, ?)"
+            ).bind(sid, imageKeys[i], i, nowIso).run();
+          }
+          await env.DB.prepare("UPDATE published_salons SET image_key = ?, image_url = ? WHERE id = ?")
+            .bind(imageKey, imageKey ? `/api/images/${encodeURIComponent(imageKey)}` : "", sid).run();
+        }
+        return json({ ok: true });
+      } catch (e) {
+        return json({ ok: false, error: "保存に失敗しました" }, 500);
+      }
+    }
+
+
+    // ---- 無料見学リクエスト（お客様・オーナー双方へメール） ----
+    if (path === "/api/tours" && method === "POST") {
+      try {
+        const b = await request.json().catch(() => ({}));
+        const salonIdRaw = s(b.salon_id, 60);
+        const salonName = s(b.salon_name, 150);
+        const guestName = s(b.name, 80);
+        const guestEmail = s(b.email, 200);
+        const guestPhone = s(b.phone, 40);
+        const date = s(b.date, 10);
+        const time = s(b.time, 5);
+        const message = s(b.message, 500);
+
+        if (!salonName || !guestName || !guestEmail || !date || !time) {
+          return json({ ok: false, error: "必須項目が未入力です" }, 400);
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) {
+          return json({ ok: false, error: "メールアドレスの形式が正しくありません" }, 400);
+        }
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) {
+          return json({ ok: false, error: "日時の形式が正しくありません" }, 400);
+        }
+        const closeM = salonIdRaw.match(/^db_(\d+)$/);
+        if (closeM) {
+          const cl = await env.DB.prepare(
+            "SELECT hours FROM salon_closures WHERE salon_id = ? AND date = ?"
+          ).bind(Number(closeM[1]), date).first();
+          if (cl && safeJsonArray(cl.hours).includes(time)) {
+            return json({ ok: false, error: "その日時は受付できません。別の時間をお選びください" }, 400);
+          }
+        }
+
+        const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+        const recent = await env.DB.prepare(
+          "SELECT COUNT(*) AS c FROM tour_requests WHERE guest_email = ? AND created_at > ?"
+        ).bind(guestEmail, since).first();
+        if (Number(recent?.c || 0) >= 3) {
+          return json({ ok: false, error: "短時間に送信が続いています。しばらくしてからお試しください" }, 429);
+        }
+
+        let ownerEmail = "";
+        const m = salonIdRaw.match(/^db_(\d+)$/);
+        if (m) {
+          const row = await env.DB.prepare(
+            "SELECT owner_email FROM published_salons WHERE id = ?"
+          ).bind(Number(m[1])).first();
+          ownerEmail = row?.owner_email || "";
+        }
+        const adminEmail = env.NOTIFY_EMAIL || "";
+        const toOwner = ownerEmail || adminEmail;
+
+        await env.DB.prepare(
+          `INSERT INTO tour_requests
+            (salon_id, salon_name, owner_email, guest_name, guest_email, guest_phone, desired_date, desired_time, message, status, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'requested', ?)`
+        ).bind(
+          salonIdRaw, salonName, toOwner, guestName, guestEmail, guestPhone,
+          date, time, message, new Date().toISOString()
+        ).run();
+
+        const [yy, mm, dd] = date.split("-");
+        const when = `${yy}年${Number(mm)}月${Number(dd)}日 ${time}〜（約30分）`;
+
+        const guestText = [
+          `${guestName} 様`,
+          "",
+          "無料見学のリクエストを受け付けました。",
+          "オーナーからの返信をお待ちください。",
+          "",
+          `サロン: ${salonName}`,
+          `希望日時: ${when}`,
+          message ? `ご要望: ${message}` : "",
+          "",
+          "※ このメールは送信専用です。",
+          "SHARE SALON",
+        ].filter((x) => x !== "").join("\n");
+
+        const ownerText = [
+          "無料見学のリクエストが届きました。",
+          "",
+          `サロン: ${salonName}`,
+          `希望日時: ${when}`,
+          "",
+          `お名前: ${guestName}`,
+          `メール: ${guestEmail}`,
+          guestPhone ? `電話: ${guestPhone}` : "",
+          message ? `ご要望: ${message}` : "",
+          "",
+          "ご都合を確認のうえ、お客様のメールアドレスへご連絡ください。",
+          "SHARE SALON",
+        ].filter((x) => x !== "").join("\n");
+
+        const results = [];
+        results.push(await sendMail(env, guestEmail, "【SHARE SALON】無料見学のリクエストを受け付けました", guestText));
+        if (toOwner) {
+          results.push(await sendMail(env, toOwner, `【SHARE SALON】無料見学のリクエスト：${salonName}`, ownerText));
+        }
+        if (adminEmail && adminEmail !== toOwner) {
+          results.push(await sendMail(env, adminEmail, `【SHARE SALON】（運営控え）無料見学リクエスト：${salonName}`, ownerText));
+        }
+
+        return json({ ok: true, mail_sent: results.every(Boolean) });
+      } catch (err) {
+        return json({ ok: false, error: "見学リクエストの送信に失敗しました" }, 500);
+      }
+    }
+    // ---- サロン予約リクエスト（予約者・サロンオーナー・運営へメール通知） ----
+    if (path === "/api/booking" && method === "POST") {
+      try {
+        const b = await request.json().catch(() => ({}));
+        const salonIdRaw = s(b.salon_id, 60);
+        const salonName = s(b.salon_name, 150);
+        const date = s(b.date, 20);
+        const hours = Array.isArray(b.hours)
+          ? b.hours.map((h) => s(h, 20)).filter(Boolean)
+          : [];
+        const hoursCount = Number(b.hours_count) || hours.length || 1;
+        const basePrice = Number(b.base_price) || 0;
+        const serviceFee = Number(b.service_fee) || 0;
+        const totalPrice = Number(b.total_price) || 0;
+        const guestName = s(b.guest_name, 100);
+        const guestEmail = s(b.guest_email, 200);
+        const guestPhone = s(b.guest_phone, 50);
+
+        if (!salonName || !date || hours.length === 0 || !guestName || !guestEmail) {
+          return json(
+            { ok: false, error: "サロン情報・利用日時・お名前・メールアドレスは必須です" },
+            400
+          );
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) {
+          return json({ ok: false, error: "メールアドレスの形式が正しくありません" }, 400);
+        }
+
+        if (!env.RESEND_API_KEY) {
+          return json({ ok: false, error: "メール送信設定（RESEND_API_KEY）が未設定です" }, 500);
+        }
+
+        const bookingId = makeBookingCode();
+        const timesStr = hours.join(" / ");
+        const totalStr = `¥${totalPrice.toLocaleString()}`;
+
+        let ownerEmail = "";
+        const m = salonIdRaw.match(/^db_(\d+)$/);
+        if (m) {
+          try {
+            const row = await env.DB.prepare(
+              "SELECT owner_email FROM published_salons WHERE id = ?"
+            )
+              .bind(Number(m[1]))
+              .first();
+            ownerEmail = row?.owner_email || "";
+          } catch (dbErr) {
+            console.log("owner_email lookup skipped:", String(dbErr));
+          }
+        }
+
+        const adminEmail = env.NOTIFY_EMAIL || "";
+        const toOwner = ownerEmail || adminEmail;
+
+        const guestSubject = `【SHARE SALON】予約リクエストを受け付けました：${salonName}`;
+        const guestText = [
+          `${guestName} 様`,
+          "",
+          "SHARE SALON より、サロン予約リクエストを受け付けました。",
+          "サロンオーナーからの連絡が来るまで今しばらくお待ちください。",
+          "",
+          "■ ご予約リクエスト内容",
+          `予約番号: ${bookingId}`,
+          `サロン名: ${salonName}`,
+          `利用日: ${date}`,
+          `利用時間: ${timesStr}（計${hoursCount}時間）`,
+          `お支払い合計: ${totalStr}`,
+          guestPhone ? `電話番号: ${guestPhone}` : "",
+          "",
+          "※ このメールは送信専用です。",
+          "SHARE SALON",
+        ]
+          .filter((x) => x !== "")
+          .join("\n");
+
+        const sentToGuest = await sendMail(env, guestEmail, guestSubject, guestText);
+
+        if (toOwner) {
+          const ownerText = [
+            "新しいサロン予約リクエストが届きました。",
+            "",
+            `予約番号: ${bookingId}`,
+            `サロン名: ${salonName}`,
+            `利用日: ${date}`,
+            `利用時間: ${timesStr}（計${hoursCount}時間）`,
+            `お支払い合計: ${totalStr}`,
+            "",
+            "■ ご予約者情報",
+            `お名前: ${guestName} 様`,
+            `メール: ${guestEmail}`,
+            guestPhone ? `電話: ${guestPhone}` : "",
+            "",
+            "内容をご確認のうえ、ご予約者へご連絡をお願いいたします。",
+            "SHARE SALON",
+          ]
+            .filter((x) => x !== "")
+            .join("\n");
+
+          await sendMail(
+            env,
+            toOwner,
+            `【SHARE SALON】新規予約リクエスト：${salonName}（${date} ${timesStr}）`,
+            ownerText
+          );
+        }
+
+        if (adminEmail && adminEmail !== toOwner) {
+          const adminText = [
+            "（運営控え）新しいサロン予約リクエストが届きました。",
+            "",
+            `予約番号: ${bookingId}`,
+            `サロン名: ${salonName}`,
+            `利用日: ${date}`,
+            `利用時間: ${timesStr}（計${hoursCount}時間）`,
+            `お支払い合計: ${totalStr}`,
+            `お名前: ${guestName} 様`,
+            `メール: ${guestEmail}`,
+            guestPhone ? `電話: ${guestPhone}` : "",
+            `送信先オーナー: ${toOwner || "未設定"}`,
+          ]
+            .filter((x) => x !== "")
+            .join("\n");
+
+          await sendMail(
+            env,
+            adminEmail,
+            `【SHARE SALON】（運営控え）予約リクエスト：${salonName}`,
+            adminText
+          );
+        }
+
+        if (!sentToGuest) {
+          return json({ ok: false, error: "確認メールの送信に失敗しました" }, 500);
+        }
+
+        return json({ ok: true, booking_id: bookingId }, 201);
+      } catch (err) {
+        console.log("booking error:", String(err));
+        return json({ ok: false, error: "予約リクエストの処理に失敗しました" }, 500);
+      }
+    }
+
+
+    // ---- 1. 予約作成 ----
+    if (method === "POST" && path === "/api/bookings") {
+      const body = await request.json();
+      const {
+        space_id,
+        guest_user_id,
+        start_at,
+        end_at,
+        fee_mode,
+        prepay_room = false,
+        payment_due_minutes = 15,
+      } = body;
+
+      if (!space_id || !guest_user_id || !start_at || !end_at || !FEE_RATE_BPS[fee_mode]) {
+        return json({ ok: false, error: "必須項目または fee_mode が不正です" }, 400);
+      }
+      const startMs = Date.parse(start_at);
+      const endMs = Date.parse(end_at);
+      if (Number.isNaN(startMs) || Number.isNaN(endMs) || endMs <= startMs) {
+        return json({ ok: false, error: "start_at / end_at の日時が不正です" }, 400);
+      }
+
+      const space = await env.DB.prepare(
+        `SELECT id, salon_id, title, base_price_jpy, is_active
+         FROM salon_spaces WHERE id = ?`
+      ).bind(space_id).first();
+
+      if (!space || Number(space.is_active) !== 1) {
+        return json({ ok: false, error: "利用可能な枠が見つかりません" }, 404);
+      }
+
+      const salon = await env.DB.prepare(
+        `SELECT id, owner_user_id FROM salons WHERE id = ?`
+      ).bind(space.salon_id).first();
+
+      const nowIso = new Date().toISOString();
+      const conflict = await env.DB.prepare(
+        `SELECT id FROM bookings
+         WHERE space_id = ?
+           AND (
+             status IN ('confirmed', 'completed')
+             OR (status = 'pending_payment' AND (payment_due_at IS NULL OR payment_due_at > ?))
+           )
+           AND NOT (end_at <= ? OR start_at >= ?)
+         LIMIT 1`
+      ).bind(space_id, nowIso, start_at, end_at).first();
+
+      if (conflict) {
+        return json({ ok: false, error: "指定の時間帯はすでに予約または仮押さえされています" }, 409);
+      }
+
+      const feeRateBps = FEE_RATE_BPS[fee_mode];
+      const roomAmountJpy = Number(space.base_price_jpy);
+      const platformFeeJpy = calcFeeJpy(roomAmountJpy, feeRateBps);
+      const totalPrepaidJpy = prepay_room ? roomAmountJpy + platformFeeJpy : platformFeeJpy;
+
+      const bookingId = makeId("bkg");
+      const bookingCode = makeBookingCode();
+      const paymentDueAt = new Date(
+        Date.now() + Number(payment_due_minutes) * 60 * 1000
+      ).toISOString();
+
+      await env.DB.prepare(
+        `INSERT INTO bookings (
+          id, booking_code, space_id, salon_id, guest_user_id, host_user_id,
+          start_at, end_at, fee_mode, fee_rate_bps,
+          room_amount_jpy, platform_fee_jpy, total_prepaid_jpy,
+          status, fee_payment_status, payment_due_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending_payment', 'unpaid', ?)`
+      ).bind(
+        bookingId,
+        bookingCode,
+        space_id,
+        space.salon_id,
+        guest_user_id,
+        salon?.owner_user_id ?? null,
+        start_at,
+        end_at,
+        fee_mode,
+        feeRateBps,
+        roomAmountJpy,
+        platformFeeJpy,
+        totalPrepaidJpy,
+        paymentDueAt
+      ).run();
+        // ---- 予約作成時の管理者・オーナー通知メール ----
+        try {
+          if (env.RESEND_API_KEY) {
+            const notifyTargets = new Set();
+            if (env.NOTIFY_EMAIL) notifyTargets.add(env.NOTIFY_EMAIL);
+
+            if (salon?.owner_user_id) {
+              const ownerRow = await env.DB.prepare(
+                `SELECT email FROM users WHERE id = ?`
+              )
+                .bind(salon.owner_user_id)
+                .first();
+              if (ownerRow?.email) notifyTargets.add(ownerRow.email);
+            }
+
+            const noticeText = [
+              "新しいスペース予約が入りました。",
+              "",
+              `予約ID: ${bookingId}`,
+              `予約コード: ${bookingCode}`,
+              `サロンID: ${space.salon_id}`,
+              `スペース: ${space.title || space_id}`,
+              `開始日時: ${start_at}`,
+              `終了日時: ${end_at}`,
+              `予約者ID: ${guest_user_id}`,
+              `合計金額: ¥${Number(totalPrepaidJpy || 0).toLocaleString()}`,
+            ].join("\n");
+
+            for (const toAddr of notifyTargets) {
+              await sendMail(
+                env,
+                toAddr,
+                `【SHARE SALON】新規予約通知：${space.title || space_id}（${start_at}）`,
+                noticeText
+              );
+            }
+          }
+        } catch (mailErr) {
+          console.log("booking notify mail error:", String(mailErr));
+        }
+
+      return json({
+        ok: true,
+        booking_id: bookingId,
+        booking_code: bookingCode,
+        status: "pending_payment",
+        fee_payment_status: "unpaid",
+        fee_mode,
+        fee_rate_percent: feeRateBps / 100,
+        room_amount_jpy: roomAmountJpy,
+        platform_fee_jpy: platformFeeJpy,
+        total_prepaid_jpy: totalPrepaidJpy,
+        payment_due_at: paymentDueAt,
+      }, 201);
+    }
+    // ---- 管理者・オーナー向け：予約＆見学一覧の取得 ----
+    if (path === "/api/admin/bookings" && method === "GET") {
+      try {
+        const auth = await verifyAdminToken(request, env);
+        if (!auth) {
+          return json({ ok: false, error: "認証が必要です。再ログインしてください" }, 401);
+        }
+
+        let bookings = [];
+        try {
+          const rows = await env.DB.prepare(
+            `SELECT id, booking_code, space_id, salon_id, guest_user_id, start_at, end_at, status, total_prepaid_jpy, created_at
+             FROM bookings
+             ORDER BY created_at DESC
+             LIMIT 50`
+          ).all();
+          bookings = rows.results || [];
+        } catch (e) {
+          bookings = [];
+        }
+
+        let tours = [];
+        try {
+          const tourRows = await env.DB.prepare(
+            `SELECT id, salon_name, applicant_name, email, phone, tour_date, tour_time, note, status, created_at
+             FROM tour_bookings
+             ORDER BY created_at DESC
+             LIMIT 50`
+          ).all();
+          tours = tourRows.results || [];
+        } catch (e) {
+          tours = [];
+        }
+
+        return json({ ok: true, bookings, tours });
+      } catch (err) {
+        return json({ ok: false, error: err?.message || "一覧の取得に失敗しました" }, 500);
+      }
+    }
+
+    // ---- 2. 手数料先払い完了 ----
+    const payMatch = path.match(/^\/api\/bookings\/([^/]+)\/pay-fee$/);
+    if (method === "POST" && payMatch) {
+      const bookingId = payMatch[1];
+      const body = await request.json().catch(() => ({}));
+      const provider = body.provider || "manual_or_gateway";
+      const providerTxId = body.provider_tx_id || null;
+
+      const booking = await env.DB.prepare(
+        `SELECT * FROM bookings WHERE id = ?`
+      ).bind(bookingId).first();
+
+      if (!booking) return json({ ok: false, error: "予約が見つかりません" }, 404);
+
+      if (booking.status === "confirmed" && booking.fee_payment_status === "paid") {
+        return json({ ok: true, message: "すでに先払い完了・確定済みです", booking_id: bookingId });
+      }
+      if (booking.status !== "pending_payment") {
+        return json({ ok: false, error: `現在のステータス（${booking.status}）では先払い確定できません` }, 409);
+      }
+
+      const now = new Date();
+      if (booking.payment_due_at && Date.parse(booking.payment_due_at) < now.getTime()) {
+        return json({ ok: false, error: "先払い期限を過ぎています。予約をやり直してください" }, 410);
+      }
+
+      const nowIso = now.toISOString();
+      const updated = await env.DB.prepare(
+        `UPDATE bookings
+         SET status = 'confirmed', fee_payment_status = 'paid', paid_at = ?, updated_at = ?
+         WHERE id = ? AND status = 'pending_payment'`
+      ).bind(nowIso, nowIso, bookingId).run();
+
+      if (!updated.meta?.changes) {
+        return json({ ok: false, error: "予約状態が変更されたため確定できませんでした" }, 409);
+      }
+
+      const paymentId = makeId("pay");
+      await env.DB.prepare(
+        `INSERT INTO booking_payments (
+          id, booking_id, tx_type, amount_jpy, provider, provider_tx_id, status
+        ) VALUES (?, ?, 'prepay_fee', ?, ?, ?, 'succeeded')`
+      ).bind(
+        paymentId,
+        bookingId,
+        Number(booking.total_prepaid_jpy),
+        provider,
+        providerTxId
+      ).run();
+
+      return json({
+        ok: true,
+        booking_id: bookingId,
+        booking_code: booking.booking_code,
+        status: "confirmed",
+        fee_payment_status: "paid",
+        paid_amount_jpy: Number(booking.total_prepaid_jpy),
+        payment_id: paymentId,
+        paid_at: nowIso,
+      });
+    }
+
+    // ---- 3. キャンセル ----
+    const cancelMatch = path.match(/^\/api\/bookings\/([^/]+)\/cancel$/);
+    if (method === "POST" && cancelMatch) {
+      const bookingId = cancelMatch[1];
+      const body = await request.json().catch(() => ({}));
+      const actorUserId = body.actor_user_id || null;
+      const actorRole = ["guest", "host", "admin", "system"].includes(body.actor_role)
+        ? body.actor_role
+        : "guest";
+      const reason = body.reason || "";
+
+      const booking = await env.DB.prepare(
+        `SELECT b.*, s.free_cancel_before_minutes, s.late_cancel_penalty_bps, s.noshow_penalty_bps
+         FROM bookings b
+         JOIN salon_spaces s ON s.id = b.space_id
+         WHERE b.id = ?`
+      ).bind(bookingId).first();
+
+      if (!booking) return json({ ok: false, error: "予約が見つかりません" }, 404);
+
+      if (!["pending_payment", "confirmed"].includes(booking.status)) {
+        return json({ ok: false, error: `現在のステータス（${booking.status}）はキャンセルできません` }, 409);
+      }
+
+      const now = new Date();
+      const nowIso = now.toISOString();
+      const minutesBeforeStart = Math.floor((Date.parse(booking.start_at) - now.getTime()) / 60000);
+      const freeBeforeMin = Number(booking.free_cancel_before_minutes ?? 1440);
+      const latePenaltyBps = Number(booking.late_cancel_penalty_bps ?? 5000);
+      const noshowPenaltyBps = Number(booking.noshow_penalty_bps ?? 10000);
+
+      const prepaidAmount = Number(booking.total_prepaid_jpy || 0);
+      const isPaid = booking.fee_payment_status === "paid" && prepaidAmount > 0;
+
+      let refundAmount = 0;
+      let penaltyAmount = 0;
+      let nextFeePaymentStatus = booking.fee_payment_status;
+      let policyApplied = "unpaid_cancel";
+
+      if (!isPaid) {
+        nextFeePaymentStatus = "unpaid";
+        policyApplied = "unpaid_pending_cancel";
+      } else if (actorRole === "host" || actorRole === "admin") {
+        refundAmount = prepaidAmount;
+        nextFeePaymentStatus = "refunded";
+        policyApplied = "host_or_admin_full_refund";
+      } else if (minutesBeforeStart >= freeBeforeMin) {
+        refundAmount = prepaidAmount;
+        nextFeePaymentStatus = "refunded";
+        policyApplied = "within_free_cancel_window";
+      } else if (minutesBeforeStart > 0) {
+        penaltyAmount = Math.min(prepaidAmount, calcFeeJpy(prepaidAmount, latePenaltyBps));
+        refundAmount = Math.max(0, prepaidAmount - penaltyAmount);
+        nextFeePaymentStatus = refundAmount === 0 ? "forfeited" : "partially_refunded";
+        policyApplied = "late_cancel_penalty";
+      } else {
+        penaltyAmount = Math.min(prepaidAmount, calcFeeJpy(prepaidAmount, noshowPenaltyBps));
+        refundAmount = Math.max(0, prepaidAmount - penaltyAmount);
+        nextFeePaymentStatus = refundAmount === 0 ? "forfeited" : "partially_refunded";
+        policyApplied = "past_start_time_penalty";
+      }
+
+      const updated = await env.DB.prepare(
+        `UPDATE bookings
+         SET status = 'cancelled',
+             fee_payment_status = ?,
+             cancelled_at = ?,
+             cancelled_by_role = ?,
+             cancel_reason = ?,
+             refund_amount_jpy = ?,
+             penalty_amount_jpy = ?,
+             updated_at = ?
+         WHERE id = ? AND status IN ('pending_payment', 'confirmed')`
+      ).bind(
+        nextFeePaymentStatus,
+        nowIso,
+        actorRole,
+        reason,
+        refundAmount,
+        penaltyAmount,
+        nowIso,
+        bookingId
+      ).run();
+
+      if (!updated.meta?.changes) {
+        return json({ ok: false, error: "キャンセル処理が競合しました" }, 409);
+      }
+
+      const logId = makeId("clog");
+      await env.DB.prepare(
+        `INSERT INTO booking_cancel_logs (
+          id, booking_id, actor_user_id, actor_role, minutes_before_start,
+          policy_applied, calculated_refund_jpy, calculated_penalty_jpy, note
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(
+        logId,
+        bookingId,
+        actorUserId,
+        actorRole,
+        minutesBeforeStart,
+        policyApplied,
+        refundAmount,
+        penaltyAmount,
+        reason
+      ).run();
+
+      if (refundAmount > 0) {
+        await env.DB.prepare(
+          `INSERT INTO booking_payments (id, booking_id, tx_type, amount_jpy, provider, status)
+           VALUES (?, ?, 'refund', ?, 'manual_or_gateway', 'succeeded')`
+        ).bind(makeId("pay"), bookingId, refundAmount).run();
+      }
+      if (penaltyAmount > 0) {
+        await env.DB.prepare(
+          `INSERT INTO booking_payments (id, booking_id, tx_type, amount_jpy, provider, status)
+           VALUES (?, ?, 'penalty_capture', ?, 'manual_or_gateway', 'succeeded')`
+        ).bind(makeId("pay"), bookingId, penaltyAmount).run();
+      }
+
+      return json({
+        ok: true,
+        booking_id: bookingId,
+        status: "cancelled",
+        fee_payment_status: nextFeePaymentStatus,
+        minutes_before_start: minutesBeforeStart,
+        policy_applied: policyApplied,
+        refund_amount_jpy: refundAmount,
+        penalty_amount_jpy: penaltyAmount,
+        cancel_log_id: logId,
+      });
+    }
+
+    // ---- 4. 領収書発行 ----
+    if (method === "POST" && path === "/api/receipts/issue") {
+      const body = await request.json();
+      const {
+        target_user_id,
+        target_role = "guest",
+        billing_cycle,
+        booking_id = null,
+        anchor_date = null,
+        recipient_name = "",
+        issuer_name = "salon-base",
+      } = body;
+
+      if (
+        !target_user_id ||
+        !["guest", "host"].includes(target_role) ||
+        !["per_booking", "half_month", "monthly"].includes(billing_cycle)
+      ) {
+        return json({ ok: false, error: "必須項目またはパラメータが不正です" }, 400);
+      }
+
+      const user = await env.DB.prepare(
+        `SELECT id, name, email FROM users WHERE id = ?`
+      ).bind(target_user_id).first();
+      if (!user) return json({ ok: false, error: "対象ユーザーが見つかりません" }, 404);
+
+      let effectiveAnchorDate = anchor_date;
+      if (billing_cycle === "per_booking") {
+        if (!booking_id) {
+          return json({ ok: false, error: "都度発行（per_booking）には booking_id が必要です" }, 400);
+        }
+        const targetBooking = await env.DB.prepare(
+          `SELECT * FROM bookings WHERE id = ?`
+        ).bind(booking_id).first();
+        if (!targetBooking) return json({ ok: false, error: "対象予約が見つかりません" }, 404);
+        const baseIso = targetBooking.paid_at || targetBooking.start_at || targetBooking.created_at;
+        effectiveAnchorDate = effectiveAnchorDate || String(baseIso).slice(0, 10);
+      } else {
+        effectiveAnchorDate = effectiveAnchorDate || new Date().toISOString().slice(0, 10);
+      }
+
+      const period = resolveReceiptPeriod(billing_cycle, effectiveAnchorDate);
+      if (!period) {
+        return json({ ok: false, error: "対象期間の日付（YYYY-MM-DD）が不正です" }, 400);
+      }
+      const { periodStartDate, periodEndDate } = period;
+
+      const existing = await env.DB.prepare(
+        `SELECT * FROM receipts
+         WHERE target_user_id = ? AND target_role = ? AND billing_cycle = ?
+           AND period_start_date = ? AND period_end_date = ? AND status = 'issued'
+         ORDER BY created_at DESC LIMIT 1`
+      ).bind(target_user_id, target_role, billing_cycle, periodStartDate, periodEndDate).first();
+
+      if (existing) {
+        const existingItems = await env.DB.prepare(
+          `SELECT id, booking_id, booking_payment_id, description, amount_jpy, sort_order
+           FROM receipt_items WHERE receipt_id = ? ORDER BY sort_order ASC`
+        ).bind(existing.id).all();
+        return json({
+          ok: true,
+          already_issued: true,
+          receipt: existing,
+          items: existingItems.results || [],
+        }, 200);
+      }
+
+      const rangeStartIso = `${periodStartDate}T00:00:00.000Z`;
+      const rangeEndIso = `${periodEndDate}T23:59:59.999Z`;
+      const userCol = target_role === "host" ? "b.host_user_id" : "b.guest_user_id";
+      let sql = `
+        SELECT bp.id AS payment_id, bp.booking_id, bp.tx_type, bp.amount_jpy, bp.created_at,
+               b.booking_code
+        FROM booking_payments bp
+        JOIN bookings b ON b.id = bp.booking_id
+        WHERE bp.status = 'succeeded'
+          AND ${userCol} = ?
+          AND bp.created_at >= ?
+          AND bp.created_at <= ?
+      `;
+      const binds = [target_user_id, rangeStartIso, rangeEndIso];
+      if (billing_cycle === "per_booking" && booking_id) {
+        sql += ` AND bp.booking_id = ?`;
+        binds.push(booking_id);
+      }
+      sql += ` ORDER BY bp.created_at ASC`;
+
+      const paymentRows = await env.DB.prepare(sql).bind(...binds).all();
+      const rows = paymentRows.results || [];
+      if (rows.length === 0) {
+        return json({
+          ok: false,
+          error: "指定期間・条件に該当する決済明細がありません",
+          period_start_date: periodStartDate,
+          period_end_date: periodEndDate,
+        }, 404);
+      }
+
+      const formattedItems = rows.map((row, idx) => {
+        const info = formatReceiptItemRow(row);
+        return {
+          id: makeId("ritm"),
+          booking_id: row.booking_id,
+          booking_payment_id: row.payment_id,
+          description: info.description,
+          amount_jpy: info.signedAmountJpy,
+          sort_order: idx + 1,
+        };
+      });
+
+      const totalJpy = formattedItems.reduce((sum, it) => sum + Number(it.amount_jpy), 0);
+      if (totalJpy <= 0) {
+        return json({
+          ok: false,
+          error: "集計合計が0円以下のため領収書を発行できません",
+          total_jpy: totalJpy,
+        }, 400);
+      }
+
+      const receiptId = makeId("rcp");
+      const receiptNo = makeReceiptNo();
+      const finalRecipientName =
+        String(recipient_name || "").trim() || user.name || user.email || target_user_id;
+      const finalIssuer = String(issuer_name || "salon-base").trim() || "salon-base";
+      const nowIso = new Date().toISOString();
+
+      await env.DB.prepare(
+        `INSERT INTO receipts (
+          id, receipt_no, target_user_id, target_role, billing_cycle,
+          period_start_date, period_end_date, recipient_name, issuer_name,
+          currency, subtotal_jpy, tax_jpy, total_jpy, status, issued_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'JPY', ?, 0, ?, 'issued', ?)`
+      ).bind(
+        receiptId,
+        receiptNo,
+        target_user_id,
+        target_role,
+        billing_cycle,
+        periodStartDate,
+        periodEndDate,
+        finalRecipientName,
+        finalIssuer,
+        totalJpy,
+        totalJpy,
+        nowIso
+      ).run();
+
+      for (const item of formattedItems) {
+        await env.DB.prepare(
+          `INSERT INTO receipt_items (
+            id, receipt_id, booking_id, booking_payment_id, description, amount_jpy, sort_order
+          ) VALUES (?, ?, ?, ?, ?, ?, ?)`
+        ).bind(
+          item.id,
+          receiptId,
+          item.booking_id,
+          item.booking_payment_id,
+          item.description,
+          item.amount_jpy,
+          item.sort_order
+        ).run();
+      }
+
+      return json({
+        ok: true,
+        already_issued: false,
+        receipt: {
+          id: receiptId,
+          receipt_no: receiptNo,
+          target_user_id,
+          target_role,
+          billing_cycle,
+          period_start_date: periodStartDate,
+          period_end_date: periodEndDate,
+          recipient_name: finalRecipientName,
+          issuer_name: finalIssuer,
+          currency: "JPY",
+          subtotal_jpy: totalJpy,
+          tax_jpy: 0,
+          total_jpy: totalJpy,
+          status: "issued",
+          issued_at: nowIso,
+        },
+        items: formattedItems,
+      }, 201);
+    }
+
+    // ---- 5. 領収書取得 ----
+    const receiptMatch = path.match(/^\/api\/receipts\/([^/]+)$/);
+    if (method === "GET" && receiptMatch) {
+      const receiptId = receiptMatch[1];
+      const receipt = await env.DB.prepare(
+        `SELECT * FROM receipts WHERE id = ?`
+      ).bind(receiptId).first();
+      if (!receipt) return json({ ok: false, error: "領収書が見つかりません" }, 404);
+      const items = await env.DB.prepare(
+        `SELECT id, booking_id, booking_payment_id, description, amount_jpy, sort_order
+         FROM receipt_items WHERE receipt_id = ? ORDER BY sort_order ASC`
+      ).bind(receiptId).all();
+      return json({ ok: true, receipt, items: items.results || [] });
+    }
+
+    // ---- それ以外は画面（HTMLなど）を返す ----
+    if (path.startsWith("/api/")) {
+      return json({ ok: false, error: "Not Found" }, 404);
+    }
+    return env.ASSETS.fetch(request);
+  },
+};
