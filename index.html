@@ -1199,7 +1199,7 @@
 
         // 初期化処理
 window.addEventListener('DOMContentLoaded', async () => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date(Date.now() + 9 * 3600 * 1000).toISOString().split('T')[0];
     document.getElementById('search-date').value = today;
 
     try {
@@ -1490,32 +1490,31 @@ window.addEventListener('DOMContentLoaded', async () => {
 
                         <!-- 1時間単位の空き時間スロット選択（複数選択可能） -->
                         <div class="bg-base-sand/70 p-5 sm:p-6 rounded-2xl border border-base-border">
+                            <div class="mb-4">
+                                <h4 class="text-sm font-bold text-base-charcoal mb-2">
+                                    <i class="fa-regular fa-calendar text-base-terra mr-1.5"></i>利用日を選択
+                                </h4>
+                                <div class="bg-white rounded-2xl border border-base-border p-3">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <button type="button" id="mcal-prev" class="w-10 h-10 rounded-full border border-base-border bg-white text-base-charcoal font-bold" aria-label="前の月">‹</button>
+                                        <div id="mcal-label" class="font-serif font-bold text-base-charcoal"></div>
+                                        <button type="button" id="mcal-next" class="w-10 h-10 rounded-full border border-base-border bg-white text-base-charcoal font-bold" aria-label="次の月">›</button>
+                                    </div>
+                                    <div class="grid grid-cols-7 text-center text-[11px] font-bold text-base-muted mb-1">
+                                        <div class="text-red-500">日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div class="text-blue-500">土</div>
+                                    </div>
+                                    <div id="mcal-grid" class="grid grid-cols-7 gap-1"></div>
+                                </div>
+                            </div>
+
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
                                 <h4 class="text-sm font-bold text-base-charcoal">
-                                    <i class="fa-regular fa-clock text-base-terra mr-1.5"></i>利用時間を選択（${selectedDate}）
+                                    <i class="fa-regular fa-clock text-base-terra mr-1.5"></i>利用時間を選択（<span id="mcal-date-label">${selectedDate}</span>）
                                 </h4>
                                 <span class="text-[11px] text-base-muted">※複数時間の連続・飛び枠選択が可能です</span>
                             </div>
 
-                            <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-5">
-                                ${allTimeSlots.map(time => {
-                                    const isBooked = salon.bookedHours.includes(time);
-                                    if (isBooked) {
-                                        return `
-                                            <button type="button" disabled 
-                                                    class="py-2.5 px-2 rounded-xl border border-gray-200 bg-gray-100 text-gray-400 text-xs font-medium cursor-not-allowed text-center line-through">
-                                                ${time}（満枠）
-                                            </button>
-                                        `;
-                                    }
-                                    return `
-                                        <button type="button" data-time="${time}" onclick="toggleModalTimeSlot(this)" 
-                                                class="modal-slot-btn py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal hover:border-base-terra text-xs sm:text-sm font-medium transition text-center">
-                                            ${time}〜
-                                        </button>
-                                    `;
-                                }).join('')}
-                            </div>
+                            <div id="modal-slots" class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-5"></div>
 
                             <!-- 料金自動計算内訳ボックス -->
                             <div class="bg-white p-4 rounded-xl border border-base-border mb-4 space-y-1.5 text-xs">
@@ -1580,6 +1579,103 @@ window.addEventListener('DOMContentLoaded', async () => {
             const modal = document.getElementById('salon-detail-modal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
+            initModalCalendar();
+        }
+
+        // ---------- 予約画面のカレンダー（常に表示） ----------
+        const MODAL_SLOTS = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
+        let modalDate = '';
+        const modalMonth = { y: 0, m: 0 };
+        function jstTodayStr() { return new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10); }
+        function mpad(n) { return String(n).padStart(2, '0'); }
+
+        function initModalCalendar() {
+            const today = jstTodayStr();
+            let d = (document.getElementById('search-date') || {}).value || today;
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || d < today) d = today;
+            modalDate = d;
+            const p = d.split('-');
+            modalMonth.y = Number(p[0]);
+            modalMonth.m = Number(p[1]) - 1;
+            document.getElementById('mcal-prev').addEventListener('click', () => { modalMonth.m--; if (modalMonth.m < 0) { modalMonth.m = 11; modalMonth.y--; } renderModalCalendar(); });
+            document.getElementById('mcal-next').addEventListener('click', () => { modalMonth.m++; if (modalMonth.m > 11) { modalMonth.m = 0; modalMonth.y++; } renderModalCalendar(); });
+            renderModalCalendar();
+            selectModalDate(d);
+        }
+
+        function renderModalCalendar() {
+            const grid = document.getElementById('mcal-grid');
+            if (!grid) return;
+            const today = jstTodayStr();
+            const first = new Date(Date.UTC(modalMonth.y, modalMonth.m, 1)).getUTCDay();
+            const days = new Date(Date.UTC(modalMonth.y, modalMonth.m + 1, 0)).getUTCDate();
+            document.getElementById('mcal-label').textContent = modalMonth.y + '年' + (modalMonth.m + 1) + '月';
+            let html = '';
+            for (let i = 0; i < first; i++) html += '<div></div>';
+            for (let day = 1; day <= days; day++) {
+                const s = modalMonth.y + '-' + mpad(modalMonth.m + 1) + '-' + mpad(day);
+                const past = s < today;
+                const sel = s === modalDate;
+                let cls = 'h-11 rounded-xl text-sm font-medium border transition ';
+                if (past) cls += 'border-transparent text-gray-300 bg-transparent';
+                else if (sel) cls += 'border-base-terra bg-base-terra text-white font-bold';
+                else cls += 'border-base-border bg-white text-base-charcoal hover:border-base-terra';
+                if (s === today && !sel) cls += ' ring-2 ring-base-sage';
+                html += '<button type="button" data-d="' + s + '" class="mcal-day ' + cls + '"' + (past ? ' disabled' : '') + '>' + day + '</button>';
+            }
+            grid.innerHTML = html;
+            grid.querySelectorAll('.mcal-day').forEach((b) => b.addEventListener('click', () => selectModalDate(b.dataset.d)));
+        }
+
+        async function selectModalDate(date) {
+            modalDate = date;
+            const sd = document.getElementById('search-date');
+            if (sd) sd.value = date;
+            const lbl = document.getElementById('mcal-date-label');
+            if (lbl) lbl.textContent = date;
+            modalSelectedHours = [];
+            renderModalCalendar();
+            refreshModalSummary();
+            const box = document.getElementById('modal-slots');
+            if (box) box.innerHTML = '<p class="col-span-full text-xs text-base-muted py-2">空き状況を確認中です...</p>';
+            const salon = currentModalSalon;
+            let closed = (salon && salon.bookedHours ? salon.bookedHours : []).slice();
+            const m = salon ? String(salon.id).match(/^db_(\d+)$/) : null;
+            if (m) {
+                try {
+                    const res = await fetch('/api/availability?salon_id=' + m[1] + '&date=' + encodeURIComponent(date));
+                    const data = await res.json();
+                    if (data && data.ok) closed = closed.concat(data.closed || []);
+                } catch (e) {}
+            }
+            if (modalDate !== date) return; // 別の日が選ばれた
+            renderModalSlots(closed);
+        }
+
+        function renderModalSlots(closed) {
+            const box = document.getElementById('modal-slots');
+            if (!box) return;
+            box.innerHTML = MODAL_SLOTS.map((time) => {
+                if (closed.includes(time)) {
+                    return `<button type="button" disabled class="py-2.5 px-2 rounded-xl border border-gray-200 bg-gray-100 text-gray-400 text-xs font-medium cursor-not-allowed text-center line-through">${time}（満枠）</button>`;
+                }
+                return `<button type="button" data-time="${time}" onclick="toggleModalTimeSlot(this)" class="modal-slot-btn py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal hover:border-base-terra text-xs sm:text-sm font-medium transition text-center">${time}〜</button>`;
+            }).join('');
+        }
+
+        function refreshModalSummary() {
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+            set('calc-selected-times', '未選択（0時間）');
+            set('calc-hours-count', '0');
+            set('calc-base-price', '¥0');
+            set('calc-service-fee', '¥0');
+            set('calc-total-price', '¥0');
+            const submitBtn = document.getElementById('submit-booking-btn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = '時間を選択してください';
+                submitBtn.className = 'w-full py-4 rounded-full bg-gray-300 text-white font-bold text-sm sm:text-base transition cursor-not-allowed';
+            }
         }
 
         function closeSalonModal() {
