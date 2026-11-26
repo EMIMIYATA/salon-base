@@ -783,6 +783,27 @@ if (path === "/api/owner/login" && method === "POST") {
       }
     }
 
+    // ---- お客様向け：その日の埋まっている時間（休み・予約済み） ----
+    if (path === "/api/availability" && method === "GET") {
+      const u = new URL(request.url);
+      const sid = parseInt(String(u.searchParams.get("salon_id") || "").replace(/^db_/, ""), 10);
+      const date = String(u.searchParams.get("date") || "");
+      if (!sid || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return json({ ok: false, error: "salon_id と date が必要です" }, 400);
+      try {
+        const closed = new Set();
+        const cl = await env.DB.prepare("SELECT hours FROM salon_closures WHERE salon_id = ? AND date = ?").bind(sid, date).first();
+        for (const h of safeJsonArray(cl?.hours, [])) closed.add(h);
+        const holdSince = new Date(Date.now() - 35 * 60 * 1000).toISOString();
+        const bk = await env.DB.prepare(
+          "SELECT hours FROM salon_bookings WHERE salon_id = ? AND date = ? AND (status = 'paid' OR (status = 'pending' AND created_at > ?))"
+        ).bind(sid, date, holdSince).all();
+        for (const r of bk.results || []) for (const h of safeJsonArray(r.hours, [])) closed.add(h);
+        return json({ ok: true, closed: Array.from(closed).sort() });
+      } catch (e) {
+        return json({ ok: false, error: "取得に失敗しました" }, 500);
+      }
+    }
+
     // ---- 日付ごとの休み：保存（ログイン必須） ----
     if (path === "/api/closures" && method === "POST") {
       if (!(await verifyAdminToken(request, env))) {
