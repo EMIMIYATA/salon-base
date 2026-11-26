@@ -1300,9 +1300,9 @@ window.addEventListener('DOMContentLoaded', async () => {
 
                      <!-- 評価バッジ -->
                      <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-xs text-xs font-bold text-base-charcoal shadow-sm flex items-center gap-1">
-                         <i class="fa-solid fa-star text-amber-500"></i>
-                         <span>${rating.toFixed(1)}</span>
-                         <span class="text-base-muted font-normal text-[11px]">(${reviewCount})</span>
+                         ${reviewCount > 0
+                            ? `<i class="fa-solid fa-star text-amber-500"></i><span>${rating.toFixed(1)}</span><span class="text-base-muted font-normal text-[11px]">(${reviewCount})</span>`
+                            : `<span class="text-base-terraDark">新着</span>`}
                      </div>
 
                      <!-- 1時間あたりの料金 -->
@@ -1580,6 +1580,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             initModalCalendar();
+            renderReviewSection(salon);
         }
 
         // ---------- 予約画面のカレンダー（常に表示） ----------
@@ -1675,6 +1676,122 @@ window.addEventListener('DOMContentLoaded', async () => {
                 submitBtn.disabled = true;
                 submitBtn.textContent = '時間を選択してください';
                 submitBtn.className = 'w-full py-4 rounded-full bg-gray-300 text-white font-bold text-sm sm:text-base transition cursor-not-allowed';
+            }
+        }
+
+
+        // ---------- 口コミ（アンケート） ----------
+        const REVIEW_QS = [
+            'お部屋の中は綺麗でしたか？',
+            '設備・備品は十分でしたか？',
+            '入室や案内はスムーズでしたか？',
+            'オーナーの対応は良かったですか？',
+            'また利用したいですか？'
+        ];
+        const REVIEW_SHORT = ['清潔さ', '設備・備品', '入室のしやすさ', 'オーナーの対応', 'また利用したい'];
+        const REVIEW_CHOICES = [[4, 'はい'], [3, 'まあまあ'], [2, 'あまり'], [1, 'いいえ']];
+        function escHtml(x) { return String(x == null ? '' : x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+        async function renderReviewSection(salon) {
+            const body = document.getElementById('modal-dynamic-body');
+            if (!body) return;
+            const old = document.getElementById('review-section');
+            if (old) old.remove();
+            const m = String(salon.id).match(/^db_(\d+)$/);
+            if (!m) return; // サンプル掲載は対象外
+            const sec = document.createElement('div');
+            sec.id = 'review-section';
+            sec.className = 'px-6 sm:px-8 pb-8 -mt-2';
+            sec.innerHTML = '<div class="border-t border-base-border pt-6"><h4 class="font-serif text-lg font-bold text-base-charcoal mb-3"><i class="fa-regular fa-comments text-base-terra mr-2"></i>口コミ</h4><div id="review-body" class="text-xs text-base-muted">読み込み中です...</div></div>';
+            body.appendChild(sec);
+            let data = { count: 0, overall: 0, averages: [0, 0, 0, 0, 0], reviews: [] };
+            try {
+                const res = await fetch('/api/reviews?salon_id=' + m[1]);
+                const d = await res.json();
+                if (d && d.ok) data = d;
+            } catch (e) {}
+            const box = document.getElementById('review-body');
+            if (!box) return;
+            let html = '';
+            if (data.count > 0) {
+                html += '<div class="bg-base-sand/70 rounded-2xl border border-base-border p-4 mb-4">'
+                    + '<div class="flex items-baseline gap-2 mb-3"><i class="fa-solid fa-star text-amber-500"></i><span class="font-serif text-2xl font-bold text-base-charcoal">' + Number(data.overall).toFixed(1) + '</span><span class="text-xs text-base-muted">（' + data.count + '件の口コミ）</span></div>'
+                    + REVIEW_SHORT.map((label, i) => {
+                        const v = Number(data.averages[i] || 0);
+                        const pct = Math.round((v / 4) * 100);
+                        return '<div class="flex items-center gap-2 mb-1.5 text-[11px]"><span class="w-24 shrink-0 text-base-charcoal">' + label + '</span><div class="flex-1 h-2 rounded-full bg-white border border-base-border overflow-hidden"><div class="h-full bg-base-terra" style="width:' + pct + '%"></div></div><span class="w-8 text-right font-bold text-base-charcoal">' + v.toFixed(1) + '</span></div>';
+                    }).join('')
+                    + '</div>';
+                html += data.reviews.map((r) => {
+                    const sc = [r.q1, r.q2, r.q3, r.q4, r.q5];
+                    const avg = sc.reduce((a, b) => a + b, 0) / 5;
+                    const date = String(r.created_at || '').slice(0, 10);
+                    const chips = REVIEW_SHORT.map((label, i) => '<span class="px-2 py-0.5 rounded-md bg-base-terraLight text-base-terraDark text-[10px] font-semibold">' + label + '：' + REVIEW_CHOICES.find((c) => c[0] === sc[i])[1] + '</span>').join(' ');
+                    return '<div class="rounded-2xl border border-base-border bg-white p-4 mb-3">'
+                        + '<div class="flex items-center justify-between mb-2"><span class="text-xs font-bold text-base-charcoal">' + escHtml(r.nickname || 'ご利用者') + ' 様</span><span class="text-[11px] text-base-muted">' + escHtml(date) + '</span></div>'
+                        + '<div class="flex flex-wrap gap-1 mb-2">' + chips + '</div>'
+                        + (r.comment ? '<p class="text-xs text-base-charcoal leading-relaxed whitespace-pre-wrap">' + escHtml(r.comment) + '</p>' : '')
+                        + '</div>';
+                }).join('');
+            } else {
+                html += '<p class="mb-4">まだ口コミはありません。</p>';
+            }
+            html += '<details class="rounded-2xl border border-base-border bg-white p-4">'
+                + '<summary class="cursor-pointer text-sm font-bold text-base-terraDark">口コミを書く（ご利用された方）</summary>'
+                + '<form id="review-form" class="mt-4 space-y-4" onsubmit="submitReview(event, ' + m[1] + ')">'
+                + '<div><label class="block text-[11px] font-bold text-base-charcoal mb-1">予約番号 <span class="text-base-terra">*</span></label>'
+                + '<input id="rv-code" type="text" required placeholder="例：SB-20261126-1234" class="w-full px-3.5 py-2.5 rounded-xl border border-base-border text-sm uppercase focus:outline-none focus:border-base-terra">'
+                + '<p class="text-[10px] text-base-muted mt-1">ご予約完了メールに記載の番号です。ご利用日の後に投稿できます。</p></div>'
+                + '<div><label class="block text-[11px] font-bold text-base-charcoal mb-1">ニックネーム（任意）</label>'
+                + '<input id="rv-nick" type="text" maxlength="30" placeholder="例：花子" class="w-full px-3.5 py-2.5 rounded-xl border border-base-border text-sm focus:outline-none focus:border-base-terra"></div>'
+                + REVIEW_QS.map((q, i) => '<div><p class="text-xs font-bold text-base-charcoal mb-2">' + (i + 1) + '. ' + q + '</p><div class="grid grid-cols-4 gap-2">'
+                    + REVIEW_CHOICES.map((c) => '<label class="cursor-pointer"><input type="radio" name="rvq' + i + '" value="' + c[0] + '" class="peer sr-only"><span class="block text-center py-2.5 rounded-xl border border-base-border bg-white text-xs font-medium text-base-charcoal peer-checked:border-base-terra peer-checked:bg-base-terraLight peer-checked:text-base-terraDark peer-checked:font-bold">' + c[1] + '</span></label>').join('')
+                    + '</div></div>').join('')
+                + '<div><label class="block text-[11px] font-bold text-base-charcoal mb-1">ご感想（任意）</label>'
+                + '<textarea id="rv-comment" rows="4" maxlength="600" placeholder="良かった点や、気づいた点をご記入ください。" class="w-full px-3.5 py-2.5 rounded-xl border border-base-border text-sm focus:outline-none focus:border-base-terra"></textarea></div>'
+                + '<p class="text-[10px] text-base-muted">投稿された口コミは、オーナーが内容を確認し、サイトに掲載するかどうかを決めます。</p>'
+                + '<div id="rv-msg" class="hidden text-xs font-bold rounded-xl px-4 py-2.5"></div>'
+                + '<button type="submit" id="rv-submit" class="w-full py-3.5 rounded-full bg-base-terra hover:bg-base-terraDark text-white font-bold text-sm">口コミを送信する</button>'
+                + '</form></details>';
+            box.innerHTML = html;
+        }
+
+        async function submitReview(e, salonNo) {
+            e.preventDefault();
+            const msg = document.getElementById('rv-msg');
+            const btn = document.getElementById('rv-submit');
+            const show = (ok, text) => {
+                msg.className = ok ? 'text-xs font-bold rounded-xl px-4 py-2.5 bg-base-sageLight text-base-sage' : 'text-xs font-bold rounded-xl px-4 py-2.5 bg-red-50 text-red-700 border border-red-200';
+                msg.textContent = text;
+            };
+            const q = REVIEW_QS.map((_, i) => {
+                const el = document.querySelector('input[name="rvq' + i + '"]:checked');
+                return el ? Number(el.value) : 0;
+            });
+            if (q.some((x) => !x)) { show(false, 'すべての質問にお答えください。'); return; }
+            btn.disabled = true;
+            const orig = btn.textContent;
+            btn.textContent = '送信中...';
+            try {
+                const res = await fetch('/api/reviews', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({
+                        booking_code: document.getElementById('rv-code').value.trim(),
+                        nickname: document.getElementById('rv-nick').value.trim(),
+                        comment: document.getElementById('rv-comment').value.trim(),
+                        q
+                    })
+                });
+                const d = await res.json().catch(() => ({}));
+                if (!res.ok || d.ok === false) throw new Error(d.error || '送信に失敗しました');
+                show(true, 'ありがとうございました。オーナーが確認したあと、サイトに掲載されます。');
+                document.getElementById('review-form').reset();
+            } catch (err) {
+                show(false, err.message || '送信に失敗しました');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = orig;
             }
         }
 
