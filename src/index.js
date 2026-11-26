@@ -84,6 +84,15 @@ function formatReceiptItemRow(row) {
   };
 }
 
+let reviewsTableReady = false;
+async function ensureReviewsTable(env) {
+  if (reviewsTableReady) return;
+  await env.DB.prepare(
+    "CREATE TABLE IF NOT EXISTS salon_reviews (id INTEGER PRIMARY KEY AUTOINCREMENT, salon_id INTEGER NOT NULL, booking_code TEXT NOT NULL UNIQUE, owner_email TEXT, nickname TEXT, q1 INTEGER, q2 INTEGER, q3 INTEGER, q4 INTEGER, q5 INTEGER, comment TEXT, status TEXT NOT NULL DEFAULT 'pending', created_at TEXT NOT NULL)"
+  ).run();
+  reviewsTableReady = true;
+}
+
 function safeJsonArray(str, fallback = []) {
   try {
     const parsed = JSON.parse(str || "[]");
@@ -351,14 +360,22 @@ export default {
           (photoMap[p.salon_id] ||= []).push(`/api/images/${encodeURIComponent(p.image_key)}`);
         }
 
+        const ratingMap = {};
+        try {
+          await ensureReviewsTable(env);
+          const rv = await env.DB.prepare(
+            "SELECT salon_id, COUNT(*) AS n, AVG((q1+q2+q3+q4+q5)/5.0) AS avg4 FROM salon_reviews WHERE status = 'published' GROUP BY salon_id"
+          ).all();
+          for (const x of rv.results || []) ratingMap[x.salon_id] = { n: Number(x.n), rating: Math.round((Number(x.avg4) / 4) * 50) / 10 };
+        } catch (e) {}
         const salons = (rows.results || []).map((r) => ({
           id: `db_${r.id}`,
           name: r.name,
           area: r.area,
           station: r.station,
           pricePerHour: Number(r.price_per_hour || 1500),
-          rating: Number(r.rating || 4.9),
-          reviewCount: Number(r.review_count || 1),
+          rating: ratingMap[r.id] ? ratingMap[r.id].rating : 0,
+          reviewCount: ratingMap[r.id] ? ratingMap[r.id].n : 0,
           availabilityBadge: r.availability_badge || "本日空きあり",
           genres: safeJsonArray(r.genres_json, ["エステ・リラク"]),
           equipment: safeJsonArray(r.equipment_json, ["完全個室"]),
@@ -577,6 +594,7 @@ if (path === "/api/owner/withdraw" && method === "POST") {
     for (const sl of sals?.results || []) {
       await env.DB.prepare("DELETE FROM salon_photos WHERE salon_id = ?").bind(sl.id).run();
       await env.DB.prepare("DELETE FROM salon_closures WHERE salon_id = ?").bind(sl.id).run();
+      try { await ensureReviewsTable(env); await env.DB.prepare("DELETE FROM salon_reviews WHERE salon_id = ?").bind(sl.id).run(); } catch (e) {}
       await env.DB.prepare("DELETE FROM published_salons WHERE id = ?").bind(sl.id).run();
     }
     await env.DB.prepare("DELETE FROM owner_entries WHERE id = ?").bind(row.id).run();
@@ -780,6 +798,121 @@ if (path === "/api/owner/login" && method === "POST") {
         return json({ ok: true, closures: (rows.results || []).map((x) => ({ date: x.date, hours: JSON.parse(x.hours || "[]") })) });
       } catch (e) {
         return json({ ok: false, error: "取得に失敗しました" }, 500);
+      }
+    }
+
+    // ---- 口コミ：公開分の一覧（お客様向け） ----
+    if (path === "/api/reviews" && method === "GET") {
+      const u = new URL(request.url);
+      const sid = parseInt(String(u.searchParams.get("salon_id") || "").replace(/^db_/, ""), 10);
+      if (!sid) return json({ ok: false, error: "salon_id が必要です" }, 400);
+      try {
+        await ensureReviewsTable(env);
+        const rows = await env.DB.prepare(
+          "SELECT nickname, q1, q2, q3, q4, q5, comment, created_at FROM salon_reviews WHERE salon_id = ? AND status = 'published' ORDER BY id DESC LIMIT 100"
+        ).bind(sid).all();
+        const list = rows.results || [];
+        const n = list.length;
+        const avg = [0, 0, 0, 0, 0];
+        for (const r of list) { avg[0] += r.q1; avg[1] += r.q2; avg[2] += r.q3; avg[3] += r.q4; avg[4] += r.q5; }
+        const averages = avg.map((x) => (n ? Math.round((x / n) * 10) / 10 : 0));
+        const overall = n ? Math.round((averages.reduce((a, b) => a + b, 0) / 5 / 4) * 50) / 10 : 0;
+        return json({ ok: true, count: n, overall, averages, reviews: list });
+      } catch (e) {
+        return json({ ok: false, error: "取得に失敗しました" }, 500);
+      }
+    }
+
+    // ---- 口コミ：投稿（予約番号が必要） ----
+    if (path === "/api/reviews" && method === "POST") {
+      try {
+        await ensureReviewsTable(env);
+        const b = await request.json().catch(() => ({}));
+        const code = String(b.booking_code || "").trim().toUpperCase();
+        const nickname = s(b.nickname, 30) || "ご利用者";
+        const comment = s(b.comment, 600);
+        const q = Array.isArray(b.q) ? b.q.map((x) => parseInt(x, 10)) : [];
+        if (!code) return json({ ok: false, error: "予約番号を入力してください" }, 400);
+        if (q.length !== 5 || q.some((x) => !(x >= 1 && x <= 4))) {
+          return json({ ok: false, error: "すべての質問にお答えください" }, 400);
+        }
+        const bk = await env.DB.prepare(
+          "SELECT booking_code, salon_id, salon_name, owner_email, date, status FROM salon_bookings WHERE booking_code = ?"
+        ).bind(code).first();
+        if (!bk || bk.status !== "paid") {
+          return json({ ok: false, error: "予約番号が見つからないか、お支払いが完了していません" }, 404);
+        }
+        const today = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+        if (String(bk.date) > today) {
+          return json({ ok: false, error: "ご利用日の後に、口コミを投稿できます" }, 400);
+        }
+        const dup = await env.DB.prepare("SELECT id FROM salon_reviews WHERE booking_code = ?").bind(code).first();
+        if (dup) return json({ ok: false, error: "この予約番号の口コミは、すでに投稿されています" }, 409);
+        await env.DB.prepare(
+          "INSERT INTO salon_reviews (salon_id, booking_code, owner_email, nickname, q1, q2, q3, q4, q5, comment, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)"
+        ).bind(bk.salon_id, code, bk.owner_email || "", nickname, q[0], q[1], q[2], q[3], q[4], comment, new Date().toISOString()).run();
+        try {
+          if (env.RESEND_API_KEY && bk.owner_email) {
+            await sendMail(
+              env,
+              bk.owner_email,
+              "【SHARE SALON】新しい口コミが届きました：" + (bk.salon_name || ""),
+              ["「" + (bk.salon_name || "") + "」に、口コミが届きました。", "", "管理画面の「口コミの管理」で内容を確認し、サイトに掲載するかどうかを決めてください。", "https://share-salon-tokyo.com/admin.html", "", "SHARE SALON"].join("\n")
+            );
+          }
+        } catch (e) { console.log("review mail error", String(e)); }
+        return json({ ok: true });
+      } catch (e) {
+        return json({ ok: false, error: "投稿に失敗しました" }, 500);
+      }
+    }
+
+    // ---- 口コミ：オーナーの一覧（ログイン必須） ----
+    if (path === "/api/owner/reviews" && method === "GET") {
+      if (!(await verifyAdminToken(request, env))) return json({ ok: false, error: "認証が必要です" }, 401);
+      try {
+        await ensureReviewsTable(env);
+        const rawTok = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").split(".")[0];
+        const tok = JSON.parse(atob(rawTok));
+        let rows;
+        if (tok.role === "admin") {
+          rows = await env.DB.prepare(
+            "SELECT r.id, r.salon_id, r.booking_code, r.nickname, r.q1, r.q2, r.q3, r.q4, r.q5, r.comment, r.status, r.created_at, s.name AS salon_name FROM salon_reviews r LEFT JOIN published_salons s ON s.id = r.salon_id ORDER BY r.id DESC LIMIT 200"
+          ).all();
+        } else {
+          const ow = await env.DB.prepare("SELECT email FROM owner_entries WHERE id = ?").bind(tok.owner_id).first();
+          rows = await env.DB.prepare(
+            "SELECT r.id, r.salon_id, r.booking_code, r.nickname, r.q1, r.q2, r.q3, r.q4, r.q5, r.comment, r.status, r.created_at, s.name AS salon_name FROM salon_reviews r JOIN published_salons s ON s.id = r.salon_id WHERE s.owner_email = ? ORDER BY r.id DESC LIMIT 200"
+          ).bind(ow?.email || "").all();
+        }
+        return json({ ok: true, reviews: rows.results || [] });
+      } catch (e) {
+        return json({ ok: false, error: "取得に失敗しました" }, 500);
+      }
+    }
+
+    // ---- 口コミ：掲載する／しないの決定（ログイン必須） ----
+    const reviewIdMatch = path.match(/^\/api\/owner\/reviews\/(\d+)$/);
+    if (reviewIdMatch && method === "POST") {
+      if (!(await verifyAdminToken(request, env))) return json({ ok: false, error: "認証が必要です" }, 401);
+      try {
+        await ensureReviewsTable(env);
+        const rid = Number(reviewIdMatch[1]);
+        const b = await request.json().catch(() => ({}));
+        const status = String(b.status || "");
+        if (!["published", "hidden", "pending"].includes(status)) return json({ ok: false, error: "状態が正しくありません" }, 400);
+        const rawTok = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").split(".")[0];
+        const tok = JSON.parse(atob(rawTok));
+        const rv = await env.DB.prepare("SELECT r.id, s.owner_email FROM salon_reviews r LEFT JOIN published_salons s ON s.id = r.salon_id WHERE r.id = ?").bind(rid).first();
+        if (!rv) return json({ ok: false, error: "口コミが見つかりません" }, 404);
+        if (tok.role !== "admin") {
+          const ow = await env.DB.prepare("SELECT email FROM owner_entries WHERE id = ?").bind(tok.owner_id).first();
+          if (!ow?.email || rv.owner_email !== ow.email) return json({ ok: false, error: "この口コミは操作できません" }, 403);
+        }
+        await env.DB.prepare("UPDATE salon_reviews SET status = ? WHERE id = ?").bind(status, rid).run();
+        return json({ ok: true });
+      } catch (e) {
+        return json({ ok: false, error: "更新に失敗しました" }, 500);
       }
     }
 
@@ -1140,7 +1273,9 @@ if (path === "/api/owner/login" && method === "POST") {
             const guestText = [
               `${bk.guest_name} 様`, "", "ご予約とお支払いが完了しました。", "",
               `予約番号: ${bk.booking_code}`, `サロン: ${bk.salon_name}`, `ご利用日時: ${when}`,
-              `お支払い金額: ¥${Number(bk.amount_jpy).toLocaleString()}`, "", "※ このメールは送信専用です。", "SHARE SALON",
+              `お支払い金額: ¥${Number(bk.amount_jpy).toLocaleString()}`, "",
+              "ご利用後、サロンの詳細ページの「口コミを書く」から、この予約番号で口コミをご投稿いただけます。", "",
+              "※ このメールは送信専用です。", "SHARE SALON",
             ].join("\n");
             const ownRow = await env.DB.prepare("SELECT owner_code FROM owner_entries WHERE email = ? ORDER BY id ASC LIMIT 1").bind(bk.owner_email || "").first();
             const ownerText = [
@@ -1256,6 +1391,7 @@ if (path === "/api/owner/login" && method === "POST") {
         if (method === "DELETE") {
           await env.DB.prepare("DELETE FROM salon_photos WHERE salon_id = ?").bind(sid).run();
           await env.DB.prepare("DELETE FROM salon_closures WHERE salon_id = ?").bind(sid).run();
+          try { await ensureReviewsTable(env); await env.DB.prepare("DELETE FROM salon_reviews WHERE salon_id = ?").bind(sid).run(); } catch (e) {}
           await env.DB.prepare("DELETE FROM published_salons WHERE id = ?").bind(sid).run();
           return json({ ok: true });
         }
