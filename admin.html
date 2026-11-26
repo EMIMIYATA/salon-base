@@ -211,6 +211,18 @@
         </div>
       </section>
 
+      <!-- ②-2 口コミの管理 -->
+      <section class="bg-white rounded-3xl border border-base-border shadow-card p-6">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="font-serif text-lg font-bold text-base-charcoal">口コミの管理</h2>
+          <button type="button" id="refresh-reviews-btn" class="px-3 py-1.5 rounded-full text-xs font-bold border border-base-border hover:bg-base-bg">更新</button>
+        </div>
+        <p class="text-[11px] text-base-muted mb-3">お客様から届いた口コミです。「サイトに掲載する」を押した口コミだけが、公開サイトに表示されます。</p>
+        <div id="owner-reviews-list" class="space-y-3 text-xs text-base-charcoal">
+          <p class="text-base-muted">読み込み中です...</p>
+        </div>
+      </section>
+
       <!-- ③ サロン掲載内容（一度登録したら、変更ボタンで修正） -->
       <section class="bg-white rounded-3xl border border-base-border shadow-card p-6 sm:p-8">
         <div class="flex items-start justify-between gap-3 mb-4 pb-3 border-b border-base-border">
@@ -470,6 +482,55 @@
       }
     }
     document.getElementById('refresh-bookings-btn').addEventListener('click', loadAdminBookings);
+
+    // ---------- 口コミの管理 ----------
+    const RV_SHORT = ['清潔さ', '設備・備品', '入室のしやすさ', 'オーナーの対応', 'また利用したい'];
+    const RV_LABEL = { 4: 'はい', 3: 'まあまあ', 2: 'あまり', 1: 'いいえ' };
+    async function loadOwnerReviews() {
+      const box = document.getElementById('owner-reviews-list');
+      if (!box) return;
+      try {
+        const res = await fetch('/api/owner/reviews', { headers: { ...getAuthHeaders() } });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401) { handleLogout(); showError('ログインの有効期限が切れました。もう一度ログインしてください。'); return; }
+        if (!res.ok || data.ok === false) throw new Error(data.error || '取得に失敗しました');
+        const list = data.reviews || [];
+        if (list.length === 0) { box.innerHTML = '<p class="text-base-muted">まだ口コミはありません。</p>'; return; }
+        box.innerHTML = list.map((r) => {
+          const sc = [r.q1, r.q2, r.q3, r.q4, r.q5];
+          const chips = RV_SHORT.map((l, i) => '<span class="px-2 py-0.5 rounded-md bg-base-terraLight text-base-terraDark text-[10px] font-semibold">' + l + '：' + (RV_LABEL[sc[i]] || '-') + '</span>').join(' ');
+          const badge = r.status === 'published'
+            ? '<span class="px-2.5 py-0.5 rounded-full bg-base-sageLight text-base-sage text-[11px] font-bold">掲載中</span>'
+            : r.status === 'hidden'
+              ? '<span class="px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[11px] font-bold">非掲載</span>'
+              : '<span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[11px] font-bold">確認待ち</span>';
+          const btns = (r.status !== 'published' ? '<button type="button" data-rv="' + r.id + '" data-st="published" class="rv-act px-4 py-2 rounded-full bg-base-terra text-white text-xs font-bold">サイトに掲載する</button>' : '')
+            + (r.status !== 'hidden' ? '<button type="button" data-rv="' + r.id + '" data-st="hidden" class="rv-act px-4 py-2 rounded-full border border-base-border text-xs font-bold">掲載しない</button>' : '');
+          return '<div class="rounded-2xl border border-base-border bg-base-bg p-4">'
+            + '<div class="flex items-center justify-between gap-2 mb-1"><span class="font-bold">' + esc(r.salon_name || '') + '</span>' + badge + '</div>'
+            + '<div class="text-[11px] text-base-muted mb-2">' + esc(r.nickname || 'ご利用者') + ' 様 ／ ' + esc(String(r.created_at || '').slice(0, 10)) + ' ／ 予約番号 ' + esc(r.booking_code) + '</div>'
+            + '<div class="flex flex-wrap gap-1 mb-2">' + chips + '</div>'
+            + (r.comment ? '<p class="text-xs leading-relaxed whitespace-pre-wrap mb-3">' + esc(r.comment) + '</p>' : '')
+            + '<div class="flex flex-wrap gap-2">' + btns + '</div></div>';
+        }).join('');
+        box.querySelectorAll('.rv-act').forEach((b) => b.addEventListener('click', async () => {
+          b.disabled = true;
+          try {
+            const r2 = await fetch('/api/owner/reviews/' + b.dataset.rv, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+              body: JSON.stringify({ status: b.dataset.st }),
+            });
+            const d2 = await r2.json().catch(() => ({}));
+            if (!r2.ok || d2.ok === false) throw new Error(d2.error || '更新に失敗しました');
+            loadOwnerReviews();
+          } catch (err) { alert(err.message || '更新に失敗しました'); b.disabled = false; }
+        }));
+      } catch (err) {
+        box.innerHTML = '<p class="text-red-700">' + esc(err.message || '取得に失敗しました') + '</p>';
+      }
+    }
+    document.getElementById('refresh-reviews-btn').addEventListener('click', loadOwnerReviews);
 
     // ---------- 日にち・時間の設定 ----------
     function clMsg(ok, msg) {
@@ -823,6 +884,7 @@
       headerLogoutBtn.classList.remove('hidden');
       loadMySalons();
       loadAdminBookings();
+      loadOwnerReviews();
             loadStripeStatus();
     }
 
