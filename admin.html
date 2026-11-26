@@ -164,7 +164,28 @@
         </div>
         <div class="space-y-3">
           <select id="cl-salon" class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 text-sm"></select>
-          <input id="cl-date" type="date" class="w-full px-4 py-2.5 rounded-xl border border-base-border bg-base-bg/50 text-sm" />
+          <div class="rounded-2xl border border-base-border bg-base-bg/50 p-3">
+            <div class="flex gap-2 mb-3">
+              <button type="button" id="cl-mode-multi" class="flex-1 py-2 rounded-full text-xs font-bold border border-base-terra bg-base-terra text-white">日にちを選ぶ</button>
+              <button type="button" id="cl-mode-range" class="flex-1 py-2 rounded-full text-xs font-bold border border-base-border bg-white text-base-charcoal">期間でまとめて選ぶ</button>
+            </div>
+            <p id="cl-mode-help" class="text-[11px] text-base-muted mb-2">日にちをタップして選びます（何日でも選べます）。もう一度タップすると外れます。</p>
+            <div class="flex items-center justify-between mb-2">
+              <button type="button" id="cl-prev" class="w-10 h-10 rounded-full border border-base-border bg-white text-base-charcoal font-bold" aria-label="前の月">‹</button>
+              <div id="cl-month-label" class="font-serif font-bold text-base-charcoal"></div>
+              <button type="button" id="cl-next" class="w-10 h-10 rounded-full border border-base-border bg-white text-base-charcoal font-bold" aria-label="次の月">›</button>
+            </div>
+            <div class="grid grid-cols-7 text-center text-[11px] font-bold text-base-muted mb-1">
+              <div class="text-red-500">日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div class="text-blue-500">土</div>
+            </div>
+            <div id="cl-cal" class="grid grid-cols-7 gap-1"></div>
+            <div class="flex items-center justify-between mt-3 text-[11px]">
+              <span id="cl-selected-summary" class="font-bold text-base-charcoal">日にちを選んでください</span>
+              <button type="button" id="cl-clear-sel" class="underline text-base-muted">選択をクリア</button>
+            </div>
+            <p class="text-[10px] text-base-muted mt-1"><span class="inline-block w-2 h-2 rounded-full bg-base-terra align-middle"></span> は設定済みの日です。</p>
+          </div>
+          <p class="text-[11px] text-base-muted">選んだ <b>すべての日</b> に、下で選ぶ時間の設定が保存されます。</p>
           <div id="cl-hours" class="grid grid-cols-3 sm:grid-cols-4 gap-2"></div>
           <div class="flex flex-wrap gap-2">
             <button type="button" id="cl-all" class="px-4 py-2 rounded-full border border-base-border text-xs font-bold hover:bg-base-bg">終日お休みにする</button>
@@ -469,30 +490,116 @@
       loadClosureList();
     }
 
+    const clSelected = new Set();
+    let clMode = 'multi';
+    let clRangeStart = null;
+    let clMarks = {};
+    function pad2(n) { return String(n).padStart(2, '0'); }
+    function jstToday() { return new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10); }
+    function dstr(y, m, d) { return y + '-' + pad2(m + 1) + '-' + pad2(d); }
+    const clMonth = (function () { const p = jstToday().split('-'); return { y: Number(p[0]), m: Number(p[1]) - 1 }; })();
+
+    function renderCalendar() {
+      const box = document.getElementById('cl-cal');
+      if (!box) return;
+      const today = jstToday();
+      const first = new Date(Date.UTC(clMonth.y, clMonth.m, 1)).getUTCDay();
+      const days = new Date(Date.UTC(clMonth.y, clMonth.m + 1, 0)).getUTCDate();
+      document.getElementById('cl-month-label').textContent = clMonth.y + '年' + (clMonth.m + 1) + '月';
+      let html = '';
+      for (let i = 0; i < first; i++) html += '<div></div>';
+      for (let d = 1; d <= days; d++) {
+        const s = dstr(clMonth.y, clMonth.m, d);
+        const past = s < today;
+        const sel = clSelected.has(s);
+        const marked = !!clMarks[s];
+        let cls = 'relative h-11 rounded-xl text-sm font-medium border transition ';
+        if (past) cls += 'border-transparent text-gray-300 bg-transparent';
+        else if (sel) cls += 'border-base-terra bg-base-terra text-white font-bold';
+        else cls += 'border-base-border bg-white text-base-charcoal';
+        if (s === today && !sel) cls += ' ring-2 ring-base-sage';
+        const dot = marked ? '<span class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full ' + (sel ? 'bg-white' : 'bg-base-terra') + '"></span>' : '';
+        html += '<button type="button" data-d="' + s + '" class="cl-day ' + cls + '"' + (past ? ' disabled' : '') + '>' + d + dot + '</button>';
+      }
+      box.innerHTML = html;
+      box.querySelectorAll('.cl-day').forEach((b) => b.addEventListener('click', () => onDayClick(b.dataset.d)));
+      const n = clSelected.size;
+      const sum = document.getElementById('cl-selected-summary');
+      if (clMode === 'range' && clRangeStart) sum.textContent = '開始日 ' + clRangeStart + '。終了日をタップしてください';
+      else if (n === 0) sum.textContent = '日にちを選んでください';
+      else if (n === 1) sum.textContent = Array.from(clSelected)[0] + ' を選択中';
+      else { const arr = Array.from(clSelected).sort(); sum.textContent = n + '日を選択中（' + arr[0] + ' 〜 ' + arr[arr.length - 1] + '）'; }
+    }
+
+    function setMode(mode) {
+      clMode = mode;
+      clRangeStart = null;
+      const on = 'flex-1 py-2 rounded-full text-xs font-bold border border-base-terra bg-base-terra text-white';
+      const off = 'flex-1 py-2 rounded-full text-xs font-bold border border-base-border bg-white text-base-charcoal';
+      document.getElementById('cl-mode-multi').className = mode === 'multi' ? on : off;
+      document.getElementById('cl-mode-range').className = mode === 'range' ? on : off;
+      document.getElementById('cl-mode-help').textContent = mode === 'multi'
+        ? '日にちをタップして選びます（何日でも選べます）。もう一度タップすると外れます。'
+        : '最初に開始日、次に終了日をタップすると、その間の日がすべて選ばれます。';
+      renderCalendar();
+    }
+
+    function onDayClick(s) {
+      if (clMode === 'multi') {
+        if (clSelected.has(s)) clSelected.delete(s); else clSelected.add(s);
+        clRangeStart = null;
+      } else if (!clRangeStart) {
+        clSelected.clear();
+        clSelected.add(s);
+        clRangeStart = s;
+      } else {
+        let a = clRangeStart, b = s;
+        if (b < a) { const x = a; a = b; b = x; }
+        const today = jstToday();
+        const da = new Date(a + 'T00:00:00Z');
+        const db = new Date(b + 'T00:00:00Z');
+        clSelected.clear();
+        for (let cur = da, i = 0; cur <= db && i < 366; cur = new Date(cur.getTime() + 86400000), i++) {
+          const ds2 = cur.toISOString().slice(0, 10);
+          if (ds2 >= today) clSelected.add(ds2);
+        }
+        clRangeStart = null;
+      }
+      renderCalendar();
+      if (clSelected.size === 1) loadClosureForDate(Array.from(clSelected)[0]);
+    }
+
     async function loadClosureList() {
       const sid = document.getElementById('cl-salon').value;
       const box = document.getElementById('cl-list');
-      if (!sid) { box.innerHTML = ''; return; }
+      clMarks = {};
+      if (!sid) { box.innerHTML = ''; renderCalendar(); return; }
       try {
         const res = await fetch('/api/closures?salon_id=' + sid);
         const data = await res.json().catch(() => ({}));
         const list = data.closures || [];
+        list.forEach((c) => { clMarks[c.date] = c.hours; });
         box.innerHTML = list.length
           ? list.map((c) => '<button type="button" data-date="' + esc(c.date) + '" class="cl-item w-full text-left rounded-xl border border-base-border bg-base-bg px-3 py-2">'
               + '<b>' + esc(c.date) + '</b>　' + (c.hours.length >= HOURS.length ? '終日お休み' : esc(c.hours.join('、')) + ' が満枠') + '</button>').join('')
           : '<p class="text-base-muted">まだ設定はありません。</p>';
         box.querySelectorAll('.cl-item').forEach((el) => {
           el.addEventListener('click', () => {
-            document.getElementById('cl-date').value = el.dataset.date;
-            loadClosureForDate();
+            const d = el.dataset.date;
+            clSelected.clear();
+            clSelected.add(d);
+            const p = d.split('-');
+            clMonth.y = Number(p[0]); clMonth.m = Number(p[1]) - 1;
+            renderCalendar();
+            loadClosureForDate(d);
           });
         });
       } catch { box.innerHTML = ''; }
+      renderCalendar();
     }
 
-    async function loadClosureForDate() {
+    async function loadClosureForDate(date) {
       const sid = document.getElementById('cl-salon').value;
-      const date = document.getElementById('cl-date').value;
       clClosed.clear();
       if (sid && date) {
         try {
@@ -504,31 +611,44 @@
       renderHours('cl-hours', clClosed);
     }
 
-    document.getElementById('cl-salon').addEventListener('change', () => { loadClosureList(); loadClosureForDate(); });
-    document.getElementById('cl-date').addEventListener('change', loadClosureForDate);
+    document.getElementById('cl-mode-multi').addEventListener('click', () => setMode('multi'));
+    document.getElementById('cl-mode-range').addEventListener('click', () => setMode('range'));
+    document.getElementById('cl-prev').addEventListener('click', () => { clMonth.m--; if (clMonth.m < 0) { clMonth.m = 11; clMonth.y--; } renderCalendar(); });
+    document.getElementById('cl-next').addEventListener('click', () => { clMonth.m++; if (clMonth.m > 11) { clMonth.m = 0; clMonth.y++; } renderCalendar(); });
+    document.getElementById('cl-clear-sel').addEventListener('click', () => { clSelected.clear(); clRangeStart = null; renderCalendar(); });
+    document.getElementById('cl-salon').addEventListener('change', () => { clSelected.clear(); clClosed.clear(); renderHours('cl-hours', clClosed); loadClosureList(); });
     document.getElementById('cl-all').addEventListener('click', () => { HOURS.forEach((t) => clClosed.add(t)); renderHours('cl-hours', clClosed); });
     document.getElementById('cl-clear').addEventListener('click', () => { clClosed.clear(); renderHours('cl-hours', clClosed); });
     document.getElementById('cl-save').addEventListener('click', async () => {
       const sid = document.getElementById('cl-salon').value;
-      const date = document.getElementById('cl-date').value;
+      const dates = Array.from(clSelected).sort();
       const msg = document.getElementById('cl-msg');
       msg.classList.remove('hidden');
-      if (!sid || !date) { clMsg(false, 'サロンと日付を選んでください。'); return; }
+      if (!sid || dates.length === 0) { clMsg(false, 'サロンと日にちを選んでください。'); return; }
+      const btn = document.getElementById('cl-save');
+      btn.disabled = true;
       try {
-        const res = await fetch('/api/closures', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-          body: JSON.stringify({ salon_id: Number(sid), date, hours: Array.from(clClosed) }),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (res.status === 401) { handleLogout(); showError('ログインの有効期限が切れました。もう一度ログインしてください。'); return; }
-        if (!res.ok || data.ok === false) throw new Error(data.error || '保存に失敗しました');
-        clMsg(true, date + ' の設定を保存しました。');
-        loadClosureList();
+        const hours = Array.from(clClosed);
+        for (let i = 0; i < dates.length; i++) {
+          clMsg(true, '保存中… (' + (i + 1) + '/' + dates.length + ')');
+          const res = await fetch('/api/closures', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+            body: JSON.stringify({ salon_id: Number(sid), date: dates[i], hours }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (res.status === 401) { handleLogout(); showError('ログインの有効期限が切れました。もう一度ログインしてください。'); return; }
+          if (!res.ok || data.ok === false) throw new Error((data.error || '保存に失敗しました') + '（' + dates[i] + '）');
+        }
+        clMsg(true, dates.length === 1 ? dates[0] + ' の設定を保存しました。' : dates.length + '日分の設定を保存しました。');
+        await loadClosureList();
       } catch (err) {
         clMsg(false, err.message || '保存に失敗しました');
+      } finally {
+        btn.disabled = false;
       }
     });
+    renderCalendar();
 
     // ---------- サロン掲載内容 ----------
     async function loadMySalons() {
