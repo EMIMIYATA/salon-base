@@ -816,6 +816,10 @@ if (path === "/api/owner/login" && method === "POST") {
       }
     }
     // ---- 管理画面アプリ化（マニフェストとアイコン） ----
+    // /admin を管理画面（admin.html）に向ける
+    if ((path === "/admin" || path === "/admin/") && (method === "GET" || method === "HEAD")) {
+      return env.ASSETS.fetch(new Request(new URL("/admin.html", url.origin).toString(), request));
+    }
     if (path === "/admin.webmanifest" && method === "GET") {
       return new Response(JSON.stringify({
         name: "SHARE SALON オーナー管理",
