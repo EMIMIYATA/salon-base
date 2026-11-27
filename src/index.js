@@ -188,7 +188,7 @@ async function sendMail(env, to, subject, text) {
       "content-type": "application/json",
     },
     body: JSON.stringify({
-      from: "SHARE SALON <noreply@weblavo-tokyo.com>",
+      from: "SHARE SALON <info@share-salon-tokyo.com>",
       to: [to],
       subject,
       text,
