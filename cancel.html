@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>運営用：キャンセル・返金 | SHARE SALON</title>
+<style>
+  :root{--c:#3a3330;--m:#7a6f69;--t:#b8704f;--bg:#faf7f4;--b:#e8e0d9}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--c);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.7;font-size:14px}
+  header{background:#fff;border-bottom:1px solid var(--b);padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+  header b{font-size:15px}
+  main{max-width:720px;margin:0 auto;padding:16px 16px 80px}
+  h1{font-size:19px;margin:8px 0}
+  .card{background:#fff;border:1px solid var(--b);border-radius:16px;padding:14px;margin:12px 0}
+  input{width:100%;padding:12px;border:1px solid var(--b);border-radius:12px;font-size:16px;margin:6px 0}
+  button{font-size:14px;font-weight:700;border-radius:999px;padding:10px 16px;border:1px solid var(--b);background:#fff;color:var(--c);cursor:pointer}
+  button.p{background:var(--t);border-color:var(--t);color:#fff}
+  button.d{border-color:#c0392b;color:#c0392b}
+  button:disabled{opacity:.5}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .m{color:var(--m);font-size:12px}
+  .tag{display:inline-block;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700}
+  .paid{background:#e4f1e6;color:#2f6b3a}
+  .can{background:#eee;color:#666}
+  .err{color:#b00020;font-size:13px}
+  .hid{display:none}
+</style>
+</head>
+<body>
+<header><b>SHARE SALON 運営用</b><button id="logout" class="hid">ログアウト</button></header>
+<main>
+  <h1>予約のキャンセル・返金</h1>
+  <p class="m">お客様から、電話でキャンセルの連絡を受けたときに使います。キャンセル料と返金額は、利用日までの日数で、自動で計算します。</p>
+
+  <div id="login" class="card">
+    <b>運営パスワード</b>
+    <input id="pw" type="password" autocomplete="current-password" placeholder="運営用のパスワード">
+    <div class="row"><button id="loginBtn" class="p">ログイン</button></div>
+    <p id="loginErr" class="err"></p>
+  </div>
+
+  <div id="app" class="hid">
+    <div class="row"><button id="reload">更新</button></div>
+    <div id="list"></div>
+  </div>
+</main>
+<script>
+(function () {
+  var KEY = 'ops_token';
+  var token = '';
+  try { token = sessionStorage.getItem(KEY) || ''; } catch (e) {}
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); }
+  function yen(n) { return '¥' + Number(n || 0).toLocaleString(); }
+  function hdr() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
+
+  function show(loggedIn) {
+    $('login').classList.toggle('hid', loggedIn);
+    $('app').classList.toggle('hid', !loggedIn);
+    $('logout').classList.toggle('hid', !loggedIn);
+  }
+  function logout() { token = ''; try { sessionStorage.removeItem(KEY); } catch (e) {} show(false); }
+
+  $('loginBtn').onclick = async function () {
+    $('loginErr').textContent = '';
+    try {
+      var r = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: $('pw').value }) });
+      var d = await r.json().catch(function () { return {}; });
+      if (!r.ok || !d.token) throw new Error(d.error || 'ログインできませんでした');
+      token = d.token; try { sessionStorage.setItem(KEY, token); } catch (e) {}
+      $('pw').value = '';
+      show(true); load();
+    } catch (e) { $('loginErr').textContent = e.message; }
+  };
+  $('logout').onclick = logout;
+  $('reload').onclick = load;
+
+  async function load() {
+    var box = $('list');
+    box.innerHTML = '<p class="m">読み込み中です...</p>';
+    try {
+      var r = await fetch('/api/ops/bookings', { headers: hdr() });
+      var d = await r.json().catch(function () { return {}; });
+      if (r.status === 401 || r.status === 403) { logout(); $('loginErr').textContent = 'もう一度ログインしてください'; return; }
+      if (!r.ok || d.ok === false) throw new Error(d.error || '取得に失敗しました');
+      var list = d.bookings || [];
+      if (!list.length) { box.innerHTML = '<p class="m">お支払い済みの予約は、まだありません。</p>'; return; }
+      box.innerHTML = list.map(function (b) {
+        var dd = String(b.date).split('-');
+        var when = dd[0] + '年' + Number(dd[1]) + '月' + Number(dd[2]) + '日 ' + (b.hours || []).join(' / ');
+        var head = '<div><b>' + esc(b.salon_name) + '</b> ' + (b.status === 'paid' ? '<span class="tag paid">お支払い済み</span>' : '<span class="tag can">キャンセル済み</span>') + '</div>'
+          + '<div class="m">予約番号 ' + esc(b.booking_code) + '</div>'
+          + '<div>' + esc(when) + '</div>'
+          + '<div>' + yen(b.amount_jpy) + '（運営手数料 ' + yen(b.fee_jpy) + '）</div>'
+          + '<div class="m">' + esc(b.guest_name) + ' ／ ' + esc(b.guest_email) + (b.guest_phone ? ' ／ ' + esc(b.guest_phone) : '') + '</div>';
+        if (b.status !== 'paid') {
+          return '<div class="card">' + head + '<div class="m">' + (b.cancel_reason === 'owner' ? 'オーナー都合' : 'お客様都合') + '：キャンセル料 ' + yen(b.cancel_fee_jpy) + ' ／ 返金 ' + yen(b.refund_jpy) + '</div></div>';
+        }
+        var g = b.plan_guest;
+        return '<div class="card">' + head
+          + '<div class="m">いまキャンセルすると（お客様都合）：利用日まで ' + g.days_before + ' 日 → キャンセル料 ' + g.percent + '％（' + yen(g.cancel_fee) + '）／ 返金 ' + yen(g.refund) + '</div>'
+          + '<div class="row"><button class="d" data-id="' + b.id + '" data-r="guest">お客様都合でキャンセル</button>'
+          + '<button data-id="' + b.id + '" data-r="owner">オーナー都合（全額返金）</button></div></div>';
+      }).join('');
+      box.querySelectorAll('button[data-id]').forEach(function (btn) { btn.onclick = function () { cancel(btn); }; });
+    } catch (e) { box.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; }
+  }
+
+  async function cancel(btn) {
+    var id = btn.dataset.id, reason = btn.dataset.r;
+    btn.disabled = true;
+    try {
+      var r0 = await fetch('/api/ops/bookings/' + id + '/cancel', { method: 'POST', headers: hdr(), body: JSON.stringify({ reason: reason, dry_run: true }) });
+      var d0 = await r0.json().catch(function () { return {}; });
+      if (!r0.ok || d0.ok === false) throw new Error(d0.error || '計算に失敗しました');
+      var p = d0.plan;
+      var msg = (reason === 'owner' ? '【オーナー都合のキャンセル】\n' : '【お客様都合のキャンセル】\n')
+        + 'お支払い金額：' + yen(p.amount) + '\n'
+        + (reason === 'owner' ? '' : 'キャンセル料：' + yen(p.cancel_fee) + '（' + p.percent + '％）\n')
+        + 'お客様への返金：' + yen(p.refund) + '\n'
+        + 'オーナーから取り戻す額：' + yen(p.reverse_transfer) + '\n'
+        + (reason === 'owner' ? 'オーナーへ別途請求する運営手数料：' + yen(p.owner_bill) + '\n' : 'オーナーの受け取り：' + yen(p.owner_receives) + '\n')
+        + '\nこの内容で実行します。取り消せません。よろしいですか？';
+      if (!confirm(msg)) { btn.disabled = false; return; }
+      var r = await fetch('/api/ops/bookings/' + id + '/cancel', { method: 'POST', headers: hdr(), body: JSON.stringify({ reason: reason }) });
+      var d = await r.json().catch(function () { return {}; });
+      if (!r.ok || d.ok === false) throw new Error(d.error || '処理に失敗しました');
+      alert('キャンセルと返金を行いました。お客様とオーナーへ、メールを送りました。');
+      load();
+    } catch (e) { alert(e.message); btn.disabled = false; }
+  }
+
+  if (token) { show(true); load(); } else { show(false); }
+})();
+</script>
+</body>
+</html>
