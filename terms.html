@@ -1,172 +1,2686 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>利用規約・キャンセルポリシー | SHARE SALON</title>
-<style>
-  :root{--c:#3a3330;--m:#7a6f69;--t:#b8704f;--bg:#faf7f4;--b:#e8e0d9}
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--c);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.85;font-size:15px}
-  header{background:#fff;border-bottom:1px solid var(--b);padding:14px 16px;position:sticky;top:0;z-index:5}
-  header a{color:var(--c);text-decoration:none;font-weight:700}
-  main{max-width:780px;margin:0 auto;padding:20px 16px 80px}
-  h1{font-size:22px;margin:8px 0 4px}
-  h2{font-size:18px;margin:36px 0 10px;padding-left:10px;border-left:4px solid var(--t)}
-  h3{font-size:15px;margin:20px 0 4px}
-  p,li{margin:6px 0}
-  ol,ul{padding-left:1.4em}
-  .note{background:#fff;border:1px solid var(--b);border-radius:12px;padding:12px 14px;color:var(--m);font-size:13px}
-  nav{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
-  nav a{background:#fff;border:1px solid var(--b);border-radius:999px;padding:7px 14px;font-size:13px;color:var(--c);text-decoration:none}
-  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--b);margin:10px 0;font-size:14px}
-  th,td{border:1px solid var(--b);padding:10px;text-align:left}
-  th{background:#f3ece6}
-  .box{background:#fff;border:2px solid var(--t);border-radius:12px;padding:12px 16px;margin:12px 0}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHARE SALON（シェアサロン）｜サロン特化型レンタルスペース予約＆掲載プラットフォーム</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Noto Sans JP & Noto Serif JP & Cormorant Garamond -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&family=Noto+Serif+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        base: {
+                            bg: '#FAF7F2',        // ウォームアイボリーベージュ（背景）
+                            surface: '#FFFFFF',   // ピュアホワイト（カード・面）
+                            sand: '#F3ECE1',      // ソフトサンドベージュ（サブ背景）
+                            border: '#E6DDD0',    // シャンパンサンド（ボーダー）
+                            sage: '#5C7A6B',      // ソフトセージ（空き状況バッジ等の控えめなアクセント）
+                            sageDark: '#486355',  // ホバー用セージ
+                            sageLight: '#EBF2EE', // 薄いセージ背景
+                            terra: '#C4826E',     // くすみローズゴールド / テラコッタ（メインブランドカラー）
+                            terraDark: '#B06F5B', // ホバー用テラコッタ
+                            terraLight: '#F9EFEA',// 薄いローズベージュ背景
+                            charcoal: '#3D352E',  // ディープエスプレッソブラウン（メインテキスト）
+                            muted: '#7A6F66',     // ミュートトープ（サブテキスト）
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Noto Sans JP"', 'sans-serif'],
+                        serif: ['"Noto Serif JP"', 'serif'],
+                        en: ['"Cormorant Garamond"', 'serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 12px 32px -6px rgba(61, 53, 46, 0.07)',
+                        'card': '0 4px 20px -2px rgba(61, 53, 46, 0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+      <style>
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background:
+        linear-gradient(rgba(250, 247, 242, 0.75), rgba(250, 247, 242, 0.75)),
+        url('/bg3.jpg') center / cover no-repeat;
+    }
+
+    body {
+      color: #3D352E;
+      font-family: 'Noto Sans JP', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* カスタムレンジスライダー（オーナー向け収益シミュレーター） */
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: transparent;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 24px;
+      width: 24px;
+      border-radius: 50%;
+      background: #C4826E;
+      border: 3px solid #FFFFFF;
+      box-shadow: 0 2px 8px rgba(61, 53, 46, 0.25);
+      cursor: pointer;
+      margin-top: -9px;
+      transition: transform 0.15s ease;
+    }
+
+   input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.12);
+            background: #B06F5B;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #E6DDD0;
+            border-radius: 999px;
+        }
+        .fade-in {
+            animation: fadeIn 0.35s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
-<body>
-<header><a href="/">← SHARE SALON（シェアサロン）</a></header>
-<main>
-<h1>利用規約・キャンセルポリシー</h1>
-<p style="color:var(--m);font-size:13px">制定：2026年11月26日　運営者：宮田絵美（SHARE SALON）　<a href="/tokushoho.html">特定商取引法に基づく表記</a></p>
-<nav>
-  <a href="#common">1. 共通規約</a>
-  <a href="#renter">2. 借りる方</a>
-  <a href="#owner">3. 貸す方（オーナー）</a>
-  <a href="#cancel">4. キャンセルポリシー</a>
-  <a href="#agree">5. 同意書</a>
-  <a href="#privacy">6. 個人情報</a>
-</nav>
+<body class="min-h-screen flex flex-col">
 
-<h2 id="common">1. 共通規約</h2>
-<h3>第1条（本サービスについて）</h3>
-<p>SHARE SALON（以下「本サービス」）は、サロンスペースを貸したい方（以下「オーナー」）と、借りたい方（以下「利用者」）をつなぐ場を提供するサービスです。</p>
-<h3>第2条（運営の立場）</h3>
-<ol>
-<li>スペースの利用契約は、オーナーと利用者の間で成立します。運営は場の提供・予約受付・決済の取次ぎを行う立場であり、契約の当事者ではありません。</li>
-<li>運営は、スペースの内容、施術、利用中の出来事、当事者間のトラブルについて、運営に故意または重大な過失がある場合を除き、責任を負いません。</li>
-</ol>
-<h3>第3条（登録・パスワード）</h3>
-<ol>
-<li>登録情報は、正確かつ最新の内容にしてください。</li>
-<li>パスワード、会員番号、予約番号は、ご自身で厳重に管理してください。第三者による利用の責任は、利用者・オーナー本人が負います。</li>
-</ol>
-<h3>第4条（禁止事項）</h3>
-<ul>
-<li>法令・公序良俗に反する行為、虚偽の情報の登録</li>
-<li>無資格・無届での施術、違法な施術・サービスの提供</li>
-<li>性的なサービスの提供、またはそれを目的とした利用</li>
-<li>スペースの無断転貸、予約者以外の利用、定員を超える利用</li>
-<li>無断での撮影・録音、他の利用者や第三者への迷惑行為</li>
-<li>本サービスを介さない直接の決済や取引の誘導（手数料の回避）</li>
-<li>虚偽・誹謗中傷の口コミの投稿、口コミの不正な操作</li>
-<li>運営や本サービスの運営を妨げる行為</li>
-</ul>
-<h3>第5条（料金・決済）</h3>
-<ol>
-<li>利用料金は、サロンページに表示される1時間あたりの料金×利用時間です。表示は税込です。</li>
-<li>決済は、クレジットカード等により、Stripe社の決済システムを通じて、予約時に行います。</li>
-<li>運営は、利用料金の20％をプラットフォーム手数料として、オーナーへの支払い額から差し引きます。利用者に、別途の手数料は発生しません。利用者のキャンセルで、キャンセル料が発生する場合と、オーナー都合のキャンセルの場合、このプラットフォーム手数料は返金しません。</li>
-<li>オーナーへの支払いは、Stripe社の定める周期・方法で行います。</li>
-</ol>
-<h3>第6条（口コミ）</h3>
-<ol>
-<li>口コミは、お支払い済みの予約の利用日以降に、予約番号を持つ利用者のみ投稿できます。</li>
-<li>投稿された口コミを、サイトに掲載するかどうかは、そのサロンのオーナーが決めます。ただし、掲載の可否は、運営がルールに基づいて見直すことがあります。</li>
-</ol>
-<h3>第7条（利用の停止・退会）</h3>
-<p>運営は、規約違反があった場合、事前の通知なく、掲載の停止、予約の取消し、利用の停止を行うことがあります。オーナーは、管理画面の「退会する」から、退会できます。未履行の予約がある場合は、その対応を済ませてください。</p>
-<h3>第8条（免責・損害賠償）</h3>
-<ol>
-<li>運営は、システムの停止・遅延・不具合により生じた損害について、運営に故意または重大な過失がある場合を除き、責任を負いません。</li>
-<li>運営が責任を負う場合でも、その範囲は、直接かつ通常の損害に限り、当該予約の利用料金を上限とします。</li>
-</ol>
-<h3>第9条（規約の変更）</h3>
-<p>運営は、必要に応じて、本規約を変更できます。変更後は、サイトに掲載した時点で効力を生じます。</p>
-<h3>第10条（準拠法・管轄）</h3>
-<p>本規約は日本法に準拠し、紛争は東京地方裁判所を第一審の専属的合意管轄裁判所とします。</p>
+    <!-- ==================== 1. 共通グローバルヘッダー ==================== -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-base-border shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between py-3 lg:h-20 gap-3">
+                
+                <!-- ブランドロゴ -->
+                <div class="flex items-center justify-between">
+                    <a href="#" onclick="switchView('guest'); return false;" class="flex items-center gap-3 group">
+                        <div class="w-10 h-10 rounded-2xl bg-base-terra flex items-center justify-center text-white shadow-sm group-hover:bg-base-terraDark transition">
+                            <i class="fa-solid fa-spa text-base"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-baseline gap-2">
+                                <span style="font-family: 'Cormorant Garamond', serif; font-size: 24px; line-height: 1.1; letter-spacing: 0.08em;" class="font-bold text-base-charcoal">SHARE SALON</span>
+                                <span class="text-xs font-medium text-base-terra hidden sm:inline">シェアサロン</span>
+                            </div>
+                            <span class="text-[11px] text-base-muted tracking-wider block mt-0.5">サロン特化型レンタルスペース</span>
+                        </div>
+                    </a>
 
-<h2 id="renter">2. 借りる方（利用者）の規約</h2>
-<ol>
-<li><b>資格・届出</b>：施術を行う方は、必要な資格を持ち、法令に基づく手続きを、ご自身の責任で行ってください。</li>
-<li><b>利用時間</b>：予約した時間内に、入室から片付け・退室までを終えてください。延長は、オーナーの承諾と、次の予約がない場合に限ります。</li>
-<li><b>原状回復</b>：利用後は、清掃し、使用前の状態に戻してください。ごみは、オーナーの指定に従って処理してください。</li>
-<li><b>備品・設備</b>：破損・汚損・紛失があった場合は、すみやかにオーナーに連絡し、修理・清掃・交換の費用を、実費で負担してください。</li>
-<li><b>ルールの遵守</b>：サロンページに記載された利用ルール（土足・火気・においの強い製品・騒音・近隣への配慮など）に従ってください。</li>
-<li><b>賠償責任保険</b>：施術中の事故に備えて、施術者賠償責任保険への加入を推奨します。施術に関する事故・クレームは、利用者ご自身の責任で対応します。</li>
-<li><b>貴重品</b>：持ち込んだ物の管理は、ご自身で行ってください。盗難・紛失について、オーナーと運営は責任を負いません。</li>
-<li><b>キャンセル</b>：下記「4. キャンセルポリシー」に従います。</li>
-</ol>
+                    
+                    
+                </div>
 
-<h2 id="owner">3. 貸す方（オーナー）の規約</h2>
-<ol>
-<li><b>権利・許可</b>：貸し出すスペースを、貸す権限（所有・賃貸借契約上の転貸の許可など）があることを、保証してください。賃貸物件の場合は、管理会社・貸主の許可を得てください。</li>
-<li><b>法令の遵守</b>：美容所の届出、保健所への手続き、消防・衛生に関する法令など、スペースの貸出しに必要な手続きは、オーナーご自身の責任で行ってください。</li>
-<li><b>掲載内容</b>：写真・料金・設備・住所・利用ルールは、事実のとおりに掲載してください。実際と異なる内容で、トラブルになった場合の責任は、オーナーが負います。</li>
-<li><b>清潔・安全</b>：スペースは、清潔・安全な状態に整えて、予約時間に、利用できるようにしてください。</li>
-<li><b>鍵・入室方法</b>：鍵や暗証番号は、予約者以外に共有しないでください。入室方法は、お支払い後の連絡で、案内してください。</li>
-<li><b>予約の管理</b>：貸せない日時は、管理画面の「日にち・時間の設定」で、早めに閉じてください。確定した予約は、正当な理由なく断れません。</li>
-<li><b>オーナー都合のキャンセル</b>：やむを得ずキャンセルする場合は、すみやかに、運営と利用者に連絡してください。利用者が支払った料金は、全額、利用者に返金します。この返金は、オーナーの負担で行います。運営のプラットフォーム手数料（利用料金の20％）は、返金せず、オーナーから差し引く、または、別途請求します。繰り返し行う場合や無断で行う場合は、掲載停止などの対応を取ることがあります。</li>
-<li><b>手数料と入金</b>：プラットフォーム手数料は、利用料金の20％です。入金には、Stripeの受け取り設定（本人確認・口座登録）が必要です。</li>
-<li><b>キャンセル料の受け取り</b>：下記のキャンセルポリシーに基づくキャンセル料は、手数料（20％）を差し引いて、オーナーに支払います。オーナー都合・利用者都合のどちらの場合も、運営の手数料は、返金しません。</li>
-<li><b>損害の請求</b>：利用者による破損等は、オーナーが、利用者に直接、請求できます。運営は、当事者間の連絡を、可能な範囲で支援しますが、立て替え・保証はしません。</li>
-<li><b>口コミ</b>：投稿された口コミは、事実に反する内容や誹謗中傷でない限り、特定の理由なく、非掲載にしないでください。</li>
-<li><b>個人情報</b>：予約で知った利用者の個人情報は、予約対応の目的以外に、使用しないでください。</li>
-</ol>
+                <!-- 画面切り替えタブ（ピル型スイッチ） -->
+                <div class="bg-base-sand p-1.5 rounded-full flex items-center border border-base-border w-full lg:w-auto shadow-inner">
+                    <button id="tab-guest" onclick="switchView('guest')" 
+                            class="flex-1 lg:flex-initial px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 bg-base-terra text-white shadow-sm">
+                        <span>🔍 サロンを探す</span>
+                        <span class="hidden sm:inline text-[11px] font-normal opacity-90">（借り手向け画面）</span>
+                    </button>
+                    <button id="tab-owner" onclick="switchView('owner')" 
+                            class="flex-1 lg:flex-initial px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 text-base-muted hover:text-base-charcoal">
+                        <span>✨ スペースを掲載する</span>
+                        <span class="hidden sm:inline text-[11px] font-normal opacity-90">（オーナー向け募集LP）</span>
+                    </button>
+                </div>
 
-<h2 id="cancel">4. キャンセルポリシー</h2>
-<p>予約の利用日時の「開始時刻」を基準に、利用者がキャンセルした場合、次のキャンセル料がかかります。</p>
-<table>
-<tr><th>キャンセルの時期</th><th>キャンセル料</th></tr>
-<tr><td>利用日の8日前まで</td><td>無料（0％・全額返金）</td></tr>
-<tr><td>7日前〜4日前</td><td>利用料金の30％</td></tr>
-<tr><td>3日前〜2日前</td><td>利用料金の50％</td></tr>
-<tr><td>前日</td><td>利用料金の80％</td></tr>
-<tr><td>当日・無断キャンセル</td><td>利用料金の100％</td></tr>
-</table>
-<ul>
-<li><b>キャンセル料が発生する場合（7日前以降）、運営の手数料（利用料金の20％）は返金できません。</b>上の表のキャンセル料は、この手数料を含みます。</li>
-<li>キャンセルは、運営（電話：070-2395-9365、または予約確認メールへの返信）に、連絡してください。連絡を受けた時刻が、キャンセルの時刻です。</li>
-<li>返金は、キャンセル料を差し引いた額を、お支払い時のカードに、返金します。カード会社の都合で、反映までに、数週間かかることがあります。</li>
-<li>キャンセル料のうち、プラットフォーム手数料（利用料金の20％）は運営が受け取り、残りが、オーナーに支払われます（30％のキャンセル料の場合、オーナーへの支払いは、利用料金の10％です）。</li>
-<li>日時の変更は、キャンセルと、新しい予約の扱いです。ただし、オーナーが承諾した場合は、キャンセル料なしで変更できることがあります。</li>
-<li><b>オーナー都合のキャンセル</b>の場合は、利用者に、利用料金の全額を返金します（オーナー負担。運営の手数料は、返金せず、オーナーが負担します）。</li>
-<li>天災・交通機関の大規模な停止など、やむを得ない事情があり、運営が認めた場合や、スペースが予約内容と大きく異なる場合は、キャンセル料を免除することがあります。ただし、運営の手数料は返金しません。</li>
-<li>利用開始後の、途中退室・時間の短縮に対する返金は、ありません。</li>
-</ul>
+                <!-- オーナーログイン -->
+                <a href="/admin.html" class="self-end lg:self-auto inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-base-border bg-white text-xs font-bold text-base-charcoal hover:bg-base-sand transition">
+                    <i class="fa-solid fa-key text-base-terra"></i>オーナーログイン
+                </a>
 
-<h2 id="agree">5. 同意書</h2>
-<div class="box">
-<p><b>【借りる方】予約のお支払い前に、次のことに同意していただきます。</b></p>
-<ul>
-<li>利用規約（共通・借りる方）を読み、同意します。</li>
-<li>キャンセルポリシー（キャンセル料）に、同意します。</li>
-<li>施術に必要な資格・届出を、ご自身の責任で満たしています。</li>
-<li>スペースや備品を損傷した場合は、実費を負担します。</li>
-</ul>
+                <!-- 右側サポートメニュー（PC表示） -->
+                <div class="hidden xl:flex items-center gap-4 text-xs">
+                    <button onclick="showToast('セラピスト本人確認・資格審査ガイド（モック）')" class="text-base-muted hover:text-base-terra font-medium transition">
+                        ご利用ガイド
+                    </button>
+                    <button onclick="switchView('owner'); setTimeout(()=>scrollToElement('owner-entry-form'), 120);" 
+                            class="px-4 py-2.5 rounded-full bg-base-terraLight text-base-terraDark hover:bg-base-terra hover:text-white font-semibold transition border border-base-terra/30">
+                        初期費用0円で掲載相談
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== メインコンテンツ領域 ==================== -->
+    <main class="flex-grow">
+
+        <!-- =========================================================================
+             VIEW 1: 【借り手向け】トップページ＆検索・予約画面
+             ========================================================================= -->
+        <div id="view-guest" class="fade-in">
+            
+            <!-- ヒーローセクション -->
+            <section class="relative bg-base-sand overflow-hidden border-b border-base-border">
+                <!-- 背景写真＋グラデーションオーバーレイ -->
+                <div class="absolute inset-0 pointer-events-none">
+                    <img src="https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&w=1920&q=80" 
+                         onerror="this.style.display='none'" 
+                         alt="落ち着いたプライベートサロン内装" class="w-full h-full object-cover object-center opacity-25">
+                    <div class="absolute inset-0 bg-gradient-to-b from-base-bg/85 via-base-sand/85 to-base-bg"></div>
+                </div>
+
+                <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-14 md:pt-16 md:pb-20 text-center">
+                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/95 border border-base-border text-base-terraDark text-xs font-semibold tracking-wider mb-5 shadow-sm">
+                        <i class="fa-solid fa-sparkles text-base-terra"></i> エステサロン・美容室の空き時間活用も大歓迎
+                    </span>
+                    <h1 class="font-serif text-2xl sm:text-4xl md:text-5xl font-bold text-base-charcoal leading-snug tracking-wide mb-4">
+                        サロンの空き時間を、<br class="sm:hidden">新しい収益に。
+                    </h1>
+                    <p class="text-sm sm:text-base text-base-muted max-w-2xl mx-auto mb-9 leading-relaxed">
+                        「予約が少ない日や空き時間だけレンタルしたい」エステサロン・美容室も大歓迎。施術ベッド・タオルウォーマー完備の空間を、1時間から気軽に貸し借りできます。<br class="hidden sm:inline">
+                    
+                    </p>
+
+                    <!-- 検索バー -->
+                    <div class="bg-white p-3 sm:p-4 rounded-3xl lg:rounded-full shadow-soft border border-base-border max-w-4xl mx-auto">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-0 items-center">
+                            
+                            <!-- エリア/駅名入力 -->
+                            <div class="lg:col-span-4 px-4 py-2 text-left lg:border-r border-base-border">
+                                <label for="search-area" class="block text-[11px] font-bold text-base-terraDark tracking-wider mb-1">
+                                    <i class="fa-solid fa-location-dot text-base-terra mr-1"></i>エリア・駅名
+                                </label>
+                                <input type="text" id="search-area" oninput="applyFilters()" placeholder="例：表参道、恵比寿、新宿、心斎橋" 
+                                       class="w-full text-sm text-base-charcoal placeholder-gray-400 focus:outline-none bg-transparent">
+                            </div>
+
+                            <!-- 利用日選択 -->
+                            <div class="lg:col-span-3 px-4 py-2 text-left lg:border-r border-base-border">
+                                <label for="search-date" class="block text-[11px] font-bold text-base-terraDark tracking-wider mb-1">
+                                    <i class="fa-regular fa-calendar text-base-terra mr-1"></i>利用日
+                                </label>
+                                <input type="date" id="search-date" 
+                                       class="w-full text-sm text-base-charcoal focus:outline-none bg-transparent cursor-pointer">
+                            </div>
+
+                            <!-- 施術ジャンル選択 -->
+                            <div class="lg:col-span-3 px-4 py-2 text-left">
+                                <label for="search-genre" class="block text-[11px] font-bold text-base-terraDark tracking-wider mb-1">
+                                    <i class="fa-solid fa-wand-magic-sparkles text-base-terra mr-1"></i>施術ジャンル
+                                </label>
+                                <select id="search-genre" onchange="applyFilters()" class="w-full text-sm text-base-charcoal focus:outline-none bg-transparent cursor-pointer">
+                                    <option value="all">すべて</option>
+                                    <option value="エステ・リラク">エステ・リラク</option>
+                                    <option value="ネイル">ネイル</option>
+                                    <option value="マツエク">マツエク</option>
+                                    <option value="整体・ストレッチ">整体・ストレッチ</option>
+                                    <option value="ヘアメイク">ヘアメイク</option>
+                                </select>
+                            </div>
+
+                            <!-- 検索ボタン -->
+                            <div class="lg:col-span-2 lg:pl-2">
+                                <button onclick="applyFilters(); scrollToElement('results-section');" 
+                                        class="w-full py-3.5 px-5 rounded-2xl lg:rounded-full bg-base-terra hover:bg-base-terraDark text-white font-semibold text-sm transition shadow-sm flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    <span>検索する</span>
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- 人気エリア クイック検索チップ -->
+                    <div class="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs text-base-muted">
+                        <span class="font-medium">注目エリア：</span>
+                        <button onclick="quickArea('表参道')" class="px-3 py-1 rounded-full bg-white/90 hover:bg-white border border-base-border hover:border-base-terra transition">表参道</button>
+                        <button onclick="quickArea('恵比寿')" class="px-3 py-1 rounded-full bg-white/90 hover:bg-white border border-base-border hover:border-base-terra transition">恵比寿</button>
+                        <button onclick="quickArea('新宿')" class="px-3 py-1 rounded-full bg-white/90 hover:bg-white border border-base-border hover:border-base-terra transition">新宿</button>
+                        <button onclick="quickArea('銀座')" class="px-3 py-1 rounded-full bg-white/90 hover:bg-white border border-base-border hover:border-base-terra transition">銀座</button>
+                        <button onclick="quickArea('心斎橋')" class="px-3 py-1 rounded-full bg-white/90 hover:bg-white border border-base-border hover:border-base-terra transition">心斎橋</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 設備タグフィルター＆検索結果一覧セクション -->
+            <section id="results-section" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
+                
+                <!-- サロン専用設備タグフィルター（複数選択・リアルタイム絞り込み） -->
+                <div class="bg-white p-5 sm:p-6 rounded-2xl border border-base-border shadow-card mb-8">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3.5">
+                        <div class="flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-lg bg-base-terraLight text-base-terra flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-sliders"></i>
+                            </span>
+                            <h2 class="text-sm font-bold text-base-charcoal">サロン専用設備・こだわり条件で絞り込み（複数選択可）</h2>
+                        </div>
+                        <button id="clear-filters-btn" onclick="resetAllFilters()" class="hidden text-xs font-medium text-base-terra hover:text-base-terraDark underline self-start sm:self-auto">
+                            <i class="fa-solid fa-rotate-left mr-1"></i>すべての条件をクリア
+                        </button>
+                    </div>
+
+                    <div id="equipment-filter-list" class="flex flex-wrap gap-2">
+                        <button type="button" data-equip="電動昇降ベッド" onclick="toggleEquipFilter(this)" class="equip-btn px-3.5 py-2 rounded-full text-xs font-medium border border-base-border bg-base-bg text-base-charcoal hover:border-base-terra transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-bed text-base-terra"></i><span>電動昇降ベッド</span>
+                        </button>
+                        <button type="button" data-equip="折り畳みベッド" onclick="toggleEquipFilter(this)" class="equip-btn px-3.5 py-2 rounded-full text-xs font-medium border border-base-border bg-base-bg text-base-charcoal hover:border-base-terra transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-mattress-pillow text-base-terra"></i><span>折り畳みベッド</span>
+                        </button>
+                        <button type="button" data-equip="完全個室" onclick="toggleEquipFilter(this)" class="equip-btn px-3.5 py-2 rounded-full text-xs font-medium border border-base-border bg-base-bg text-base-charcoal hover:border-base-terra transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-door-closed text-base-terra"></i><span>完全個室</span>
+                        </button>
+                        <button type="button" data-equip="タオルウォーマー" onclick="toggleEquipFilter(this)" class="equip-btn px-3.5 py-2 rounded-full text-xs font-medium border border-base-border bg-base-bg text-base-charcoal hover:border-base-terra transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-temperature-high text-base-terra"></i><span>タオルウォーマー</span>
+                        </button>
+                        <button type="button" data-equip="ドレッサー・三面鏡" onclick="toggleEquipFilter(this)" class="equip-btn px-3.5 py-2 rounded-full text-xs font-medium border border-base-border bg-base-bg text-base-charcoal hover:border-base-terra transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-wand-sparkles text-base-terra"></i><span>ドレッサー・三面鏡</span>
+                        </button>
+                        <button type="button" data-equip="シャワー完備" onclick="toggleEquipFilter(this)" class="equip-btn px-3.5 py-2 rounded-full text-xs font-medium border border-base-border bg-base-bg text-base-charcoal hover:border-base-terra transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-shower text-base-terra"></i><span>シャワー完備</span>
+                        </button>
+                        <button type="button" data-equip="リングライト" onclick="toggleEquipFilter(this)" class="equip-btn px-3.5 py-2 rounded-full text-xs font-medium border border-base-border bg-base-bg text-base-charcoal hover:border-base-terra transition flex items-center gap-1.5">
+                            <i class="fa-regular fa-lightbulb text-base-terra"></i><span>リングライト</span>
+                        </button>
+                        <button type="button" data-equip="駅徒歩5分以内" onclick="toggleEquipFilter(this)" class="equip-btn px-3.5 py-2 rounded-full text-xs font-medium border border-base-border bg-base-bg text-base-charcoal hover:border-base-terra transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-person-walking text-base-terra"></i><span>駅徒歩5分以内</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 検索結果ヘッダー -->
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-2">
+                    <div>
+                        <span class="font-en text-base-terra text-sm font-semibold tracking-widest uppercase block">Selected Private Salons</span>
+                        <h2 class="font-serif text-xl sm:text-2xl font-bold text-base-charcoal">掲載レンタルサロン一覧</h2>
+                    </div>
+                    <p class="text-sm text-base-muted">
+                        該当スペース：<span id="result-count" class="font-bold text-base-terraDark text-lg">6</span> 件
+                    </p>
+                </div>
+
+                <!-- サロンカード一覧グリッド -->
+                <div id="salon-list-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                    <!-- JSで動的に描画 -->
+                </div>
+
+                <!-- 0件時のエンプティステート -->
+                <div id="no-results-box" class="hidden text-center py-16 bg-white rounded-3xl border border-base-border shadow-card">
+                    <div class="w-16 h-16 rounded-full bg-base-sand text-base-muted flex items-center justify-center mx-auto mb-4 text-2xl">
+                        <i class="fa-regular fa-face-meh"></i>
+                    </div>
+                    <h3 class="font-serif text-lg font-bold text-base-charcoal mb-2">条件に一致するサロンが見つかりませんでした</h3>
+                    <p class="text-sm text-base-muted mb-6">選択中の設備タグやエリア条件を緩めて再度お試しください。</p>
+                    <button onclick="resetAllFilters()" class="px-6 py-3 rounded-full bg-base-terra text-white text-sm font-semibold hover:bg-base-terraDark transition">
+                        すべてのサロンを表示する
+                    </button>
+                </div>
+
+            </section>
+        </div>
+
+
+        <!-- =========================================================================
+             VIEW 2: 【オーナー向け】初期掲載スペース募集LP
+             ========================================================================= -->
+        <div id="view-owner" class="hidden fade-in">
+            
+            <!-- ファーストビュー（ヒーロー：ベージュ系ラグジュアリー） -->
+            <section class="relative bg-base-sand text-base-charcoal overflow-hidden border-b border-base-border">
+                <div class="absolute inset-0 pointer-events-none">
+                    <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1920&q=80" 
+                         onerror="this.style.display='none'" 
+                         alt="洗練されたサロンスペース" class="w-full h-full object-cover opacity-20">
+                    <div class="absolute inset-0 bg-gradient-to-r from-base-bg via-base-sand/95 to-base-sand/75"></div>
+                </div>
+
+                <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-24">
+                    <div class="max-w-3xl">
+                        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/95 border border-base-terra/40 text-base-terraDark text-xs font-semibold mb-6 shadow-xs">
+                            <span class="w-2 h-2 rounded-full bg-base-terra animate-ping"></span>
+                            <span>初期掲載オーナー様限定：手数料0円キャンペーン中</span>
+                        </div>
+
+                        <h1 class="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-base-charcoal leading-tight tracking-wide mb-6">
+                            サロンの『空き時間・空きベッド』を、<br>
+                            <span class="text-base-terra">新しい収益源</span>に。
+                        </h1>
+
+                        <p class="text-sm sm:text-base text-base-muted leading-relaxed mb-9 max-w-2xl">
+                            本人確認・資格チェック済みの厳選セラピストのみ利用可能。予約受付から決済、鍵の受け渡しまで完全自動化で、普段の施術業務を邪魔しません。
+                        </p>
+
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                            <button onclick="scrollToElement('owner-entry-form')" 
+                                    class="px-8 py-4 rounded-full bg-base-terra hover:bg-base-terraDark text-white font-bold text-sm sm:text-base shadow-md transition flex items-center justify-center gap-2">
+                                <span>無料で掲載相談・エントリーする（1分で完了）</span>
+                                <i class="fa-solid fa-arrow-down"></i>
+                            </button>
+                            <button onclick="scrollToElement('owner-simulator')" 
+                                    class="px-6 py-4 rounded-full bg-white hover:bg-base-terraLight border border-base-border text-base-charcoal font-semibold text-sm transition shadow-xs flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-calculator text-base-terra"></i>
+                                <span>見込み収益を計算する</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- オーナーの3つの不安を解消する安心ポイントセクション -->
+            <section class="py-16 md:py-20 bg-base-bg border-b border-base-border">
+                <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-12">
+                        <span class="font-en text-base-terra text-sm font-semibold tracking-widest uppercase">3 Reasons for Owners</span>
+                        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-base-charcoal mt-1">オーナー様の3つの不安を解消する安心の仕組み</h2>
+                        <p class="text-sm text-base-muted mt-2">大切なサロン空間を安心してお貸しいただけるよう、サロン専用に設計された運営システムを提供します。</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <!-- ① 休眠時間の収益化 -->
+                        <div class="bg-white rounded-3xl p-7 border border-base-border shadow-card relative overflow-hidden">
+                            <span class="font-en text-6xl font-bold text-base-terra/15 absolute top-3 right-5">01</span>
+                            <div class="w-12 h-12 rounded-2xl bg-base-terraLight text-base-terra flex items-center justify-center text-xl mb-5">
+                                <i class="fa-solid fa-coins"></i>
+                            </div>
+                            <h3 class="font-serif text-lg font-bold text-base-charcoal mb-3 leading-snug">
+                                休眠時間の収益化と<br>準備インターバル自動確保
+                            </h3>
+                            <p class="text-sm text-base-muted leading-relaxed">
+                                定休日やスタッフ不在の空きベッド時間を収益化。予約の前後には清掃・換気用のインターバル時間（30分〜）を自動確保できるため、本業の営業を妨げません。
+                            </p>
+                        </div>
+
+                        <!-- ② 審査制・本人確認による安心感 -->
+                        <div class="bg-white rounded-3xl p-7 border border-base-border shadow-card relative overflow-hidden">
+                            <span class="font-en text-6xl font-bold text-base-terra/15 absolute top-3 right-5">02</span>
+                            <div class="w-12 h-12 rounded-2xl bg-base-sand text-base-charcoal flex items-center justify-center text-xl mb-5">
+                                <i class="fa-solid fa-user-shield"></i>
+                            </div>
+                            <h3 class="font-serif text-lg font-bold text-base-charcoal mb-3 leading-snug">
+                                審査制・本人確認による<br>高い安心感と清潔感
+                            </h3>
+                            <p class="text-sm text-base-muted leading-relaxed">
+                                公的身分証による本人確認に加え、施術資格や活動実績の事前審査を通過したセラピストのみ予約可能。サロンの品位と清潔感が守られます。
+                            </p>
+                        </div>
+
+                        <!-- ③ 手間ゼロの自動運用 -->
+                        <div class="bg-white rounded-3xl p-7 border border-base-border shadow-card relative overflow-hidden">
+                            <span class="font-en text-6xl font-bold text-base-terra/15 absolute top-3 right-5">03</span>
+                            <div class="w-12 h-12 rounded-2xl bg-base-terraLight text-base-terra flex items-center justify-center text-xl mb-5">
+                                <i class="fa-solid fa-robot"></i>
+                            </div>
+                            <h3 class="font-serif text-lg font-bold text-base-charcoal mb-3 leading-snug">
+                                予約・決済・スマートロックの<br>手間ゼロ自動運用
+                            </h3>
+                            <p class="text-sm text-base-muted leading-relaxed">
+                                空き枠のカレンダー公開、事前クレジットカード決済、直前キャンセル料の自動徴収、スマートロック暗証番号の自動発行までシステムが完結します。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- インタラクティブ収益シミュレーター -->
+            <section id="owner-simulator" class="py-16 md:py-20 bg-white border-b border-base-border">
+                <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-10">
+                        <span class="font-en text-base-terra text-sm font-semibold tracking-widest uppercase">Income Simulator</span>
+                        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-base-charcoal mt-1">インタラクティブ収益シミュレーター</h2>
+                        <p class="text-sm text-base-muted mt-2">3つのスライダーを動かして、あなたのサロンの見込み副収入を試算できます。</p>
+                    </div>
+
+                    <div class="bg-base-bg rounded-3xl p-6 sm:p-10 border border-base-border shadow-soft">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                            
+                            <!-- 左側：3つのスライダー -->
+                            <div class="lg:col-span-7 space-y-7">
+                                
+                                <!-- スライダー1：1時間あたりの貸出料金 -->
+                                <div>
+                                    <div class="flex justify-between items-end mb-2.5">
+                                        <label for="sim-rate" class="text-sm font-bold text-base-charcoal flex items-center gap-2">
+                                            <span class="w-6 h-6 rounded-full bg-base-terra text-white text-xs flex items-center justify-center">1</span>
+                                            1時間あたりの貸出料金
+                                        </label>
+                                        <div>
+                                            <span class="text-xs text-base-muted mr-1">¥</span>
+                                            <span id="val-rate" class="font-serif text-2xl sm:text-3xl font-bold text-base-terraDark">1,500</span>
+                                            <span class="text-xs text-base-muted"> / 時間</span>
+                                        </div>
+                                    </div>
+                                    <input type="range" id="sim-rate" min="800" max="3000" step="100" value="1500" oninput="updateSimulator()">
+                                    <div class="flex justify-between text-[11px] text-base-muted mt-1">
+                                        <span>¥800</span>
+                                        <span>¥1,500（標準相場）</span>
+                                        <span>¥3,000</span>
+                                    </div>
+                                </div>
+
+                                <!-- スライダー2：週あたりの貸出時間 -->
+                                <div>
+                                    <div class="flex justify-between items-end mb-2.5">
+                                        <label for="sim-hours" class="text-sm font-bold text-base-charcoal flex items-center gap-2">
+                                            <span class="w-6 h-6 rounded-full bg-base-terra text-white text-xs flex items-center justify-center">2</span>
+                                            週あたりの貸出時間（1ベッドあたり）
+                                        </label>
+                                        <div>
+                                            <span id="val-hours" class="font-serif text-2xl sm:text-3xl font-bold text-base-terraDark">15</span>
+                                            <span class="text-xs text-base-muted"> 時間 / 週</span>
+                                        </div>
+                                    </div>
+                                    <input type="range" id="sim-hours" min="5" max="50" step="1" value="15" oninput="updateSimulator()">
+                                    <div class="flex justify-between text-[11px] text-base-muted mt-1">
+                                        <span>5時間（週末・夜間のみ）</span>
+                                        <span>25時間</span>
+                                        <span>50時間（フル稼働）</span>
+                                    </div>
+                                </div>
+
+                                <!-- スライダー3：貸出ベッド数 -->
+                                <div>
+                                    <div class="flex justify-between items-end mb-2.5">
+                                        <label for="sim-beds" class="text-sm font-bold text-base-charcoal flex items-center gap-2">
+                                            <span class="w-6 h-6 rounded-full bg-base-terra text-white text-xs flex items-center justify-center">3</span>
+                                            貸出ベッド・個室数
+                                        </label>
+                                        <div>
+                                            <span id="val-beds" class="font-serif text-2xl sm:text-3xl font-bold text-base-terraDark">1</span>
+                                            <span class="text-xs text-base-muted"> 台</span>
+                                        </div>
+                                    </div>
+                                    <input type="range" id="sim-beds" min="1" max="3" step="1" value="1" oninput="updateSimulator()">
+                                    <div class="flex justify-between text-[11px] text-base-muted mt-1">
+                                        <span>1台（空きベッド1つ）</span>
+                                        <span>2台</span>
+                                        <span>3台（複数個室）</span>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- 右側：手取り試算結果カード -->
+                            <div class="lg:col-span-5">
+                                <div class="bg-base-sand rounded-2xl p-6 sm:p-8 border-2 border-base-terra/35 shadow-card text-center relative overflow-hidden">
+                                    <div class="bg-base-terra text-white text-[11px] font-bold py-1.5 px-4 -mx-8 -mt-8 mb-6 tracking-wider">
+                                        システム手数料（15%）差し引き後の手取り額
+                                    </div>
+
+                                    <p class="text-xs font-bold text-base-muted mb-1">月間見込み副収入（手取り）</p>
+                                    <div class="my-2">
+                                        <span class="text-base font-bold text-base-charcoal">約 </span>
+                                        <span id="res-monthly" class="font-serif text-4xl sm:text-5xl font-bold text-base-terraDark tracking-tight">82,238</span>
+                                        <span class="text-sm font-bold text-base-charcoal"> 円 / 月</span>
+                                    </div>
+
+                                    <div class="mt-5 pt-5 border-t border-base-border">
+                                        <p class="text-xs text-base-muted mb-1">年間見込み副収入（手取り）</p>
+                                        <p class="font-serif text-2xl font-bold text-base-charcoal">
+                                            約 <span id="res-yearly">986,850</span> <span class="text-xs font-normal text-base-charcoal">円 / 年</span>
+                                        </p>
+                                    </div>
+
+                                    <p class="text-[11px] text-base-muted mt-4 leading-relaxed">
+                                        ※1ヶ月＝4.3週として算出。初期掲載オーナー様限定の優遇手数料率（15%）を適用した目安金額です。
+                                    </p>
+
+                                    <button onclick="scrollToElement('owner-entry-form')" 
+                                            class="w-full mt-5 py-3.5 rounded-full bg-base-terra hover:bg-base-terraDark text-white text-sm font-bold transition shadow-sm">
+                                        この条件で無料エントリーする
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 掲載までの3ステップ -->
+            <section class="py-16 md:py-20 bg-base-bg border-b border-base-border">
+                <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-12">
+                        <span class="font-en text-base-terra text-sm font-semibold tracking-widest uppercase">How to Start</span>
+                        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-base-charcoal mt-1">掲載開始までの簡単3ステップ</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-7 rounded-2xl border border-base-border shadow-card text-center">
+                            <span class="inline-block px-3.5 py-1 rounded-full bg-base-terraLight text-base-terraDark text-xs font-bold mb-4">STEP 1</span>
+                            <h3 class="font-serif text-lg font-bold text-base-charcoal mb-2.5">無料エントリー</h3>
+                            <p class="text-sm text-base-muted leading-relaxed">
+                                下記フォームからサロンの基本情報を1分で送信。初期費用・月額固定費は一切かかりません。
+                            </p>
+                        </div>
+                        <div class="bg-white p-7 rounded-2xl border border-base-border shadow-card text-center">
+                            <span class="inline-block px-3.5 py-1 rounded-full bg-base-sand text-base-charcoal text-xs font-bold mb-4">STEP 2</span>
+                            <h3 class="font-serif text-lg font-bold text-base-charcoal mb-2.5">AIアシストでかんたんページ作成
+</h3>
+                            <p class="text-sm text-base-muted leading-relaxed">
+                            写真をアップして設備を選ぶだけ。AIが魅力の伝わるサロン紹介文を自動で提案するので、ご自身ですぐに公開ページを作成・編集できます。
+
+                            </p>
+                        </div>
+                        <div class="bg-white p-7 rounded-2xl border border-base-border shadow-card text-center">
+                            <span class="inline-block px-3.5 py-1 rounded-full bg-base-terraLight text-base-terraDark text-xs font-bold mb-4">STEP 3</span>
+                            <h3 class="font-serif text-lg font-bold text-base-charcoal mb-2.5">公開・予約受付スタート</h3>
+                            <p class="text-sm text-base-muted leading-relaxed">
+                                貸し出したい曜日・時間帯を設定して公開。予約が入ると自動決済され、毎月指定口座へお振り込みします。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 初期オーナー無料掲載エントリーフォーム -->
+            <section id="owner-entry-form" class="py-16 md:py-24 bg-base-sand">
+                <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="bg-white rounded-3xl shadow-soft border border-base-border p-6 sm:p-10">
+                            <div class="text-center mb-8 space-y-3">
+          <div>
+            <span class="inline-block px-3.5 py-1 rounded-full bg-base-terraLight text-base-terraDark text-xs sm:text-sm font-medium">
+              先着30サロン限定・掲載ページ作成代行無料
+            </span>
+          </div>
+
+          <h2 class="font-serif text-2xl sm:text-3xl font-bold text-base-charcoal leading-snug">
+            初期オーナー無料掲載<br class="sm:hidden">エントリー
+          </h2>
+
+          <p class="text-xs sm:text-sm text-base-muted leading-relaxed max-w-md mx-auto">
+            まずは掲載可否のご相談・資料請求だけでも<br class="sm:hidden">お気軽にお申し込みください。
+          </p>
+        </div>
+                        <form id="entry-form-body" onsubmit="handleOwnerSubmit(event)" class="space-y-5">
+                            <div>
+                                <label class="block text-xs font-bold text-base-charcoal mb-1.5">サロン名 <span class="text-base-terra">*</span></label>
+                                <input type="text" id="owner-salon-name" required placeholder="例：Private Salon Lilia（リリア）" 
+                                       class="w-full px-4 py-3 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-sm bg-base-bg/50">
+                            
+
+                            <div>
+<div>
+  <label class="block text-xs font-bold text-base-charcoal mb-1.5">エリア（都道府県・最寄駅） <span class="text-base-terra">*</span></label>
+  <input type="text" id="owner-area" required placeholder="例：東京都港区南青山・表参道駅徒歩3分" class="w-full px-4 py-3 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-sm bg-base-bg/50">
 </div>
-<div class="box">
-<p><b>【貸す方】掲載のお申込み前に、次のことに同意していただきます。</b></p>
-<ul>
-<li>利用規約（共通・貸す方）を読み、同意します。</li>
-<li>貸し出すスペースについて、貸す権限と、必要な法令上の手続きを、保証します。</li>
-<li>プラットフォーム手数料（利用料金の20％）と、キャンセルポリシーに、同意します。</li>
-<li>掲載内容は、事実のとおりであることを、保証します。</li>
-</ul>
+                            <div>
+                                <label class="block text-xs font-bold text-base-charcoal mb-2">空きスペースのタイプ <span class="text-base-terra">*</span></label>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs sm:text-sm">
+                                    <label class="flex items-center gap-2 p-3 rounded-xl border border-base-border cursor-pointer hover:border-base-terra bg-base-bg/40">
+                                        <input type="radio" name="space_type" value="完全個室" checked class="accent-base-terra">
+                                        <span class="font-medium">完全個室</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 p-3 rounded-xl border border-base-border cursor-pointer hover:border-base-terra bg-base-bg/40">
+                                        <input type="radio" name="space_type" value="空きベッド1台" class="accent-base-terra">
+                                        <span class="font-medium">空きベッド1台</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 p-3 rounded-xl border border-base-border cursor-pointer hover:border-base-terra bg-base-bg/40">
+                                        <input type="radio" name="space_type" value="定休日丸ごと貸し" class="accent-base-terra">
+                                        <span class="font-medium">定休日丸ごと貸し</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-base-charcoal mb-1.5">お名前（ご担当者様） <span class="text-base-terra">*</span></label>
+                                <input type="text" id="owner-person-name" required placeholder="例：佐藤 美咲" 
+                                       class="w-full px-4 py-3 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-sm bg-base-bg/50">
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-base-charcoal mb-1.5">メールアドレス <span class="text-base-terra">*</span></label>
+                                     <input type="email" id="owner-email" required placeholder="salon@example.com"
+                                           class="w-full px-4 py-3 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-sm bg-base-bg/50">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-base-charcoal mb-1.5">電話番号 <span class="text-base-terra">*</span></label>
+                                     <input type="tel" id="owner-phone" required placeholder="例：090-1234-5678"
+                                           class="w-full px-4 py-3 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-sm bg-base-bg/50">
+                                </div>
+                            </div><div>
+    <label for="owner-salon-image" class="block text-xs font-bold text-base-charcoal mb-1.5">
+        サロン写真（任意・掲載ページ作成サポート用）
+    </label>
+    <input type="file" id="owner-salon-image" accept="image/*" onchange="previewOwnerImage(this)"
+           class="w-full px-4 py-2.5 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-xs sm:text-sm bg-base-bg/50 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-base-terraLight file:text-base-terraDark hover:file:bg-base-terra hover:file:text-white">
+    <div id="owner-image-preview-wrap" class="hidden mt-3">
+        <img id="owner-image-preview" src="" alt="選択中のサロン写真プレビュー"
+             class="w-full max-h-52 object-cover rounded-2xl border border-base-border">
+    </div>
+</div>
+<div>
+    <label for="owner-password" class="block text-xs font-bold text-base-charcoal mb-1.5">
+        オーナー管理画面ログイン用パスワード <span class="text-base-terra">*</span>
+    </label>
+    <input type="password" id="owner-password" required minlength="6" autocomplete="new-password"
+           placeholder="6文字以上で設定してください"
+           class="w-full px-4 py-3 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-sm bg-base-bg/50">
 </div>
 
-<h2 id="privacy">6. 個人情報の取扱い</h2>
-<ol>
-<li>取得する情報：お名前、メールアドレス、電話番号、予約内容、オーナーの事業・口座・本人確認に関する情報など。</li>
-<li>利用目的：予約・決済・連絡、本人確認、不正の防止、サービスの改善、お問い合わせへの対応。</li>
-<li>決済情報（カード番号など）は、Stripe社が取り扱い、運営は保存しません。</li>
-<li>メールの送信に、Resend社のサービスを利用しています。</li>
-<li>法令に基づく場合を除き、本人の同意なく、第三者へ提供しません。ただし、予約の対応に必要な範囲で、予約者の名前・連絡先を、そのサロンのオーナーに提供します。</li>
-<li>情報の開示・訂正・削除は、運営への連絡で、受け付けます。</li>
-</ol>
 
-<p class="note" style="margin-top:36px">この規約は、サービスの運営に合わせて、変更することがあります。</p>
-</main>
+                            <label class="flex items-start gap-2 text-xs text-base-muted leading-relaxed cursor-pointer">
+                                <input type="checkbox" id="owner-agree" class="mt-0.5 w-4 h-4 shrink-0">
+                                <span><a href="/terms.html#owner" target="_blank" class="underline text-base-terra">利用規約（貸す方）</a>と<a href="/terms.html#cancel" target="_blank" class="underline text-base-terra">キャンセルポリシー</a>に同意します。貸し出すスペースを貸す権限と、必要な法令上の手続きがあること、掲載内容が事実であること、手数料（利用料金の20％）を、保証・了承します。</span>
+                            </label>
+                            <button type="submit" 
+                                    class="w-full py-4 rounded-full bg-base-terra hover:bg-base-terraDark text-white font-bold text-base shadow-md transition mt-2">
+                                無料で掲載エントリーを送信する
+                            </button>
+                        </form>
+
+                        <!-- 受付完了メッセージ -->
+                        <div id="entry-form-complete" class="hidden text-center py-8 fade-in">
+                            <div class="w-16 h-16 rounded-full bg-base-terraLight text-base-terra flex items-center justify-center mx-auto mb-5 text-2xl">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <h3 class="font-serif text-xl sm:text-2xl font-bold text-base-charcoal mb-3">
+                                初期オーナー掲載エントリーを受け付けました
+                            </h3>
+                            <p id="complete-owner-text" class="text-sm text-base-muted leading-relaxed mb-6">
+                                ご応募ありがとうございます。専任スタッフより1営業日以内に、掲載案内資料および無料ページ作成サポートの日程調整メールをお送りいたします。
+                            </p>
+                            <button onclick="resetEntryForm()" class="px-6 py-2.5 rounded-full border border-base-border text-xs font-medium text-base-muted hover:text-base-charcoal transition">
+                                入力フォームに戻る
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+        </div>
+          <!--
+                    let adminConsoleToken = '';
+        let adminBookingsCache = [];
+        let adminManagedSalons = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const dateInput = document.getElementById('admin-schedule-date');
+            if (dateInput && !dateInput.value) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+            const hours = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
+            renderAdminDateTimeSchedule(dateInput?.value || '', hours, [], []);
+        });
+
+                const ADMIN_TOKEN_KEY = 'salonbase_admin_token';
+
+        async function loginAdminConsole() {
+            const pw = document.getElementById('console-admin-password')?.value || '';
+            const rememberEl = document.getElementById('remember-admin-login');
+            const shouldRemember = rememberEl ? rememberEl.checked : true;
+
+            if (!pw) {
+                openNotifModal('入力エラー', '管理者パスワードを入力してください。');
+                return;
+            }
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ password: pw })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.token) {
+                openNotifModal('ログインエラー', data.error || 'ログインに失敗しました。');
+                return;
+            }
+            adminConsoleToken = data.token;
+
+            try {
+                if (shouldRemember) {
+                    localStorage.setItem(ADMIN_TOKEN_KEY, data.token);
+                } else {
+                    localStorage.removeItem(ADMIN_TOKEN_KEY);
+                }
+            } catch {}
+
+            await refreshAdminConsoleData();
+        }
+
+
+        async function refreshAdminConsoleData() {
+            if (!adminConsoleToken) return;
+
+            const [myRes, bkgRes] = await Promise.all([
+                fetch('/api/my-salons', { headers: { Authorization: `Bearer ${adminConsoleToken}` } }),
+                fetch('/api/admin/bookings', { headers: { Authorization: `Bearer ${adminConsoleToken}` } })
+            ]);
+
+            const myData = await myRes.json().catch(() => ({}));
+            const bkgData = await bkgRes.json().catch(() => ({}));
+
+            adminManagedSalons = myData.salons || [];
+            adminBookingsCache = bkgData.bookings || [];
+
+            // 登録済みサロンがある場合は新規登録フォームを隠し、「変更」ボタンを表示
+            syncSalonFormMode(adminManagedSalons);
+
+            const selectEl = document.getElementById('admin-salon-select');
+            if (selectEl) {
+                selectEl.innerHTML = adminManagedSalons.map(sItem =>
+                    `<option value="${sItem.id}">${sItem.name}（ID: ${sItem.id}）</option>`
+                ).join('');
+            }
+
+            await loadAdminScheduleForSelectedDate();
+        }
+
+                const SALON_REGISTERED_KEY = 'salonbase_registered_once';
+
+        function hasRegisteredSalon(ownerSalons = []) {
+            if (Array.isArray(ownerSalons) && ownerSalons.length > 0) {
+                return true;
+            }
+            try {
+                return localStorage.getItem(SALON_REGISTERED_KEY) === '1';
+            } catch {
+                return false;
+            }
+        }
+
+        function markSalonAsRegistered() {
+            try {
+                localStorage.setItem(SALON_REGISTERED_KEY, '1');
+            } catch {}
+        }
+
+        function syncSalonFormMode(ownerSalons = []) {
+            const createFormEl = document.getElementById('entry-form-body');
+            const editBtnEl = document.getElementById('open-salon-edit-btn');
+            const summaryEl = document.getElementById('registered-salon-summary');
+            const isRegistered = hasRegisteredSalon(ownerSalons);
+
+            if (isRegistered) {
+                // 登録済み：新規登録フォームは非表示にし、「変更」ボタンのみ表示
+                if (createFormEl) createFormEl.classList.add('hidden');
+                if (editBtnEl) editBtnEl.classList.remove('hidden');
+                const salonTitle = ownerSalons[0]?.name || '登録済みサロン';
+                if (summaryEl) {
+                    summaryEl.textContent = `${salonTitle}（掲載済み：内容を変更したいときのみ「変更」ボタンを押してください）`;
+                }
+            } else {
+                // 初回未登録のみ表示
+                if (createFormEl) createFormEl.classList.remove('hidden');
+                if (editBtnEl) editBtnEl.classList.add('hidden');
+                if (summaryEl) {
+                    summaryEl.textContent = '初回のみ掲載登録を行えます。登録後は「変更」ボタンから更新します。';
+                }
+            }
+        }
+                    
+        function openSalonEditMode() {
+            const target = adminManagedSalons[0];
+            if (!target) return;
+            const fullSalon = salons.find(sItem => String(sItem.id).replace(/^db_/, '') === String(target.id)) || target;
+
+            const editSection = document.getElementById('salon-edit-section');
+            editSection.classList.remove('hidden');
+            editSection.dataset.editingSalonId = target.id;
+
+            document.getElementById('edit-salon-name').value = fullSalon.name || '';
+            document.getElementById('edit-salon-price').value = fullSalon.pricePerHour || '';
+            document.getElementById('edit-salon-description').value = fullSalon.description || '';
+        }
+
+        async function submitSalonUpdate() {
+            const editSection = document.getElementById('salon-edit-section');
+            const rawId = String(editSection?.dataset.editingSalonId || '').replace(/^db_/, '');
+            if (!rawId || !adminConsoleToken) return;
+
+            const payload = {
+                name: document.getElementById('edit-salon-name')?.value || '',
+                pricePerHour: Number(document.getElementById('edit-salon-price')?.value || 0),
+                description: document.getElementById('edit-salon-description')?.value || ''
+            };
+
+            const res = await fetch(`/api/salons/${rawId}`, {
+                method: 'PUT',
+                headers: {
+                    'content-type': 'application/json',
+                    Authorization: `Bearer ${adminConsoleToken}`
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || data.ok === false) {
+                openNotifModal('更新エラー', data.error || 'サロン詳細の変更に失敗しました。');
+                return;
+            }
+
+            openNotifModal('変更完了', 'サロン詳細を更新しました。');
+            editSection.classList.add('hidden');
+            await refreshAdminConsoleData();
+        }
+
+        async function loadAdminScheduleForSelectedDate() {
+            const sid = document.getElementById('admin-salon-select')?.value;
+            const dateStr = document.getElementById('admin-schedule-date')?.value || '';
+            const hours = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
+
+            let closedHours = [];
+            if (sid && dateStr) {
+                try {
+                    const r = await fetch(`/api/closures?salon_id=${encodeURIComponent(sid)}&date=${encodeURIComponent(dateStr)}`);
+                    const d = await r.json().catch(() => ({}));
+                    if (r.ok && Array.isArray(d.hours)) closedHours = d.hours;
+                } catch {}
+            }
+
+            renderAdminDateTimeSchedule(dateStr, hours, adminBookingsCache, closedHours);
+        }
+
+        function renderAdminDateTimeSchedule(dateStr, hoursList, bookings = [], closedHours = []) {
+            const container = document.getElementById('admin-schedule-by-date');
+            if (!container) return;
+
+            const closedSet = new Set(closedHours);
+            const bookedBySlot = new Map();
+
+            for (const b of bookings) {
+                const startRaw = String(b.start_at || b.desired_date || '');
+                if (!dateStr || !startRaw.startsWith(dateStr)) continue;
+                const dObj = new Date(b.start_at);
+                const slotLabel = Number.isNaN(dObj.getTime())
+                    ? String(b.desired_time || '').slice(0, 5)
+                    : dObj.toLocaleTimeString('ja-JP', {
+                        timeZone: 'Asia/Tokyo',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    });
+                if (slotLabel) bookedBySlot.set(slotLabel, b);
+            }
+
+            container.innerHTML = `
+                <div class="text-xs font-bold text-base-charcoal mb-2">${dateStr} の時間帯スケジュール</div>
+                <div class="divide-y divide-base-border border border-base-border rounded-xl bg-white overflow-hidden">
+                    ${hoursList.map(hhmm => {
+                        const booking = bookedBySlot.get(hhmm);
+                        const isClosed = closedSet.has(hhmm);
+                        let badge = `<span class="text-emerald-700 font-semibold">空き</span>`;
+                        let detail = `利用可能`;
+
+                        if (booking) {
+                            badge = `<span class="text-base-terra font-bold">予約あり</span>`;
+                            detail = `${booking.booking_code || booking.id || '予約'}（${booking.status || 'confirmed'}）`;
+                        } else if (isClosed) {
+                            badge = `<span class="text-gray-500 font-semibold">休み枠</span>`;
+                            detail = `受付停止中`;
+                        }
+
+                        return `
+                            <div class="flex items-center justify-between px-3.5 py-2.5 text-xs">
+                                <div class="font-mono font-bold text-base-charcoal w-16">${hhmm}</div>
+                                <div class="flex-1 text-base-muted truncate pr-2">${detail}</div>
+                                <div>${badge}</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+      -->          
+    </main>
+
+    <!-- ==================== フッター ==================== -->
+    <footer class="bg-base-charcoal text-gray-300 py-12 border-t border-base-border">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-8 border-b border-white/10">
+                <div>
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-base-terra flex items-center justify-center text-white text-xs">
+                            <i class="fa-solid fa-spa"></i>
+                        </div>
+                        <span class="font-en text-2xl font-bold text-white tracking-wider">SHARE SALON</span>
+                        <span class="text-xs text-gray-400">シェアサロン</span>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">セラピストの独立開業とサロンの空き時間収益化をつなぐ、サロン特化型レンタルプラットフォーム</p>
+                </div>
+                <div class="flex flex-wrap gap-6 text-xs">
+                    <a href="#" onclick="switchView('guest'); return false;" class="hover:text-white transition">サロンを探す</a>
+                    <a href="#" onclick="switchView('owner'); return false;" class="hover:text-white transition">スペースを掲載する</a>
+                    <a href="/admin.html" class="hover:text-white transition">オーナーログイン</a>
+                    <a href="/tokushoho.html" class="hover:text-white transition">運営者・特定商取引法</a>
+                    <a href="/terms.html" class="hover:text-white transition">利用規約・キャンセルポリシー</a>
+                </div>
+            </div>
+            <div class="pt-6 text-xs text-gray-400 flex flex-col sm:flex-row justify-between items-center gap-2">
+                <p>&copy; 2026 SHARE SALON All Rights Reserved.</p>
+                <p>Interactive UI Mockup for Salon Rental Marketplace</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ==================== サロン詳細＆予約モーダル ==================== -->
+    <div id="salon-detail-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl max-w-3xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-base-border relative fade-in">
+            
+            <!-- 閉じるボタン -->
+            <button onclick="closeSalonModal()" aria-label="閉じる"
+                    class="sticky top-4 float-right mr-4 mt-4 z-20 w-10 h-10 rounded-full bg-white/95 hover:bg-white text-base-charcoal shadow-md flex items-center justify-center transition border border-base-border">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <!-- モーダル内動的コンテンツ -->
+            <div id="modal-dynamic-body" class="clear-both"></div>
+        </div>
+    </div>
+
+    <!-- ==================== 予約完了／通知メッセージボックス（alert代替） ==================== -->
+    <div id="notification-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-base-border text-center fade-in">
+            <div class="w-16 h-16 rounded-full bg-base-terraLight text-base-terra flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h3 id="notif-title" class="font-serif text-xl font-bold text-base-charcoal mb-2">予約リクエスト完了</h3>
+            <p id="notif-body" class="text-sm text-base-muted leading-relaxed mb-6">メッセージ</p>
+            <button onclick="closeNotifModal()" class="w-full py-3 rounded-full bg-base-terra hover:bg-base-terraDark text-white text-sm font-bold transition">
+                閉じる
+            </button>
+        </div>
+    </div>
+    <!-- ==================== 無料見学リクエスト入力 ==================== -->
+    <div id="tour-modal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4 bg-black/50">
+        <div class="bg-white rounded-3xl max-w-md w-full max-h-[92vh] overflow-y-auto p-6 shadow-2xl border border-base-border">
+            <h3 class="font-serif text-lg font-bold text-base-charcoal mb-1">無料見学（30分）のリクエスト</h3>
+            <p id="tour-salon-name" class="text-xs text-base-terraDark font-semibold mb-4"></p>
+            <form onsubmit="submitTour(event)" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-base-charcoal mb-1">希望日 *</label>
+                        <input type="date" id="tour-date" required class="w-full px-3 py-2.5 rounded-xl border border-base-border text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-base-charcoal mb-1">希望時間 *</label>
+                        <select id="tour-time" required class="w-full px-3 py-2.5 rounded-xl border border-base-border text-sm bg-white"></select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-base-charcoal mb-1">お名前 *</label>
+                    <input type="text" id="tour-name" required class="w-full px-3 py-2.5 rounded-xl border border-base-border text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-base-charcoal mb-1">メールアドレス *</label>
+                    <input type="email" id="tour-email" required class="w-full px-3 py-2.5 rounded-xl border border-base-border text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-base-charcoal mb-1">電話番号（任意）</label>
+                    <input type="tel" id="tour-phone" class="w-full px-3 py-2.5 rounded-xl border border-base-border text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-base-charcoal mb-1">ご要望（任意）</label>
+                    <textarea id="tour-message" rows="3" maxlength="500" class="w-full px-3 py-2.5 rounded-xl border border-base-border text-sm"></textarea>
+                </div>
+                <p class="text-[11px] text-base-muted">入力したお名前・連絡先は、見学の調整のためオーナーに共有されます。</p>
+                <div id="tour-error" class="hidden text-xs font-bold rounded-xl px-3 py-2 bg-red-50 text-red-700 border border-red-200"></div>
+                <div class="flex gap-3 pt-1">
+                    <button type="button" onclick="closeTourModal()" class="flex-1 py-3 rounded-full border border-base-border text-sm font-bold text-base-muted">戻る</button>
+                    <button type="submit" id="tour-submit-btn" class="flex-1 py-3 rounded-full bg-base-terra hover:bg-base-terraDark text-white text-sm font-bold">リクエストを送る</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== 軽量トースト通知 ==================== -->       
+    <div id="toast-box" class="fixed bottom-5 right-5 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-base-charcoal text-white px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 text-xs sm:text-sm border border-white/10">
+            <i class="fa-solid fa-circle-info text-base-terra"></i>
+            <span id="toast-text">通知テキスト</span>
+        </div>
+    </div>
+
+    <!-- ==================== JavaScript アプリケーションロジック ==================== -->
+    <script>
+        // 1. リアルなダミーサロンデータ（6件）
+        let salons = [
+            {
+                id: 1,
+                name: "Atelier Lumière（アトリエ・ルミエール）表参道",
+                area: "表参道",
+                station: "表参道駅 B2出口 徒歩3分",
+                pricePerHour: 1540,
+                rating: 4.9,
+                reviewCount: 54,
+                availabilityBadge: "本日空きあり",
+                genres: ["エステ・リラク", "マツエク", "整体・ストレッチ"],
+                equipment: ["電動昇降ベッド", "完全個室", "タオルウォーマー", "ドレッサー・三面鏡", "駅徒歩5分以内"],
+                image: "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=900&q=80",
+                description: "自然光が柔らかく差し込む、白とセージグリーンを基調とした完全個室サロン。最高級電動昇降ベッドとタオルウォーマーを完備し、フェイシャル・ボディエステからアイラッシュまで幅広くご利用いただけます。",
+                freeAmenities: [
+                    "電動昇降施術ベッド（有孔）",
+                    "使い捨て紙シーツ・フェイスカバー",
+                    "施術用ワゴン・スツール",
+                    "大型タオルウォーマー",
+                    "ドレッサー・女優ミラー",
+                    "Bluetoothスピーカー",
+                    "高速Wi-Fi・加湿空気清浄機",
+                    "電気ケトル・ウェルカムティーセット"
+                ],
+                entryRules: "スマートロック（RemoteLOCK）対応。予約確定後に発行される暗証番号で、予約開始5分前から入室可能です。退室時はベッドのアルコール除菌と原状回復をお願いいたします。",
+                bookedHours: ["12:00", "16:00", "17:00"] // 予約済み枠（デモ用）
+            },
+            {
+                id: 2,
+                name: "Salon de Rosé（サロン・ド・ロゼ）恵比寿",
+                area: "恵比寿",
+                station: "恵比寿駅 西口 徒歩4分",
+                pricePerHour: 1320,
+                rating: 4.8,
+                reviewCount: 41,
+                availabilityBadge: "残りわずか",
+                genres: ["ネイル", "ヘアメイク"],
+                equipment: ["完全個室", "ドレッサー・三面鏡", "リングライト", "駅徒歩5分以内"],
+                image: "https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&w=900&q=80",
+                description: "ネイル専用デスクとフット施術用リクライニングチェアを備えた上品なプライベート空間。撮影用リングライト完備で、施術後のSNS用ネイル写真撮影にも最適です。",
+                freeAmenities: [
+                    "ネイル専用デスク＆アームレスト",
+                    "フット施術リクライニングソファ",
+                    "UV/LEDネイルライト・集塵機",
+                    "撮影用リングライト",
+                    "三面鏡ドレッサー",
+                    "施術用ワゴン",
+                    "高速Wi-Fi・ドリンクサーバー"
+                ],
+                entryRules: "キーボックス解錠方式（予約完了メールにて暗証番号をご案内）。ダストの清掃と換気扇の稼働確認をしてご退室ください。",
+                bookedHours: ["10:00", "11:00", "14:00", "15:00", "19:00"]
+            },
+            {
+                id: 3,
+                name: "THE CALM SPA（ザ・カームスパ）銀座",
+                area: "銀座",
+                station: "銀座駅 A13出口 徒歩2分",
+                pricePerHour: 2200,
+                rating: 5.0,
+                reviewCount: 68,
+                availabilityBadge: "本日空きあり",
+                genres: ["エステ・リラク", "整体・ストレッチ"],
+                equipment: ["電動昇降ベッド", "完全個室", "タオルウォーマー", "シャワー完備", "駅徒歩5分以内"],
+                image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=900&q=80",
+                description: "専用シャワールーム完備のラグジュアリー完全個室。オイルトリートメントや痩身エステなど、高単価メニューを提供するセラピスト様に選ばれている人気サロンです。",
+                freeAmenities: [
+                    "ワイド電動昇降ベッド（ヒートマット付）",
+                    "専用シャワールーム（ドライヤー完備）",
+                    "大型タオルウォーマー",
+                    "紙シーツ・ペーパーショーツ（1枚無料）",
+                    "調光機能付き間接照明",
+                    "カウンセリングソファ",
+                    "Bluetoothスピーカー・冷蔵庫"
+                ],
+                entryRules: "スマートロック対応。シャワールームをご利用の際は、退室前に簡易水切りワイパーのご使用をお願いいたします。",
+                bookedHours: ["13:00", "14:00", "18:00"]
+            },
+            {
+                id: 4,
+                name: "Blanc Eyelash & Beauty 新宿南口",
+                area: "新宿",
+                station: "新宿駅 南口 徒歩5分",
+                pricePerHour: 1210,
+                rating: 4.7,
+                reviewCount: 33,
+                availabilityBadge: "本日空きあり",
+                genres: ["マツエク", "ネイル", "ヘアメイク"],
+                equipment: ["折り畳みベッド", "完全個室", "ドレッサー・三面鏡", "リングライト", "駅徒歩5分以内"],
+                image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=900&q=80",
+                description: "新宿駅南口から徒歩5分の好立地で、お客様も迷わず来店できる完全個室サロン。アイラッシュ専用LEDライトやドレッサーを備え、週末副業セラピスト様にも好評です。",
+                freeAmenities: [
+                    "フルフラット施術ベッド（折り畳み収納可）",
+                    "施術用LEDアームライト",
+                    "メイク直し用ドレッサー・三面鏡",
+                    "リングライト",
+                    "施術ワゴン・スツール",
+                    "荷物ロッカー・空気清浄機"
+                ],
+                entryRules: "スマートロック対応。グルー等の揮発性商材を使用される場合は、必ず換気扇を強にして換気を行ってください。",
+                bookedHours: ["11:00", "15:00", "16:00", "20:00"]
+            },
+            {
+                id: 5,
+                name: "Maison de Repos（メゾン・ド・ルポ）心斎橋",
+                area: "心斎橋",
+                station: "心斎橋駅 3番出口 徒歩4分",
+                pricePerHour: 1380,
+                rating: 4.9,
+                reviewCount: 47,
+                availabilityBadge: "本日空きあり",
+                genres: ["エステ・リラク", "整体・ストレッチ", "ヘアメイク"],
+                equipment: ["電動昇降ベッド", "完全個室", "タオルウォーマー", "ドレッサー・三面鏡", "駅徒歩5分以内"],
+                image: "https://images.unsplash.com/photo-1600334129128-685c5582fd35?auto=format&fit=crop&w=900&q=80",
+                description: "観葉植物とナチュラルウッドに囲まれた心斎橋の隠れ家プライベートサロン。電動昇降ベッドと独立洗面台を完備し、丁寧なカウンセリングから施術まで心地よく行えます。",
+                freeAmenities: [
+                    "電動昇降施術ベッド",
+                    "タオルウォーマー",
+                    "三面鏡ドレッサー・大型姿見",
+                    "紙シーツ・胸当てマクラ",
+                    "施術用ワゴン・スツール",
+                    "Bluetoothスピーカー・アロマディフューザー"
+                ],
+                entryRules: "スマートロック対応。建物共用部（廊下・エントランス）での待機はご遠慮いただき、ご予約時間に合わせてご入室ください。",
+                bookedHours: ["10:00", "13:00", "17:00"]
+            },
+            {
+                id: 6,
+                name: "Serenity Room（セレニティルーム）代官山",
+                area: "恵比寿",
+                station: "代官山駅 徒歩6分 / 恵比寿駅 徒歩8分",
+                pricePerHour: 1100,
+                rating: 4.8,
+                reviewCount: 29,
+                availabilityBadge: "本日空きあり",
+                genres: ["整体・ストレッチ", "エステ・リラク", "マツエク"],
+                equipment: ["折り畳みベッド", "完全個室", "タオルウォーマー", "シャワー完備"],
+                image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=900&q=80",
+                description: "1時間1,100円のリーズナブルな価格で、定期利用や開業準備中のセラピスト様に大人気。ベッドを折り畳めばストレッチやヨガのパーソナルレッスン空間としても活用可能です。",
+                freeAmenities: [
+                    "高反発折り畳み施術ベッド",
+                    "ストレッチマット",
+                    "タオルウォーマー",
+                    "シャワールーム",
+                    "着替えカーテン・ハンガーラック",
+                    "Bluetoothスピーカー・Wi-Fi"
+                ],
+                entryRules: "暗証番号式スマートロック対応。次のご利用者のため、前後30分の清掃インターバル時間内に原状回復をお願いいたします。",
+                bookedHours: ["12:00", "18:00", "19:00"]
+            }
+        ];
+
+        // 選択中の設備フィルター（Setで管理）
+        const selectedEquipments = new Set();
+        // モーダル内で選択中の時間帯配列
+        let modalSelectedHours = [];
+        let currentModalSalon = null;
+
+        // 初期化処理
+window.addEventListener('DOMContentLoaded', async () => {
+    const today = new Date(Date.now() + 9 * 3600 * 1000).toISOString().split('T')[0];
+    document.getElementById('search-date').value = today;
+
+    try {
+        const res = await fetch('/api/salons');
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok && Array.isArray(data.salons) && data.salons.length > 0) {
+            salons = [...data.salons, ...salons];
+        }
+    } catch (e) {
+        console.error('サロン一覧の取得エラー:', e);
+    }
+
+    renderSalonCards(salons);
+        try {
+        const want = new URLSearchParams(location.search).get('salon');
+                try {
+        const qp = new URLSearchParams(location.search);
+        if (qp.get('paid')) {
+            openNotifModal('お支払いが完了しました', `予約番号：${qp.get('paid')}　ご予約の内容をメールでお送りします。`);
+        } else if (qp.get('canceled')) {
+            openNotifModal('お支払いは完了していません', 'お支払いがキャンセルされました。もう一度お試しいただけます。');
+        }
+    } catch (e) {}
+        if (want) openSalonModal(want);
+    } catch (e) {}
+
+    updateSimulator();
+});
+
+        // 2. ビュー切り替え（借り手向け画面 ⇔ オーナー向け募集LP）
+        function switchView(target) {
+            const guestView = document.getElementById('view-guest');
+            const ownerView = document.getElementById('view-owner');
+            const tabGuest = document.getElementById('tab-guest');
+            const tabOwner = document.getElementById('tab-owner');
+
+            if (target === 'guest') {
+                guestView.classList.remove('hidden');
+                ownerView.classList.add('hidden');
+                tabGuest.className = "flex-1 lg:flex-initial px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 bg-base-terra text-white shadow-sm";
+                tabOwner.className = "flex-1 lg:flex-initial px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 text-base-muted hover:text-base-charcoal";
+            } else {
+                guestView.classList.add('hidden');
+                ownerView.classList.remove('hidden');
+                tabOwner.className = "flex-1 lg:flex-initial px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 bg-base-terra text-white shadow-sm";
+                tabGuest.className = "flex-1 lg:flex-initial px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 text-base-muted hover:text-base-charcoal";
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // スムーススクロール補助
+        function scrollToElement(id) {
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // 3. サロンカード一覧の描画
+       // 3. サロンカード一覧の描画
+     function renderSalonCards(list) {
+         const grid = document.getElementById('salon-list-grid');
+         const emptyBox = document.getElementById('no-results-box');
+         const countEl = document.getElementById('result-count');
+
+         countEl.textContent = list.length;
+
+         if (list.length === 0) {
+             grid.innerHTML = '';
+             emptyBox.classList.remove('hidden');
+             return;
+         }
+
+         emptyBox.classList.add('hidden');
+         grid.innerHTML = list.map(salon => {
+             const safeId = String(salon.id).replace(/'/g, "\\'");
+             const price = Number(salon.pricePerHour) || 0;
+             const rating = Number(salon.rating) || 4.8;
+             const reviewCount = Number(salon.reviewCount) || 0;
+             const badge = salon.availabilityBadge || '空きあり';
+             const genres = Array.isArray(salon.genres) ? salon.genres : [];
+             const equipment = Array.isArray(salon.equipment) ? salon.equipment : [];
+
+             return `
+             <article onclick="openSalonModal('${safeId}')" 
+                      class="group bg-white rounded-3xl overflow-hidden border border-base-border shadow-card hover:shadow-soft transition-all duration-300 cursor-pointer flex flex-col">
+
+                 <!-- サロン写真 -->
+                 <div class="relative h-52 overflow-hidden bg-gradient-to-br from-base-sand to-base-terraLight">
+                     <img src="${salon.image || ''}" 
+                          onerror="this.style.display='none'" 
+                          alt="${salon.name || ''}" 
+                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+
+                     <!-- 空き状況バッジ（控えめなセージアクセント） -->
+                     <div class="absolute top-3 left-3 px-3 py-1 rounded-full bg-base-sage/95 text-white text-[11px] font-semibold shadow-sm flex items-center gap-1.5">
+                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-200"></span>
+                         <span>${badge}</span>
+                     </div>
+
+                     <!-- 評価バッジ -->
+                     <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-xs text-xs font-bold text-base-charcoal shadow-sm flex items-center gap-1">
+                         ${reviewCount > 0
+                            ? `<i class="fa-solid fa-star text-amber-500"></i><span>${rating.toFixed(1)}</span><span class="text-base-muted font-normal text-[11px]">(${reviewCount})</span>`
+                            : `<span class="text-base-terraDark">新着</span>`}
+                     </div>
+
+                     <!-- 1時間あたりの料金 -->
+                     <div class="absolute bottom-3 left-3 px-3.5 py-1.5 rounded-2xl bg-base-charcoal/90 backdrop-blur-xs text-white shadow-sm">
+                         <span class="font-serif text-lg font-bold">¥${price.toLocaleString()}</span>
+                         <span class="text-[11px] text-gray-300"> / 時間</span>
+                     </div>
+                 </div>
+
+                 <!-- カード情報 -->
+                 <div class="p-5 flex-grow flex flex-col justify-between">
+                     <div>
+                         <!-- エリア・駅徒歩 -->
+                         <p class="text-xs text-base-terraDark font-semibold mb-1.5 flex items-center gap-1.5">
+                             <i class="fa-solid fa-location-dot text-base-terra"></i>
+                             <span>${salon.station || salon.area || ''}</span>
+                         </p>
+
+                         <!-- サロン名 -->
+                         <h3 class="font-serif text-base sm:text-lg font-bold text-base-charcoal group-hover:text-base-terra transition line-clamp-1 mb-1">
+                             ${salon.name || ''}
+                         </h3>
+                         <div class="mb-2"></div>
+
+                         <!-- 対応施術ジャンルバッジ -->
+                         <div class="flex flex-wrap gap-1.5 mb-3.5">
+                             ${genres.map(g => `
+                                 <span class="px-2.5 py-0.5 rounded-md bg-base-terraLight text-base-terraDark text-[11px] font-semibold">
+                                     ${g}
+                                 </span>
+                             `).join('')}
+                         </div>
+                     </div>
+
+                     <!-- 設備アイコンタグ -->
+                     <div class="pt-3 border-t border-base-border/70 flex flex-wrap gap-1.5">
+                         ${equipment.map(eq => `
+                             <span class="text-[11px] text-base-muted bg-base-bg px-2.5 py-0.5 rounded-full border border-base-border/70">
+                                 ${eq}
+                             </span>
+                         `).join('')}
+                     </div>
+                 </div>
+             </article>
+         `;
+         }).join('');
+     }
+
+
+        // 4. 設備タグフィルターのON/OFF切り替え
+        function toggleEquipFilter(btn) {
+            const equip = btn.dataset.equip;
+            if (selectedEquipments.has(equip)) {
+                selectedEquipments.delete(equip);
+                btn.className = "equip-btn px-3.5 py-2 rounded-full text-xs font-medium border border-base-border bg-base-bg text-base-charcoal hover:border-base-terra transition flex items-center gap-1.5";
+            } else {
+                selectedEquipments.add(equip);
+                btn.className = "equip-btn px-3.5 py-2 rounded-full text-xs font-semibold border border-base-terra bg-base-terra text-white shadow-xs transition flex items-center gap-1.5";
+            }
+            applyFilters();
+        }
+
+        // 統合絞り込みロジック
+        function applyFilters() {
+            const areaKeyword = document.getElementById('search-area').value.trim();
+            const genreVal = document.getElementById('search-genre').value;
+
+            const filtered = salons.filter(salon => {
+                const matchArea = areaKeyword === '' || 
+                                  salon.area.includes(areaKeyword) || 
+                                  salon.station.includes(areaKeyword) || 
+                                  salon.name.includes(areaKeyword);
+                const matchGenre = genreVal === 'all' || salon.genres.includes(genreVal);
+                
+                // 選択されたすべての設備タグを含むかチェック
+                let matchEquip = true;
+                for (const reqEquip of selectedEquipments) {
+                    if (!salon.equipment.includes(reqEquip)) {
+                        matchEquip = false;
+                        break;
+                    }
+                }
+                return matchArea && matchGenre && matchEquip;
+            });
+
+            renderSalonCards(filtered);
+
+            // クリアボタン表示制御
+            const clearBtn = document.getElementById('clear-filters-btn');
+            if (areaKeyword !== '' || genreVal !== 'all' || selectedEquipments.size > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+        }
+
+        // クイックエリア検索
+        function quickArea(name) {
+            document.getElementById('search-area').value = name;
+            applyFilters();
+            scrollToElement('results-section');
+        }
+
+        // すべての条件をリセット
+        function resetAllFilters() {
+            document.getElementById('search-area').value = '';
+            document.getElementById('search-genre').value = 'all';
+            selectedEquipments.clear();
+            document.querySelectorAll('.equip-btn').forEach(btn => {
+                btn.className = "equip-btn px-3.5 py-2 rounded-full text-xs font-medium border border-base-border bg-base-bg text-base-charcoal hover:border-base-terra transition flex items-center gap-1.5";
+            });
+            applyFilters();
+        }
+
+        // 5. サロン詳細＆予約モーダル制御
+        function openSalonModal(salonId) {
+        const salon = salons.find(s => String(s.id) === String(salonId));
+            if (!salon) return;
+
+            currentModalSalon = salon;
+            modalSelectedHours = [];
+
+            const selectedDate = document.getElementById('search-date').value || '2026-11-20';
+            const allTimeSlots = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"];
+
+            const body = document.getElementById('modal-dynamic-body');
+            body.innerHTML = `
+                <div class="-mt-14">
+                    <!-- ヘッダー画像 -->
+                    <div class="h-60 sm:h-72 w-full bg-gradient-to-br from-base-sand to-base-charcoal relative">
+                        <img src="${salon.image}" 
+                             onerror="this.style.display='none'" 
+                             alt="${salon.name}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
+                        <div class="absolute bottom-5 left-6 right-6 text-white">
+                            <span class="inline-block px-3 py-1 rounded-full bg-base-terra text-white text-xs font-semibold mb-2">
+                                <i class="fa-solid fa-location-dot mr-1"></i>${salon.station}
+                            </span>
+                            <h3 class="font-serif text-xl sm:text-2xl font-bold leading-snug">${salon.name}</h3>
+                        </div>
+                    </div>
+
+                    <div class="p-6 sm:p-8 space-y-6">
+                        <!-- 基本料金＆無料見学ボタン -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-base-border">
+                            <div>
+                                <span class="text-xs text-base-muted block">基本利用料金（備品使用料込み）</span>
+                                <span class="font-serif text-2xl sm:text-3xl font-bold text-base-charcoal">¥${salon.pricePerHour.toLocaleString()}</span>
+                                <span class="text-sm text-base-muted"> / 1時間（税込）</span>
+                            </div>
+                            <button type="button" onclick="triggerTourBooking()" 
+                                    class="px-5 py-2.5 rounded-full border-2 border-base-terra text-base-terraDark hover:bg-base-terraLight text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2">
+                                <i class="fa-regular fa-eye"></i>
+                                <span>無料見学（30分）を予約する</span>
+                            </button>
+                        </div>
+
+                        <!-- サロン詳細説明 -->
+                        <div>
+                            <h4 class="text-xs font-bold text-base-terraDark uppercase tracking-wider mb-2">サロン空間について</h4>
+                            <p class="text-sm text-base-charcoal leading-relaxed">${salon.description}</p>
+                        </div>
+
+                        <!-- 無料備品リスト -->
+                        <div>
+                            <h4 class="text-xs font-bold text-base-terraDark uppercase tracking-wider mb-2.5">無料で使えるサロン設備・備品</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                ${salon.freeAmenities.map(item => `
+                                    <div class="flex items-center gap-2 text-xs text-base-charcoal bg-base-bg px-3.5 py-2.5 rounded-xl border border-base-border/70">
+                                        <i class="fa-solid fa-check text-base-terra"></i>
+                                        <span>${item}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- 入室ルール -->
+                        <div class="bg-base-sand/80 p-4 rounded-2xl border border-base-border">
+                            <h4 class="text-xs font-bold text-base-charcoal mb-1.5 flex items-center gap-1.5">
+                                <i class="fa-solid fa-key text-base-terra"></i>
+                                <span>入室方法・ご利用ルール</span>
+                            </h4>
+                            <p class="text-xs text-base-charcoal leading-relaxed">${salon.entryRules}</p>
+                        </div>
+
+                        <!-- 1時間単位の空き時間スロット選択（複数選択可能） -->
+                        <div class="bg-base-sand/70 p-5 sm:p-6 rounded-2xl border border-base-border">
+                            <div class="mb-4">
+                                <h4 class="text-sm font-bold text-base-charcoal mb-2">
+                                    <i class="fa-regular fa-calendar text-base-terra mr-1.5"></i>利用日を選択
+                                </h4>
+                                <div class="bg-white rounded-2xl border border-base-border p-3">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <button type="button" id="mcal-prev" class="w-10 h-10 rounded-full border border-base-border bg-white text-base-charcoal font-bold" aria-label="前の月">‹</button>
+                                        <div id="mcal-label" class="font-serif font-bold text-base-charcoal"></div>
+                                        <button type="button" id="mcal-next" class="w-10 h-10 rounded-full border border-base-border bg-white text-base-charcoal font-bold" aria-label="次の月">›</button>
+                                    </div>
+                                    <div class="grid grid-cols-7 text-center text-[11px] font-bold text-base-muted mb-1">
+                                        <div class="text-red-500">日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div class="text-blue-500">土</div>
+                                    </div>
+                                    <div id="mcal-grid" class="grid grid-cols-7 gap-1"></div>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
+                                <h4 class="text-sm font-bold text-base-charcoal">
+                                    <i class="fa-regular fa-clock text-base-terra mr-1.5"></i>利用時間を選択（<span id="mcal-date-label">${selectedDate}</span>）
+                                </h4>
+                                <span class="text-[11px] text-base-muted">※複数時間の連続・飛び枠選択が可能です</span>
+                            </div>
+
+                            <div id="modal-slots" class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-5"></div>
+
+                            <!-- 料金自動計算内訳ボックス -->
+                            <div class="bg-white p-4 rounded-xl border border-base-border mb-4 space-y-1.5 text-xs">
+                                <div class="flex justify-between text-base-muted">
+                                    <span>選択中の時間枠：</span>
+                                    <span id="calc-selected-times" class="font-semibold text-base-charcoal">未選択（0時間）</span>
+                                </div>
+                                <div class="flex justify-between text-base-muted">
+                                    <span>スペース利用料（¥${salon.pricePerHour.toLocaleString()} × <span id="calc-hours-count">0</span>時間）：</span>
+                                    <span id="calc-base-price">¥0</span>
+                                </div>
+                                <div class="flex justify-between text-base-muted">
+                                    <span>システム利用料（5%）：</span>
+                                    <span id="calc-service-fee">¥0</span>
+                                </div>
+                                <div class="flex justify-between items-baseline pt-2 border-t border-base-border text-sm font-bold text-base-charcoal">
+                                    <span>お支払い合計（税込）：</span>
+                                    <span id="calc-total-price" class="font-serif text-xl text-base-terraDark">¥0</span>
+                                </div>
+                            </div>
+                            <!-- 予約者情報入力欄 -->
+                            <div class="bg-white p-4 rounded-xl border border-base-border mb-4 space-y-3">
+                                <h5 class="text-xs font-bold text-base-charcoal">
+                                    <i class="fa-regular fa-user text-base-terra mr-1.5"></i>ご予約者情報（確認メール送信先）
+                                </h5>
+                                <div>
+                                    <label for="booking-guest-name" class="block text-[11px] font-bold text-base-charcoal mb-1">
+                                        お名前 <span class="text-base-terra">*</span>
+                                    </label>
+                                    <input type="text" id="booking-guest-name" required placeholder="例：山田 花子"
+                                           class="w-full px-3.5 py-2.5 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-xs sm:text-sm bg-base-bg/50">
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label for="booking-guest-email" class="block text-[11px] font-bold text-base-charcoal mb-1">
+                                            メールアドレス <span class="text-base-terra">*</span>
+                                        </label>
+                                        <input type="email" id="booking-guest-email" required placeholder="therapist@example.com"
+                                               class="w-full px-3.5 py-2.5 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-xs sm:text-sm bg-base-bg/50">
+                                    </div>
+                                    <div>
+                                        <label for="booking-guest-phone" class="block text-[11px] font-bold text-base-charcoal mb-1">
+                                            電話番号（任意）
+                                        </label>
+                                        <input type="tel" id="booking-guest-phone" placeholder="例：090-1234-5678"
+                                               class="w-full px-3.5 py-2.5 rounded-xl border border-base-border focus:outline-none focus:border-base-terra text-xs sm:text-sm bg-base-bg/50">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <label class="flex items-start gap-2 text-[11px] sm:text-xs text-base-muted leading-relaxed mb-3 cursor-pointer">
+                                <input type="checkbox" id="booking-agree" class="mt-0.5 w-4 h-4 shrink-0">
+                                <span><a href="/terms.html#renter" target="_blank" class="underline text-base-terra">利用規約</a>と<a href="/terms.html#cancel" target="_blank" class="underline text-base-terra">キャンセルポリシー</a>（8日前まで：無料、7日前〜：30％、3日前〜：50％、前日：80％、当日：100％。キャンセル料が発生する場合、運営の手数料は返金不可）に同意します。施術に必要な資格・届出は、自己の責任で満たしており、スペースを損傷した場合は実費を負担します。</span>
+                            </label>
+
+                            <!-- 予約リクエスト送信ボタン -->
+                            <button type="button" id="submit-booking-btn" onclick="triggerSalonBooking()" disabled
+                                    class="w-full py-4 rounded-full bg-gray-300 text-white font-bold text-sm sm:text-base transition cursor-not-allowed">
+                                時間を選択してください
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const modal = document.getElementById('salon-detail-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            initModalCalendar();
+            renderReviewSection(salon);
+        }
+
+        // ---------- 予約画面のカレンダー（常に表示） ----------
+        const MODAL_SLOTS = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
+        let modalDate = '';
+        const modalMonth = { y: 0, m: 0 };
+        function jstTodayStr() { return new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10); }
+        function mpad(n) { return String(n).padStart(2, '0'); }
+
+        function initModalCalendar() {
+            const today = jstTodayStr();
+            let d = (document.getElementById('search-date') || {}).value || today;
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || d < today) d = today;
+            modalDate = d;
+            const p = d.split('-');
+            modalMonth.y = Number(p[0]);
+            modalMonth.m = Number(p[1]) - 1;
+            document.getElementById('mcal-prev').addEventListener('click', () => { modalMonth.m--; if (modalMonth.m < 0) { modalMonth.m = 11; modalMonth.y--; } renderModalCalendar(); });
+            document.getElementById('mcal-next').addEventListener('click', () => { modalMonth.m++; if (modalMonth.m > 11) { modalMonth.m = 0; modalMonth.y++; } renderModalCalendar(); });
+            renderModalCalendar();
+            selectModalDate(d);
+        }
+
+        function renderModalCalendar() {
+            const grid = document.getElementById('mcal-grid');
+            if (!grid) return;
+            const today = jstTodayStr();
+            const first = new Date(Date.UTC(modalMonth.y, modalMonth.m, 1)).getUTCDay();
+            const days = new Date(Date.UTC(modalMonth.y, modalMonth.m + 1, 0)).getUTCDate();
+            document.getElementById('mcal-label').textContent = modalMonth.y + '年' + (modalMonth.m + 1) + '月';
+            let html = '';
+            for (let i = 0; i < first; i++) html += '<div></div>';
+            for (let day = 1; day <= days; day++) {
+                const s = modalMonth.y + '-' + mpad(modalMonth.m + 1) + '-' + mpad(day);
+                const past = s < today;
+                const sel = s === modalDate;
+                let cls = 'h-11 rounded-xl text-sm font-medium border transition ';
+                if (past) cls += 'border-transparent text-gray-300 bg-transparent';
+                else if (sel) cls += 'border-base-terra bg-base-terra text-white font-bold';
+                else cls += 'border-base-border bg-white text-base-charcoal hover:border-base-terra';
+                if (s === today && !sel) cls += ' ring-2 ring-base-sage';
+                html += '<button type="button" data-d="' + s + '" class="mcal-day ' + cls + '"' + (past ? ' disabled' : '') + '>' + day + '</button>';
+            }
+            grid.innerHTML = html;
+            grid.querySelectorAll('.mcal-day').forEach((b) => b.addEventListener('click', () => selectModalDate(b.dataset.d)));
+        }
+
+        async function selectModalDate(date) {
+            modalDate = date;
+            const sd = document.getElementById('search-date');
+            if (sd) sd.value = date;
+            const lbl = document.getElementById('mcal-date-label');
+            if (lbl) lbl.textContent = date;
+            modalSelectedHours = [];
+            renderModalCalendar();
+            refreshModalSummary();
+            const box = document.getElementById('modal-slots');
+            if (box) box.innerHTML = '<p class="col-span-full text-xs text-base-muted py-2">空き状況を確認中です...</p>';
+            const salon = currentModalSalon;
+            let closed = (salon && salon.bookedHours ? salon.bookedHours : []).slice();
+            const m = salon ? String(salon.id).match(/^db_(\d+)$/) : null;
+            if (m) {
+                try {
+                    const res = await fetch('/api/availability?salon_id=' + m[1] + '&date=' + encodeURIComponent(date));
+                    const data = await res.json();
+                    if (data && data.ok) closed = closed.concat(data.closed || []);
+                } catch (e) {}
+            }
+            if (modalDate !== date) return; // 別の日が選ばれた
+            renderModalSlots(closed);
+        }
+
+        function renderModalSlots(closed) {
+            const box = document.getElementById('modal-slots');
+            if (!box) return;
+            box.innerHTML = MODAL_SLOTS.map((time) => {
+                if (closed.includes(time)) {
+                    return `<button type="button" disabled class="py-2.5 px-2 rounded-xl border border-gray-200 bg-gray-100 text-gray-400 text-xs font-medium cursor-not-allowed text-center line-through">${time}（満枠）</button>`;
+                }
+                return `<button type="button" data-time="${time}" onclick="toggleModalTimeSlot(this)" class="modal-slot-btn py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal hover:border-base-terra text-xs sm:text-sm font-medium transition text-center">${time}〜</button>`;
+            }).join('');
+        }
+
+        function refreshModalSummary() {
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+            set('calc-selected-times', '未選択（0時間）');
+            set('calc-hours-count', '0');
+            set('calc-base-price', '¥0');
+            set('calc-service-fee', '¥0');
+            set('calc-total-price', '¥0');
+            const submitBtn = document.getElementById('submit-booking-btn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = '時間を選択してください';
+                submitBtn.className = 'w-full py-4 rounded-full bg-gray-300 text-white font-bold text-sm sm:text-base transition cursor-not-allowed';
+            }
+        }
+
+
+        // ---------- 口コミ（アンケート） ----------
+        const REVIEW_QS = [
+            'お部屋の中は綺麗でしたか？',
+            '設備・備品は十分でしたか？',
+            '入室や案内はスムーズでしたか？',
+            'オーナーの対応は良かったですか？',
+            'また利用したいですか？'
+        ];
+        const REVIEW_SHORT = ['清潔さ', '設備・備品', '入室のしやすさ', 'オーナーの対応', 'また利用したい'];
+        const REVIEW_CHOICES = [[4, 'はい'], [3, 'まあまあ'], [2, 'あまり'], [1, 'いいえ']];
+        function escHtml(x) { return String(x == null ? '' : x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+        async function renderReviewSection(salon) {
+            const body = document.getElementById('modal-dynamic-body');
+            if (!body) return;
+            const old = document.getElementById('review-section');
+            if (old) old.remove();
+            const m = String(salon.id).match(/^db_(\d+)$/);
+            if (!m) return; // サンプル掲載は対象外
+            const sec = document.createElement('div');
+            sec.id = 'review-section';
+            sec.className = 'px-6 sm:px-8 pb-8 -mt-2';
+            sec.innerHTML = '<div class="border-t border-base-border pt-6"><h4 class="font-serif text-lg font-bold text-base-charcoal mb-3"><i class="fa-regular fa-comments text-base-terra mr-2"></i>口コミ</h4><div id="review-body" class="text-xs text-base-muted">読み込み中です...</div></div>';
+            body.appendChild(sec);
+            let data = { count: 0, overall: 0, averages: [0, 0, 0, 0, 0], reviews: [] };
+            try {
+                const res = await fetch('/api/reviews?salon_id=' + m[1]);
+                const d = await res.json();
+                if (d && d.ok) data = d;
+            } catch (e) {}
+            const box = document.getElementById('review-body');
+            if (!box) return;
+            let html = '';
+            if (data.count > 0) {
+                html += '<div class="bg-base-sand/70 rounded-2xl border border-base-border p-4 mb-4">'
+                    + '<div class="flex items-baseline gap-2 mb-3"><i class="fa-solid fa-star text-amber-500"></i><span class="font-serif text-2xl font-bold text-base-charcoal">' + Number(data.overall).toFixed(1) + '</span><span class="text-xs text-base-muted">（' + data.count + '件の口コミ）</span></div>'
+                    + REVIEW_SHORT.map((label, i) => {
+                        const v = Number(data.averages[i] || 0);
+                        const pct = Math.round((v / 4) * 100);
+                        return '<div class="flex items-center gap-2 mb-1.5 text-[11px]"><span class="w-24 shrink-0 text-base-charcoal">' + label + '</span><div class="flex-1 h-2 rounded-full bg-white border border-base-border overflow-hidden"><div class="h-full bg-base-terra" style="width:' + pct + '%"></div></div><span class="w-8 text-right font-bold text-base-charcoal">' + v.toFixed(1) + '</span></div>';
+                    }).join('')
+                    + '</div>';
+                html += data.reviews.map((r) => {
+                    const sc = [r.q1, r.q2, r.q3, r.q4, r.q5];
+                    const avg = sc.reduce((a, b) => a + b, 0) / 5;
+                    const date = String(r.created_at || '').slice(0, 10);
+                    const chips = REVIEW_SHORT.map((label, i) => '<span class="px-2 py-0.5 rounded-md bg-base-terraLight text-base-terraDark text-[10px] font-semibold">' + label + '：' + REVIEW_CHOICES.find((c) => c[0] === sc[i])[1] + '</span>').join(' ');
+                    return '<div class="rounded-2xl border border-base-border bg-white p-4 mb-3">'
+                        + '<div class="flex items-center justify-between mb-2"><span class="text-xs font-bold text-base-charcoal">' + escHtml(r.nickname || 'ご利用者') + ' 様</span><span class="text-[11px] text-base-muted">' + escHtml(date) + '</span></div>'
+                        + '<div class="flex flex-wrap gap-1 mb-2">' + chips + '</div>'
+                        + (r.comment ? '<p class="text-xs text-base-charcoal leading-relaxed whitespace-pre-wrap">' + escHtml(r.comment) + '</p>' : '')
+                        + '</div>';
+                }).join('');
+            } else {
+                html += '<p class="mb-4">まだ口コミはありません。</p>';
+            }
+            html += '<details class="rounded-2xl border border-base-border bg-white p-4">'
+                + '<summary class="cursor-pointer text-sm font-bold text-base-terraDark">口コミを書く（ご利用された方）</summary>'
+                + '<form id="review-form" class="mt-4 space-y-4" onsubmit="submitReview(event, ' + m[1] + ')">'
+                + '<div><label class="block text-[11px] font-bold text-base-charcoal mb-1">予約番号 <span class="text-base-terra">*</span></label>'
+                + '<input id="rv-code" type="text" required placeholder="例：SB-20261126-1234" class="w-full px-3.5 py-2.5 rounded-xl border border-base-border text-sm uppercase focus:outline-none focus:border-base-terra">'
+                + '<p class="text-[10px] text-base-muted mt-1">ご予約完了メールに記載の番号です。ご利用日の後に投稿できます。</p></div>'
+                + '<div><label class="block text-[11px] font-bold text-base-charcoal mb-1">ニックネーム（任意）</label>'
+                + '<input id="rv-nick" type="text" maxlength="30" placeholder="例：花子" class="w-full px-3.5 py-2.5 rounded-xl border border-base-border text-sm focus:outline-none focus:border-base-terra"></div>'
+                + REVIEW_QS.map((q, i) => '<div><p class="text-xs font-bold text-base-charcoal mb-2">' + (i + 1) + '. ' + q + '</p><div class="grid grid-cols-4 gap-2">'
+                    + REVIEW_CHOICES.map((c) => '<label class="cursor-pointer"><input type="radio" name="rvq' + i + '" value="' + c[0] + '" class="peer sr-only"><span class="block text-center py-2.5 rounded-xl border border-base-border bg-white text-xs font-medium text-base-charcoal peer-checked:border-base-terra peer-checked:bg-base-terraLight peer-checked:text-base-terraDark peer-checked:font-bold">' + c[1] + '</span></label>').join('')
+                    + '</div></div>').join('')
+                + '<div><label class="block text-[11px] font-bold text-base-charcoal mb-1">ご感想（任意）</label>'
+                + '<textarea id="rv-comment" rows="4" maxlength="600" placeholder="良かった点や、気づいた点をご記入ください。" class="w-full px-3.5 py-2.5 rounded-xl border border-base-border text-sm focus:outline-none focus:border-base-terra"></textarea></div>'
+                + '<p class="text-[10px] text-base-muted">投稿された口コミは、オーナーが内容を確認し、サイトに掲載するかどうかを決めます。</p>'
+                + '<div id="rv-msg" class="hidden text-xs font-bold rounded-xl px-4 py-2.5"></div>'
+                + '<button type="submit" id="rv-submit" class="w-full py-3.5 rounded-full bg-base-terra hover:bg-base-terraDark text-white font-bold text-sm">口コミを送信する</button>'
+                + '</form></details>';
+            box.innerHTML = html;
+        }
+
+        async function submitReview(e, salonNo) {
+            e.preventDefault();
+            const msg = document.getElementById('rv-msg');
+            const btn = document.getElementById('rv-submit');
+            const show = (ok, text) => {
+                msg.className = ok ? 'text-xs font-bold rounded-xl px-4 py-2.5 bg-base-sageLight text-base-sage' : 'text-xs font-bold rounded-xl px-4 py-2.5 bg-red-50 text-red-700 border border-red-200';
+                msg.textContent = text;
+            };
+            const q = REVIEW_QS.map((_, i) => {
+                const el = document.querySelector('input[name="rvq' + i + '"]:checked');
+                return el ? Number(el.value) : 0;
+            });
+            if (q.some((x) => !x)) { show(false, 'すべての質問にお答えください。'); return; }
+            btn.disabled = true;
+            const orig = btn.textContent;
+            btn.textContent = '送信中...';
+            try {
+                const res = await fetch('/api/reviews', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({
+                        booking_code: document.getElementById('rv-code').value.trim(),
+                        nickname: document.getElementById('rv-nick').value.trim(),
+                        comment: document.getElementById('rv-comment').value.trim(),
+                        q
+                    })
+                });
+                const d = await res.json().catch(() => ({}));
+                if (!res.ok || d.ok === false) throw new Error(d.error || '送信に失敗しました');
+                show(true, 'ありがとうございました。オーナーが確認したあと、サイトに掲載されます。');
+                document.getElementById('review-form').reset();
+            } catch (err) {
+                show(false, err.message || '送信に失敗しました');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = orig;
+            }
+        }
+
+        function closeSalonModal() {
+            const modal = document.getElementById('salon-detail-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // モーダル内タイムスロットの複数選択＆料金計算
+        function toggleModalTimeSlot(btn) {
+            const time = btn.dataset.time;
+            const idx = modalSelectedHours.indexOf(time);
+
+            if (idx > -1) {
+                modalSelectedHours.splice(idx, 1);
+                btn.className = "modal-slot-btn py-2.5 px-2 rounded-xl border border-base-border bg-white text-base-charcoal hover:border-base-terra text-xs sm:text-sm font-medium transition text-center";
+            } else {
+                modalSelectedHours.push(time);
+                modalSelectedHours.sort();
+                btn.className = "modal-slot-btn py-2.5 px-2 rounded-xl border-2 border-base-terra bg-base-terraLight text-base-terraDark text-xs sm:text-sm font-bold shadow-xs transition text-center";
+            }
+
+            // 金額計算
+            const count = modalSelectedHours.length;
+            const basePrice = count * currentModalSalon.pricePerHour;
+            const serviceFee = Math.round(basePrice * 0.05);
+            const total = basePrice + serviceFee;
+
+            document.getElementById('calc-selected-times').textContent = count > 0 
+                ? `${modalSelectedHours.join(', ')}（計${count}時間）` 
+                : '未選択（0時間）';
+            document.getElementById('calc-hours-count').textContent = count;
+            document.getElementById('calc-base-price').textContent = `¥${basePrice.toLocaleString()}`;
+            document.getElementById('calc-service-fee').textContent = `¥${serviceFee.toLocaleString()}`;
+            document.getElementById('calc-total-price').textContent = `¥${total.toLocaleString()}`;
+
+            const submitBtn = document.getElementById('submit-booking-btn');
+            if (count > 0) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "この内容で予約リクエストを送る";
+                submitBtn.className = "w-full py-4 rounded-full bg-base-terra hover:bg-base-terraDark text-white font-bold text-sm sm:text-base shadow-md transition cursor-pointer";
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.textContent = "時間を選択してください";
+                submitBtn.className = "w-full py-4 rounded-full bg-gray-300 text-white font-bold text-sm sm:text-base transition cursor-not-allowed";
+            }
+        }
+
+        // 無料見学（30分）予約完了
+        function triggerTourBooking() {
+            const salonName = currentModalSalon.name;
+            closeSalonModal();
+            openNotifModal(
+                "無料見学（30分）のリクエストを受け付けました",
+                `「${salonName}」のオーナーへ30分無料見学のリクエストを送信しました。候補日時のご案内メールをお送りいたしますので少々お待ちください。`
+            );
+        }
+
+                       // サロン予約リクエスト送信（/api/booking へPOST）
+       async function triggerSalonBooking() {
+  if (modalSelectedHours.length === 0) return;
+
+  const guestName = (document.getElementById('booking-guest-name')?.value || '').trim();
+  const guestEmail = (document.getElementById('booking-guest-email')?.value || '').trim();
+  const guestPhone = (document.getElementById('booking-guest-phone')?.value || '').trim();
+
+  if (!guestName) {
+    openNotifModal('入力エラー', 'ご予約者のお名前を入力してください。');
+    return;
+  }
+  if (!guestEmail || !guestEmail.includes('@')) {
+    openNotifModal('入力エラー', '有効なメールアドレスを入力してください。');
+    return;
+  }
+
+  if (!document.getElementById('booking-agree')?.checked) {
+    openNotifModal('同意が必要です', '利用規約・キャンセルポリシーを読み、同意のチェックを入れてください。');
+    return;
+  }
+
+  const salonId = String(currentModalSalon?.id || '');
+  const dateVal = (document.getElementById('search-date')?.value || '').trim();
+  const submitBtn = document.getElementById('submit-booking-btn');
+
+  // バックエンド（/api/checkout）は db_123 のようなDBサロンIDを前提にしています
+  if (!/^db_\d+$/.test(salonId)) {
+    openNotifModal(
+      'ご案内',
+      'サンプル掲載サロンはオンライン決済の対象外です。登録済みサロンの詳細からお試しください。'
+    );
+    return;
+  }
+
+  try {
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = '決済画面へ移動中...';
+    }
+
+    const res = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        salon_id: salonId,
+        date: dateVal,
+        hours: modalSelectedHours,
+        guest_name: guestName,
+        guest_email: guestEmail,
+        guest_phone: guestPhone,
+        agreed: true
+      })
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.ok === false || !data.url) {
+      throw new Error(data.error || '決済画面の作成に失敗しました。');
+    }
+
+    location.href = data.url;
+  } catch (err) {
+    openNotifModal(
+      '決済エラー',
+      err.message || '通信中にエラーが発生しました。時間をおいて再度お試しください。'
+    );
+  } finally {
+    if (submitBtn && modalSelectedHours.length > 0) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'この内容で予約リクエストを送る';
+    }
+  }
+}
+
+
+
+        // 6. オーナー向けインタラクティブ収益シミュレーター
+        function updateSimulator() {
+            const rate = parseInt(document.getElementById('sim-rate').value, 10);
+            const hours = parseInt(document.getElementById('sim-hours').value, 10);
+            const beds = parseInt(document.getElementById('sim-beds').value, 10);
+
+            document.getElementById('val-rate').textContent = rate.toLocaleString();
+            document.getElementById('val-hours').textContent = hours;
+            document.getElementById('val-beds').textContent = beds;
+
+            // 月間見込み手取り = 単価 × 週時間 × ベッド数 × 4.3週 × 0.85（手数料15%差し引き後）
+            const monthlyNet = Math.round(rate * hours * beds * 4.3 * 0.85);
+            const yearlyNet = monthlyNet * 12;
+
+            document.getElementById('res-monthly').textContent = monthlyNet.toLocaleString();
+            document.getElementById('res-yearly').textContent = yearlyNet.toLocaleString();
+        }
+
+        // 7. 初期オーナー無料掲載エントリーフォーム送信
+    function previewOwnerImage(input) {
+    const wrap = document.getElementById('owner-image-preview-wrap');
+    const img = document.getElementById('owner-image-preview');
+    const file = input.files && input.files[0];
+
+    if (!file) {
+        wrap.classList.add('hidden');
+        img.src = '';
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (ev) {
+        img.src = ev.target.result;
+        wrap.classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+}
+
+async function handleOwnerSubmit(e) {
+    e.preventDefault();
+    const salonName = document.getElementById('owner-salon-name').value.trim();
+    const personName = document.getElementById('owner-person-name').value.trim();
+    const password = (document.getElementById('owner-password')?.value || '').trim();
+    const fileInput = document.getElementById('owner-salon-image');
+    const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+
+    if (password.length < 6) {
+        openNotifModal('送信エラー', 'ログインパスワードは6文字以上で設定してください');
+        return;
+    }
+    if (!document.getElementById('owner-agree')?.checked) {
+        openNotifModal('同意が必要です', '利用規約・キャンセルポリシーを読み、同意のチェックを入れてください。');
+        return;
+    }
+
+    let uploadedKey = '';
+
+    try {
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = '送信中...';
+        }
+
+        if (file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('salon_id', salonName);
+
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok || data.ok === false) {
+                throw new Error(data.error || '画像のアップロードに失敗しました。');
+            }
+            uploadedKey = data.key || '';
+        }
+
+        const entryRes = await fetch('/api/entry', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+                salon_name: salonName,
+                person_name: personName,
+                area: document.getElementById('owner-area').value,
+                email: document.getElementById('owner-email').value,
+                phone: document.getElementById('owner-phone').value,
+                password: password,
+                space_type: (document.querySelector('input[name="space_type"]:checked') || {}).value || '',
+                image_key: uploadedKey
+            })
+        });
+        const entryData = await entryRes.json().catch(() => ({}));
+        if (!entryRes.ok || entryData.ok === false) {
+            throw new Error(entryData.error || '送信に失敗しました。');
+        }
+
+        const codeNote = entryData.owner_code
+            ? `\n会員番号：${entryData.owner_code}`
+            : '';
+        const imageNote = uploadedKey
+            ? `\n（アップロード済み画像キー: ${uploadedKey}）`
+            : '';
+
+        document.getElementById('complete-owner-text').innerText =
+            `${salonName} ${personName}様、初期掲載オーナーへのエントリーありがとうございます。1営業日以内に担当者よりご連絡し、無料ページ作成サポートのご案内をお送りいたします。${codeNote}${imageNote}`;
+
+        document.getElementById('entry-form-body').classList.add('hidden');
+        document.getElementById('entry-form-complete').classList.remove('hidden');
+    } catch (err) {
+        openNotifModal(
+            '送信エラー',
+            err.message || '通信中にエラーが発生しました。時間をおいて再度お試しください。'
+        );
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '無料で掲載エントリーを送信する';
+        }
+    }
+}
+
+function resetEntryForm() {
+    document.getElementById('entry-form-body').reset();
+    document.getElementById('owner-image-preview-wrap').classList.add('hidden');
+    document.getElementById('owner-image-preview').src = '';
+    document.getElementById('entry-form-complete').classList.add('hidden');
+    document.getElementById('entry-form-body').classList.remove('hidden');
+}
+        // 8. 完了通知モーダル＆トースト制御
+        function openNotifModal(title, bodyText) {
+            document.getElementById('notif-title').textContent = title;
+            document.getElementById('notif-body').innerText = bodyText;
+            const modal = document.getElementById('notification-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeNotifModal() {
+            const modal = document.getElementById('notification-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        let toastTimer;
+        function showToast(msg) {
+            const box = document.getElementById('toast-box');
+            document.getElementById('toast-text').textContent = msg;
+            box.classList.remove('translate-y-24', 'opacity-0');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                box.classList.add('translate-y-24', 'opacity-0');
+            }, 3500);
+        }
+        function triggerTourBooking() {
+            if (!currentModalSalon) return;
+            document.getElementById('tour-salon-name').textContent = currentModalSalon.name;
+
+            const today = new Date().toISOString().split('T')[0];
+            const dateEl = document.getElementById('tour-date');
+            dateEl.min = today;
+            dateEl.value = document.getElementById('search-date').value || today;
+            refreshTourTimes();
+             
+        
+document.getElementById('tour-error').classList.add('hidden');
+            const m = document.getElementById('tour-modal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+        const TOUR_SLOTS = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
+        async function refreshTourTimes() {
+            const sel = document.getElementById('tour-time');
+            const date = document.getElementById('tour-date').value;
+            const salon = currentModalSalon;
+            if (!salon) return;
+            let closed = (salon.bookedHours || []).slice();
+            const m = String(salon.id).match(/^db_(\d+)$/);
+            if (m && date) {
+                try {
+                    const res = await fetch('/api/closures?salon_id=' + m[1] + '&date=' + date);
+                    const data = await res.json();
+                    closed = closed.concat(data.hours || []);
+                } catch (e) {}
+            }
+            const opts = TOUR_SLOTS.filter(t => !closed.includes(t));
+            sel.innerHTML = opts.length
+                ? opts.map(t => `<option value="${t}">${t}〜</option>`).join('')
+                : '<option value="">この日は満枠です</option>';
+        }
+        document.getElementById('tour-date').addEventListener('change', refreshTourTimes);
+
+        function closeTourModal() {
+            const m = document.getElementById('tour-modal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        async function submitTour(e) {
+            e.preventDefault();
+            const errBox = document.getElementById('tour-error');
+            const btn = document.getElementById('tour-submit-btn');
+            const payload = {
+                salon_id: currentModalSalon.id,
+                salon_name: currentModalSalon.name,
+                date: document.getElementById('tour-date').value,
+                time: document.getElementById('tour-time').value,
+                name: document.getElementById('tour-name').value.trim(),
+                email: document.getElementById('tour-email').value.trim(),
+                phone: document.getElementById('tour-phone').value.trim(),
+                message: document.getElementById('tour-message').value.trim(),
+            };
+            errBox.classList.add('hidden');
+            btn.disabled = true;
+            const orig = btn.textContent;
+            btn.textContent = '送信中...';
+            try {
+                const res = await fetch('/api/tours', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || data.ok === false) throw new Error(data.error || '送信に失敗しました');
+
+                const [yy, mm, dd] = payload.date.split('-');
+                const salonName = currentModalSalon.name;
+                closeTourModal();
+                closeSalonModal();
+                e.target.reset();
+                openNotifModal(
+                    '無料見学のリクエストを送信しました',
+                    `「${salonName}」\n希望日時：${yy}年${Number(mm)}月${Number(dd)}日 ${payload.time}〜\n\nご入力のメールアドレスに確認メールをお送りしました。オーナーからのご連絡をお待ちください。`
+                );
+            } catch (err) {
+                errBox.textContent = err.message || '送信に失敗しました';
+                errBox.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = orig;
+            }
+        }
+
+        // モーダル背景クリックで閉じる
+        document.getElementById('salon-detail-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeSalonModal();
+        });
+        document.getElementById('notification-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeNotifModal();
+        });
+          /*
+          let adminConsoleToken = '';
+        let adminBookingsCache = [];
+        let adminManagedSalons = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const dateInput = document.getElementById('admin-schedule-date');
+            if (dateInput && !dateInput.value) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+            const hours = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
+            renderAdminDateTimeSchedule(dateInput?.value || '', hours, [], []);
+        });
+
+        async function loginAdminConsole() {
+            const pw = document.getElementById('console-admin-password')?.value || '';
+            if (!pw) {
+                openNotifModal('入力エラー', '管理者パスワードを入力してください。');
+                return;
+            }
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ password: pw })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.token) {
+                openNotifModal('ログインエラー', data.error || 'ログインに失敗しました。');
+                return;
+            }
+            adminConsoleToken = data.token;
+            await refreshAdminConsoleData();
+        }
+
+        async function refreshAdminConsoleData() {
+            if (!adminConsoleToken) return;
+
+            const [myRes, bkgRes] = await Promise.all([
+                fetch('/api/my-salons', { headers: { Authorization: `Bearer ${adminConsoleToken}` } }),
+                fetch('/api/admin/bookings', { headers: { Authorization: `Bearer ${adminConsoleToken}` } })
+            ]);
+
+            const myData = await myRes.json().catch(() => ({}));
+            const bkgData = await bkgRes.json().catch(() => ({}));
+
+            adminManagedSalons = myData.salons || [];
+            adminBookingsCache = bkgData.bookings || [];
+
+            syncSalonFormMode(adminManagedSalons);
+
+            const selectEl = document.getElementById('admin-salon-select');
+            if (selectEl) {
+                selectEl.innerHTML = adminManagedSalons.map(sItem =>
+                    `<option value="${sItem.id}">${sItem.name}（ID: ${sItem.id}）</option>`
+                ).join('');
+            }
+
+            await loadAdminScheduleForSelectedDate();
+        }
+
+        function syncSalonFormMode(ownerSalons = []) {
+            const createFormEl = document.getElementById('entry-form-body');
+            const editBtnEl = document.getElementById('open-salon-edit-btn');
+            const summaryEl = document.getElementById('registered-salon-summary');
+            const hasSalon = Array.isArray(ownerSalons) && ownerSalons.length > 0;
+
+            if (hasSalon) {
+                if (createFormEl) createFormEl.classList.add('hidden');
+                if (editBtnEl) editBtnEl.classList.remove('hidden');
+                if (summaryEl) summaryEl.textContent = `登録済み：${ownerSalons[0].name}（詳細の変更は「変更」ボタンから行えます）`;
+            } else {
+                if (createFormEl) createFormEl.classList.remove('hidden');
+                if (editBtnEl) editBtnEl.classList.add('hidden');
+                if (summaryEl) summaryEl.textContent = 'まだサロンが登録されていません。';
+            }
+        }
+
+        function openSalonEditMode() {
+            const target = adminManagedSalons[0];
+            if (!target) return;
+            const fullSalon = salons.find(sItem => String(sItem.id).replace(/^db_/, '') === String(target.id)) || target;
+
+            const editSection = document.getElementById('salon-edit-section');
+            editSection.classList.remove('hidden');
+            editSection.dataset.editingSalonId = target.id;
+
+            document.getElementById('edit-salon-name').value = fullSalon.name || '';
+            document.getElementById('edit-salon-price').value = fullSalon.pricePerHour || '';
+            document.getElementById('edit-salon-description').value = fullSalon.description || '';
+        }
+
+        async function submitSalonUpdate() {
+            const editSection = document.getElementById('salon-edit-section');
+            const rawId = String(editSection?.dataset.editingSalonId || '').replace(/^db_/, '');
+            if (!rawId || !adminConsoleToken) return;
+
+            const payload = {
+                name: document.getElementById('edit-salon-name')?.value || '',
+                pricePerHour: Number(document.getElementById('edit-salon-price')?.value || 0),
+                description: document.getElementById('edit-salon-description')?.value || ''
+            };
+
+            const res = await fetch(`/api/salons/${rawId}`, {
+                method: 'PUT',
+                headers: {
+                    'content-type': 'application/json',
+                    Authorization: `Bearer ${adminConsoleToken}`
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || data.ok === false) {
+                openNotifModal('更新エラー', data.error || 'サロン詳細の変更に失敗しました。');
+                return;
+            }
+
+            openNotifModal('変更完了', 'サロン詳細を更新しました。');
+            editSection.classList.add('hidden');
+            await refreshAdminConsoleData();
+        }
+
+        async function loadAdminScheduleForSelectedDate() {
+            const sid = document.getElementById('admin-salon-select')?.value;
+            const dateStr = document.getElementById('admin-schedule-date')?.value || '';
+            const hours = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
+
+            let closedHours = [];
+            if (sid && dateStr) {
+                try {
+                    const r = await fetch(`/api/closures?salon_id=${encodeURIComponent(sid)}&date=${encodeURIComponent(dateStr)}`);
+                    const d = await r.json().catch(() => ({}));
+                    if (r.ok && Array.isArray(d.hours)) closedHours = d.hours;
+                } catch {}
+            }
+
+            renderAdminDateTimeSchedule(dateStr, hours, adminBookingsCache, closedHours);
+        }
+
+        function renderAdminDateTimeSchedule(dateStr, hoursList, bookings = [], closedHours = []) {
+            const container = document.getElementById('admin-schedule-by-date');
+            if (!container) return;
+
+            const closedSet = new Set(closedHours);
+            const bookedBySlot = new Map();
+
+            for (const b of bookings) {
+                const startRaw = String(b.start_at || b.desired_date || '');
+                if (!dateStr || !startRaw.startsWith(dateStr)) continue;
+                const dObj = new Date(b.start_at);
+                const slotLabel = Number.isNaN(dObj.getTime())
+                    ? String(b.desired_time || '').slice(0, 5)
+                    : dObj.toLocaleTimeString('ja-JP', {
+                        timeZone: 'Asia/Tokyo',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    });
+                if (slotLabel) bookedBySlot.set(slotLabel, b);
+            }
+
+            container.innerHTML = `
+                <div class="text-xs font-bold text-base-charcoal mb-2">${dateStr} の時間帯スケジュール</div>
+                <div class="divide-y divide-base-border border border-base-border rounded-xl bg-white overflow-hidden">
+                    ${hoursList.map(hhmm => {
+                        const booking = bookedBySlot.get(hhmm);
+                        const isClosed = closedSet.has(hhmm);
+                        let badge = `<span class="text-emerald-700 font-semibold">空き</span>`;
+                        let detail = `利用可能`;
+
+                        if (booking) {
+                            badge = `<span class="text-base-terra font-bold">予約あり</span>`;
+                            detail = `${booking.booking_code || booking.id || '予約'}（${booking.status || 'confirmed'}）`;
+                        } else if (isClosed) {
+                            badge = `<span class="text-gray-500 font-semibold">休み枠</span>`;
+                            detail = `受付停止中`;
+                        }
+
+                        return `
+                            <div class="flex items-center justify-between px-3.5 py-2.5 text-xs">
+                                <div class="font-mono font-bold text-base-charcoal w-16">${hhmm}</div>
+                                <div class="flex-1 text-base-muted truncate pr-2">${detail}</div>
+                                <div>${badge}</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        const ADMIN_TOKEN_KEY = 'salonbase_admin_token';
+        const ADMIN_PW_KEY = 'salonbase_admin_pw';
+        const SALON_REGISTERED_KEY = 'salonbase_registered_once';
+
+        let adminConsoleToken = '';
+        let adminBookingsCache = [];
+        let adminManagedSalons = [];
+
+        function restoreSavedPasswordInput() {
+            try {
+                const pwInput = document.getElementById('console-admin-password');
+                const rememberEl = document.getElementById('remember-admin-login');
+                const savedPw = localStorage.getItem(ADMIN_PW_KEY);
+                if (savedPw && pwInput) {
+                    pwInput.value = savedPw;
+                    if (rememberEl) rememberEl.checked = true;
+                }
+            } catch {}
+        }
+
+        function saveOrClearPasswordInput(pw, shouldRemember) {
+            try {
+                if (shouldRemember && pw) {
+                    localStorage.setItem(ADMIN_PW_KEY, pw);
+                } else {
+                    localStorage.removeItem(ADMIN_PW_KEY);
+                }
+            } catch {}
+        }
+
+        function hasRegisteredSalon(ownerSalons = []) {
+            if (Array.isArray(ownerSalons) && ownerSalons.length > 0) return true;
+            try {
+                return localStorage.getItem(SALON_REGISTERED_KEY) === '1';
+            } catch {
+                return false;
+            }
+        }
+
+        function markSalonAsRegistered() {
+            try {
+                localStorage.setItem(SALON_REGISTERED_KEY, '1');
+            } catch {}
+        }
+
+        function syncSalonFormMode(ownerSalons = []) {
+            const createFormEl = document.getElementById('entry-form-body');
+            const editBtnEl = document.getElementById('open-salon-edit-btn');
+            const summaryEl = document.getElementById('registered-salon-summary');
+            const isRegistered = hasRegisteredSalon(ownerSalons);
+
+            if (isRegistered) {
+                if (createFormEl) createFormEl.classList.add('hidden');
+                if (editBtnEl) editBtnEl.classList.remove('hidden');
+                const salonTitle = ownerSalons[0]?.name || '登録済みサロン';
+                if (summaryEl) {
+                    summaryEl.textContent = `${salonTitle}（掲載済み：内容を変更したいときのみ「変更」ボタンを押してください）`;
+                }
+            } else {
+                if (createFormEl) createFormEl.classList.remove('hidden');
+                if (editBtnEl) editBtnEl.classList.add('hidden');
+                if (summaryEl) {
+                    summaryEl.textContent = '初回のみ掲載登録を行えます。登録後は「変更」ボタンから更新します。';
+                }
+            }
+        }
+
+        async function loginAdminConsole() {
+            const pw = document.getElementById('console-admin-password')?.value || '';
+            const rememberEl = document.getElementById('remember-admin-login');
+            const shouldRemember = rememberEl ? rememberEl.checked : true;
+
+            if (!pw) {
+                openNotifModal('入力エラー', '管理者パスワードを入力してください。');
+                return;
+            }
+
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ password: pw })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.token) {
+                openNotifModal('ログインエラー', data.error || 'ログインに失敗しました。');
+                return;
+            }
+
+            adminConsoleToken = data.token;
+            saveOrClearPasswordInput(pw, shouldRemember);
+
+            try {
+                if (shouldRemember) {
+                    localStorage.setItem(ADMIN_TOKEN_KEY, data.token);
+                } else {
+                    localStorage.removeItem(ADMIN_TOKEN_KEY);
+                }
+            } catch {}
+
+            await refreshAdminConsoleData();
+        }
+
+        async function restoreAdminSession() {
+            try {
+                const savedToken = localStorage.getItem(ADMIN_TOKEN_KEY);
+                if (!savedToken) return;
+                adminConsoleToken = savedToken;
+                await refreshAdminConsoleData();
+            } catch {}
+        }
+
+        async function refreshAdminConsoleData() {
+            if (!adminConsoleToken) return;
+
+            const [myRes, bkgRes] = await Promise.all([
+                fetch('/api/my-salons', { headers: { Authorization: `Bearer ${adminConsoleToken}` } }),
+                fetch('/api/admin/bookings', { headers: { Authorization: `Bearer ${adminConsoleToken}` } })
+            ]);
+
+            if (myRes.status === 401 || bkgRes.status === 401) {
+                adminConsoleToken = '';
+                try { localStorage.removeItem(ADMIN_TOKEN_KEY); } catch {}
+                return;
+            }
+
+            const myData = await myRes.json().catch(() => ({}));
+            const bkgData = await bkgRes.json().catch(() => ({}));
+
+            adminManagedSalons = myData.salons || [];
+            adminBookingsCache = bkgData.bookings || [];
+
+            if (adminManagedSalons.length > 0) markSalonAsRegistered();
+            syncSalonFormMode(adminManagedSalons);
+
+            const selectEl = document.getElementById('admin-salon-select');
+            if (selectEl) {
+                selectEl.innerHTML = adminManagedSalons.map(sItem =>
+                    `<option value="${sItem.id}">${sItem.name}（ID: ${sItem.id}）</option>`
+                ).join('');
+            }
+
+            await loadAdminScheduleForSelectedDate();
+        }
+
+        function openSalonEditMode() {
+            const target = adminManagedSalons[0];
+            if (!target) return;
+
+            const targetIdStr = String(target.id);
+            const targetNumId = targetIdStr.replace(/^db_/, '');
+            const fullSalon = salons.find(
+                (sItem) => String(sItem.id) === targetIdStr || String(sItem.id).replace(/^db_/, '') === targetNumId
+            ) || {};
+
+            const editSection = document.getElementById('salon-edit-section');
+            editSection.classList.remove('hidden');
+            editSection.dataset.editingSalonId = targetNumId;
+
+            document.getElementById('edit-salon-name').value = target.name || target.salon_name || fullSalon.name || '';
+            document.getElementById('edit-salon-price').value = target.pricePerHour ?? target.price_per_hour ?? fullSalon.pricePerHour ?? '';
+            document.getElementById('edit-salon-description').value
+                document.getElementById('edit-salon-description').value = target.description || target.salon_description || fullSalon.description || '';
+        }
+
+        async function submitSalonUpdate() {
+            const editSection = document.getElementById('salon-edit-section');
+            const rawId = String(editSection?.dataset.editingSalonId || '').replace(/^db_/, '');
+            if (!rawId || !adminConsoleToken) return;
+
+            const payload = {
+                name: document.getElementById('edit-salon-name')?.value || '',
+                pricePerHour: Number(document.getElementById('edit-salon-price')?.value || 0),
+                description: document.getElementById('edit-salon-description')?.value || ''
+            };
+
+               function openSalonEditMode() {
+        const target = adminManagedSalons[0];
+        if (!target) return;
+
+        const targetIdStr = String(target.id);
+        const targetNumId = targetIdStr.replace(/^db_/, '');
+        const fullSalon = salons.find(
+            (sItem) => String(sItem.id) === targetIdStr || String(sItem.id).replace(/^db_/, '') === targetNumId
+        ) || {};
+
+        const editSection = document.getElementById('salon-edit-section');
+        editSection.classList.remove('hidden');
+        editSection.dataset.editingSalonId = targetNumId;
+
+        document.getElementById('edit-salon-name').value = target.name || target.salon_name || fullSalon.name || '';
+        document.getElementById('edit-salon-price').value = target.pricePerHour ?? target.price_per_hour ?? fullSalon.pricePerHour ?? '';
+        document.getElementById('edit-salon-description').value = target.description || target.salon_description || fullSalon.description || '';
+    }
+
+    async function submitSalonUpdate() {
+        const editSection = document.getElementById('salon-edit-section');
+        const rawId = String(editSection?.dataset.editingSalonId || '').replace(/^db_/, '');
+        if (!rawId || !adminConsoleToken) return;
+
+        const payload = {
+            name: document.getElementById('edit-salon-name')?.value || '',
+            pricePerHour: Number(document.getElementById('edit-salon-price')?.value || 0),
+            description: document.getElementById('edit-salon-description')?.value || ''
+        };
+
+        const res = await fetch(`/api/salons/${rawId}`, {
+            method: 'PUT',
+            headers: {
+                'content-type': 'application/json',
+                Authorization: `Bearer ${adminConsoleToken}`
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.ok === false) {
+            openNotifModal('更新エラー', data.error || 'サロン詳細の変更に失敗しました。');
+            return;
+        }
+
+        openNotifModal('変更完了', 'サロン詳細を更新しました。');
+        editSection.classList.add('hidden');
+        await refreshAdminConsoleData();
+    }
+
+    async function loadAdminScheduleForSelectedDate() {
+        const sid = document.getElementById('admin-salon-select')?.value;
+        const dateStr = document.getElementById('admin-schedule-date')?.value || '';
+        const hours = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
+
+        let closedHours = [];
+        if (sid && dateStr) {
+            try {
+                const r = await fetch(`/api/closures?salon_id=${encodeURIComponent(sid)}&date=${encodeURIComponent(dateStr)}`);
+                const d = await r.json().catch(() => ({}));
+                if (r.ok && Array.isArray(d.hours)) closedHours = d.hours;
+            } catch {}
+        }
+
+        renderAdminDateTimeSchedule(dateStr, hours, adminBookingsCache, closedHours);
+    }
+
+    function renderAdminDateTimeSchedule(dateStr, hoursList, bookings = [], closedHours = []) {
+        const container = document.getElementById('admin-schedule-by-date');
+        if (!container) return;
+
+        const closedSet = new Set(closedHours);
+        const bookedBySlot = new Map();
+
+        for (const b of bookings) {
+            const startRaw = String(b.start_at || b.desired_date || '');
+            if (!dateStr || !startRaw.startsWith(dateStr)) continue;
+            const dObj = new Date(b.start_at);
+            const slotLabel = Number.isNaN(dObj.getTime())
+                ? String(b.desired_time || '').slice(0, 5)
+                : dObj.toLocaleTimeString('ja-JP', {
+                    timeZone: 'Asia/Tokyo',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+            if (slotLabel) bookedBySlot.set(slotLabel, b);
+        }
+
+        container.innerHTML = `
+            <div class="text-xs font-bold text-base-charcoal mb-2">${dateStr} の時間帯スケジュール</div>
+            <div class="divide-y divide-base-border border border-base-border rounded-xl bg-white overflow-hidden">
+                ${hoursList.map(hhmm => {
+                    const booking = bookedBySlot.get(hhmm);
+                    const isClosed = closedSet.has(hhmm);
+                    let badge = `<span class="text-emerald-700 font-semibold">空き</span>`;
+                    let detail = `利用可能`;
+
+                    if (booking) {
+                        badge = `<span class="text-base-terra font-bold">予約あり</span>`;
+                        detail = `${booking.booking_code || booking.id || '予約'}（${booking.status || 'confirmed'}）`;
+                    } else if (isClosed) {
+                        badge = `<span class="text-gray-500 font-semibold">休み枠</span>`;
+                        detail = `受付停止中`;
+                    }
+
+                    return `
+                        <div class="flex items-center justify-between px-3.5 py-2.5 text-xs">
+                            <div class="font-mono font-bold text-base-charcoal w-16">${hhmm}</div>
+                            <div class="flex-1 text-base-muted truncate pr-2">${detail}</div>
+                            <div>${badge}</div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const dateInput = document.getElementById('admin-schedule-date');
+        if (dateInput && !dateInput.value) {
+            dateInput.value = new Date().toISOString().split('T')[0];
+        }
+        const hours = ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
+        renderAdminDateTimeSchedule(dateInput?.value || '', hours, [], []);
+        restoreSavedPasswordInput();
+        syncSalonFormMode([]);
+        restoreAdminSession();
+    });
+*/
+        
+</script>
 </body>
 </html>
