@@ -1209,7 +1209,7 @@ if (path === "/api/owner/login" && method === "POST") {
         }
         const tinfo = await getTransfersInfo(ow.stripe_account_id);
         if (!tinfo.active) {
-          return json({ ok: false, error: "このサロンの受け取り設定が、まだ完了していません（確認用：" + tinfo.detail + "）" }, 400);
+          return json({ ok: false, error: "このサロンの受け取り設定が、まだ完了していません。オーナーにご連絡ください" }, 400);
         }
 
         const total = Number(salon.price_per_hour) * hours.length;
