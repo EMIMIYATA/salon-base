@@ -1277,8 +1277,19 @@ if (path === "/api/owner/login" && method === "POST") {
               `${bk.guest_name} 様`, "", "ご予約とお支払いが完了しました。", "",
               `予約番号: ${bk.booking_code}`, `サロン: ${bk.salon_name}`, `ご利用日時: ${when}`,
               `お支払い金額: ¥${Number(bk.amount_jpy).toLocaleString()}`, "",
+              "【キャンセルについて】",
+              "ご利用開始日時を基準に、次のキャンセル料がかかります。",
+              "・8日前まで：無料",
+              "・7日前〜4日前：利用料金の30％",
+              "・3日前〜2日前：利用料金の50％",
+              "・前日：利用料金の80％",
+              "・当日・無断キャンセル：利用料金の100％",
+              "※ キャンセル料が発生する場合、運営の手数料（利用料金の20％）は返金できません。",
+              "※ キャンセルのご連絡は、お電話（070-2395-9365）でお願いします。連絡を受けた時刻が、キャンセルの時刻です。",
+              "詳しくは、https://share-salon-tokyo.com/terms.html#cancel をご確認ください。", "",
               "ご利用後、サロンの詳細ページの「口コミを書く」から、この予約番号で口コミをご投稿いただけます。", "",
-              "※ このメールは送信専用です。", "SHARE SALON",
+              "※ このメールは送信専用です。ご返信いただいても、お答えできません。", "SHARE SALON",
+              "運営者：宮田絵美　TEL 070-2395-9365",
             ].join("\n");
             const ownRow = await env.DB.prepare("SELECT owner_code FROM owner_entries WHERE email = ? ORDER BY id ASC LIMIT 1").bind(bk.owner_email || "").first();
             const ownerText = [
