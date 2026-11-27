@@ -670,6 +670,10 @@
 </div>
 
 
+                            <label class="flex items-start gap-2 text-xs text-base-muted leading-relaxed cursor-pointer">
+                                <input type="checkbox" id="owner-agree" class="mt-0.5 w-4 h-4 shrink-0">
+                                <span><a href="/terms.html#owner" target="_blank" class="underline text-base-terra">利用規約（貸す方）</a>と<a href="/terms.html#cancel" target="_blank" class="underline text-base-terra">キャンセルポリシー</a>に同意します。貸し出すスペースを貸す権限と、必要な法令上の手続きがあること、掲載内容が事実であること、手数料（利用料金の20％）を、保証・了承します。</span>
+                            </label>
                             <button type="submit" 
                                     class="w-full py-4 rounded-full bg-base-terra hover:bg-base-terraDark text-white font-bold text-base shadow-md transition mt-2">
                                 無料で掲載エントリーを送信する
@@ -948,8 +952,8 @@
                     <a href="#" onclick="switchView('guest'); return false;" class="hover:text-white transition">サロンを探す</a>
                     <a href="#" onclick="switchView('owner'); return false;" class="hover:text-white transition">スペースを掲載する</a>
                     <a href="/admin.html" class="hover:text-white transition">オーナーログイン</a>
-                    <a href="#" onclick="showToast('特定商取引法に基づく表記（モック）'); return false;" class="hover:text-white transition">運営会社・特商法</a>
-                    <a href="#" onclick="showToast('利用規約・プライバシーポリシー（モック）'); return false;" class="hover:text-white transition">利用規約</a>
+                    <a href="/tokushoho.html" class="hover:text-white transition">運営者・特定商取引法</a>
+                    <a href="/terms.html" class="hover:text-white transition">利用規約・キャンセルポリシー</a>
                 </div>
             </div>
             <div class="pt-6 text-xs text-gray-400 flex flex-col sm:flex-row justify-between items-center gap-2">
@@ -1565,6 +1569,11 @@ window.addEventListener('DOMContentLoaded', async () => {
                                 </div>
                             </div>
 
+                            <label class="flex items-start gap-2 text-[11px] sm:text-xs text-base-muted leading-relaxed mb-3 cursor-pointer">
+                                <input type="checkbox" id="booking-agree" class="mt-0.5 w-4 h-4 shrink-0">
+                                <span><a href="/terms.html#renter" target="_blank" class="underline text-base-terra">利用規約</a>と<a href="/terms.html#cancel" target="_blank" class="underline text-base-terra">キャンセルポリシー</a>（8日前まで：無料、7日前〜：30％、3日前〜：50％、前日：80％、当日：100％。キャンセル料が発生する場合、運営の手数料は返金不可）に同意します。施術に必要な資格・届出は、自己の責任で満たしており、スペースを損傷した場合は実費を負担します。</span>
+                            </label>
+
                             <!-- 予約リクエスト送信ボタン -->
                             <button type="button" id="submit-booking-btn" onclick="triggerSalonBooking()" disabled
                                     class="w-full py-4 rounded-full bg-gray-300 text-white font-bold text-sm sm:text-base transition cursor-not-allowed">
@@ -1868,6 +1877,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
+  if (!document.getElementById('booking-agree')?.checked) {
+    openNotifModal('同意が必要です', '利用規約・キャンセルポリシーを読み、同意のチェックを入れてください。');
+    return;
+  }
+
   const salonId = String(currentModalSalon?.id || '');
   const dateVal = (document.getElementById('search-date')?.value || '').trim();
   const submitBtn = document.getElementById('submit-booking-btn');
@@ -1896,7 +1910,8 @@ window.addEventListener('DOMContentLoaded', async () => {
         hours: modalSelectedHours,
         guest_name: guestName,
         guest_email: guestEmail,
-        guest_phone: guestPhone
+        guest_phone: guestPhone,
+        agreed: true
       })
     });
 
@@ -1970,6 +1985,10 @@ async function handleOwnerSubmit(e) {
 
     if (password.length < 6) {
         openNotifModal('送信エラー', 'ログインパスワードは6文字以上で設定してください');
+        return;
+    }
+    if (!document.getElementById('owner-agree')?.checked) {
+        openNotifModal('同意が必要です', '利用規約・キャンセルポリシーを読み、同意のチェックを入れてください。');
         return;
     }
 
