@@ -1245,6 +1245,145 @@ if (path === "/api/owner/login" && method === "POST") {
       }
     }
 
+    // ================= 運営用：予約の一覧・キャンセル・返金 =================
+    const ensureCancelColumns = async () => {
+      for (const col of ["cancelled_at TEXT", "cancel_fee_jpy INTEGER", "refund_jpy INTEGER", "cancel_reason TEXT"]) {
+        try { await env.DB.prepare("ALTER TABLE salon_bookings ADD COLUMN " + col).run(); } catch (_) {}
+      }
+    };
+    // キャンセル料の計算（利用日までの日数：日本時間）
+    const cancelPlan = (bk, reason) => {
+      const T = Number(bk.amount_jpy) || 0;
+      const F = Number(bk.fee_jpy) || 0;
+      const today = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+      const dd = Math.round((Date.parse(String(bk.date) + "T00:00:00Z") - Date.parse(today + "T00:00:00Z")) / 86400000);
+      let pct = dd >= 8 ? 0 : dd >= 4 ? 30 : dd >= 2 ? 50 : dd === 1 ? 80 : 100;
+      if (reason === "owner") pct = 0;
+      const C = Math.round((T * pct) / 100);
+      const R = T - C;
+      const reverse = R > 0 ? Math.min(R, Math.max(T - F, 0)) : 0;
+      return {
+        days_before: dd, percent: pct, amount: T, platform_fee: F,
+        cancel_fee: C, refund: R, reverse_transfer: reverse,
+        owner_receives: reason === "owner" ? 0 : Math.max(C - F, 0),
+        owner_bill: reason === "owner" ? F : 0,
+      };
+    };
+    const opsOnly = async () => {
+      if (!(await verifyAdminToken(request, env))) return json({ ok: false, error: "認証が必要です" }, 401);
+      let tok = {};
+      try { tok = tokenOf(); } catch (_) {}
+      if (tok.role !== "admin") return json({ ok: false, error: "運営用のログインが必要です" }, 403);
+      return null;
+    };
+
+    if (path === "/api/ops/bookings" && method === "GET") {
+      const deny = await opsOnly();
+      if (deny) return deny;
+      try {
+        await ensureCancelColumns();
+        const rows = await env.DB.prepare(
+          "SELECT id, booking_code, salon_name, owner_email, date, hours, amount_jpy, fee_jpy, guest_name, guest_email, guest_phone, status, cancel_fee_jpy, refund_jpy, cancel_reason, cancelled_at FROM salon_bookings WHERE status IN ('paid','cancelled') ORDER BY date DESC, id DESC LIMIT 100"
+        ).all();
+        const list = (rows.results || []).map((r) => ({
+          ...r,
+          hours: safeJsonArray(r.hours, []),
+          plan_guest: r.status === "paid" ? cancelPlan(r, "guest") : null,
+          plan_owner: r.status === "paid" ? cancelPlan(r, "owner") : null,
+        }));
+        return json({ ok: true, bookings: list });
+      } catch (e) {
+        return json({ ok: false, error: "取得に失敗しました" }, 500);
+      }
+    }
+
+    const opsCancelMatch = path.match(/^\/api\/ops\/bookings\/(\d+)\/cancel$/);
+    if (opsCancelMatch && method === "POST") {
+      const deny = await opsOnly();
+      if (deny) return deny;
+      const bookingId = Number(opsCancelMatch[1]);
+      let locked = false;
+      try {
+        await ensureCancelColumns();
+        const b = await request.json().catch(() => ({}));
+        const reason = b.reason === "owner" ? "owner" : "guest";
+        const bk = await env.DB.prepare("SELECT * FROM salon_bookings WHERE id = ?").bind(bookingId).first();
+        if (!bk) return json({ ok: false, error: "予約が見つかりません" }, 404);
+        if (bk.status !== "paid") return json({ ok: false, error: "お支払い済みの予約だけ、キャンセルできます" }, 400);
+        const plan = cancelPlan(bk, reason);
+        if (b.dry_run) return json({ ok: true, plan });
+
+        const lock = await env.DB.prepare("UPDATE salon_bookings SET status = 'cancelling' WHERE id = ? AND status = 'paid'").bind(bookingId).run();
+        if ((lock.meta?.changes || 0) !== 1) return json({ ok: false, error: "すでに処理中です" }, 409);
+        locked = true;
+
+        if (plan.refund > 0) {
+          let pi = "";
+          if (bk.stripe_session_id) {
+            const ss = await stripeFetch("GET", "/checkout/sessions/" + encodeURIComponent(bk.stripe_session_id));
+            pi = ss.payment_intent || "";
+          }
+          if (!pi) throw new Error("決済情報が見つかりません");
+          const pio = await stripeFetch("GET", "/payment_intents/" + encodeURIComponent(pi) + "?expand%5B%5D=latest_charge");
+          const transferId = pio?.latest_charge?.transfer || "";
+          if (plan.reverse_transfer > 0 && transferId) {
+            await stripeFetch("POST", "/transfers/" + encodeURIComponent(transferId) + "/reversals", {
+              amount: String(plan.reverse_transfer),
+              "metadata[booking_code]": String(bk.booking_code),
+            });
+          }
+          await stripeFetch("POST", "/refunds", {
+            payment_intent: pi,
+            amount: String(plan.refund),
+            reason: "requested_by_customer",
+            "metadata[booking_code]": String(bk.booking_code),
+          });
+        }
+
+        await env.DB.prepare(
+          "UPDATE salon_bookings SET status = 'cancelled', cancelled_at = ?, cancel_fee_jpy = ?, refund_jpy = ?, cancel_reason = ? WHERE id = ?"
+        ).bind(new Date().toISOString(), plan.cancel_fee, plan.refund, reason, bookingId).run();
+        locked = false;
+
+        // お知らせメール
+        const hrs = safeJsonArray(bk.hours, []).join(" / ");
+        const [yy, mm, dd2] = String(bk.date).split("-");
+        const when = `${yy}年${Number(mm)}月${Number(dd2)}日 ${hrs}`;
+        const yen = (n) => "¥" + Number(n).toLocaleString();
+        const guestText = [
+          `${bk.guest_name} 様`, "", "ご予約のキャンセルを受け付けました。", "",
+          `予約番号: ${bk.booking_code}`, `サロン: ${bk.salon_name}`, `ご利用日時: ${when}`,
+          `お支払い済み金額: ${yen(plan.amount)}`,
+          reason === "owner" ? "キャンセルの理由: サロン（オーナー）のご都合" : `キャンセル料: ${yen(plan.cancel_fee)}（${plan.percent}％）`,
+          `ご返金額: ${yen(plan.refund)}`, "",
+          plan.refund > 0 ? "ご返金は、お支払い時のカードへ行います。カード会社の都合で、反映まで数週間かかることがあります。" : "今回は、キャンセル料が利用料金の全額のため、ご返金はありません。", "",
+          "詳しくは、https://share-salon-tokyo.com/terms.html#cancel をご確認ください。", "",
+          "SHARE SALON", "運営者：宮田絵美　TEL 070-2395-9365",
+        ].join("\n");
+        const ownerText = [
+          "ご予約がキャンセルされました。", "",
+          `予約番号: ${bk.booking_code}`, `サロン: ${bk.salon_name}`, `ご利用日時: ${when}`,
+          reason === "owner" ? "キャンセルの理由: オーナーのご都合" : `キャンセル料: ${yen(plan.cancel_fee)}（${plan.percent}％）`,
+          reason === "owner"
+            ? `お客様へ全額（${yen(plan.refund)}）を返金しました。運営手数料 ${yen(plan.owner_bill)} は返金できないため、運営より別途ご連絡します。`
+            : `お受け取り額: ${yen(plan.owner_receives)}（キャンセル料から、運営手数料 ${yen(plan.platform_fee)} を差し引いた額）`,
+          "", "SHARE SALON",
+        ].join("\n");
+        try {
+          if (bk.guest_email) await sendMail(env, bk.guest_email, "【SHARE SALON】ご予約をキャンセルしました", guestText);
+          if (bk.owner_email) await sendMail(env, bk.owner_email, `【SHARE SALON】予約がキャンセルされました：${bk.salon_name}`, ownerText);
+          if (env.NOTIFY_EMAIL && env.NOTIFY_EMAIL !== bk.owner_email) await sendMail(env, env.NOTIFY_EMAIL, `【SHARE SALON】（運営控え）予約キャンセル：${bk.salon_name}`, ownerText);
+        } catch (_) {}
+        return json({ ok: true, plan });
+      } catch (e) {
+        if (locked) {
+          try { await env.DB.prepare("UPDATE salon_bookings SET status = 'paid' WHERE id = ? AND status = 'cancelling'").bind(bookingId).run(); } catch (_) {}
+        }
+        console.log("cancel error", String(e));
+        return json({ ok: false, error: "処理に失敗しました：" + String(e?.message || e) + "（Stripeの管理画面で、返金・送金の状態を確認してください）" }, 500);
+      }
+    }
+
     // ---- Stripe からの支払い完了通知（Webhook） ----
     if (path === "/api/stripe/webhook" && method === "POST") {
       try {
