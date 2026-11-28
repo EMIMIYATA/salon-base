@@ -1297,24 +1297,19 @@ if (path === "/api/owner/login" && method === "POST") {
       }
     }
 
-    const opsCancelMatch = path.match(/^\/api\/ops\/bookings\/(\d+)\/cancel$/);
-    if (opsCancelMatch && method === "POST") {
-      const deny = await opsOnly();
-      if (deny) return deny;
-      const bookingId = Number(opsCancelMatch[1]);
+    // キャンセルの実行（運営・お客様の両方から使う）
+    const REFUND_NOTE = "ご返金の手続きは、すぐに行いました。カード会社の処理により、お客様のカード明細に反映されるまで、通常5〜10営業日（約1〜2週間）、長い場合は数週間かかることがあります。";
+    const performCancel = async (bookingId, reason) => {
       let locked = false;
       try {
         await ensureCancelColumns();
-        const b = await request.json().catch(() => ({}));
-        const reason = b.reason === "owner" ? "owner" : "guest";
         const bk = await env.DB.prepare("SELECT * FROM salon_bookings WHERE id = ?").bind(bookingId).first();
-        if (!bk) return json({ ok: false, error: "予約が見つかりません" }, 404);
-        if (bk.status !== "paid") return json({ ok: false, error: "お支払い済みの予約だけ、キャンセルできます" }, 400);
+        if (!bk) return { status: 404, body: { ok: false, error: "予約が見つかりません" } };
+        if (bk.status !== "paid") return { status: 400, body: { ok: false, error: "お支払い済みの予約だけ、キャンセルできます" } };
         const plan = cancelPlan(bk, reason);
-        if (b.dry_run) return json({ ok: true, plan });
 
         const lock = await env.DB.prepare("UPDATE salon_bookings SET status = 'cancelling' WHERE id = ? AND status = 'paid'").bind(bookingId).run();
-        if ((lock.meta?.changes || 0) !== 1) return json({ ok: false, error: "すでに処理中です" }, 409);
+        if ((lock.meta?.changes || 0) !== 1) return { status: 409, body: { ok: false, error: "すでに処理中です" } };
         locked = true;
 
         if (plan.refund > 0) {
@@ -1345,7 +1340,6 @@ if (path === "/api/owner/login" && method === "POST") {
         ).bind(new Date().toISOString(), plan.cancel_fee, plan.refund, reason, bookingId).run();
         locked = false;
 
-        // お知らせメール
         const hrs = safeJsonArray(bk.hours, []).join(" / ");
         const [yy, mm, dd2] = String(bk.date).split("-");
         const when = `${yy}年${Number(mm)}月${Number(dd2)}日 ${hrs}`;
@@ -1356,7 +1350,7 @@ if (path === "/api/owner/login" && method === "POST") {
           `お支払い済み金額: ${yen(plan.amount)}`,
           reason === "owner" ? "キャンセルの理由: サロン（オーナー）のご都合" : `キャンセル料: ${yen(plan.cancel_fee)}（${plan.percent}％）`,
           `ご返金額: ${yen(plan.refund)}`, "",
-          plan.refund > 0 ? "ご返金は、お支払い時のカードへ行います。カード会社の都合で、反映まで数週間かかることがあります。" : "今回は、キャンセル料が利用料金の全額のため、ご返金はありません。", "",
+          plan.refund > 0 ? REFUND_NOTE : "今回は、キャンセル料が利用料金の全額のため、ご返金はありません。", "",
           "詳しくは、https://share-salon-tokyo.com/terms.html#cancel をご確認ください。", "",
           "SHARE SALON", "運営者：宮田絵美　TEL 070-2395-9365",
         ].join("\n");
@@ -1367,21 +1361,77 @@ if (path === "/api/owner/login" && method === "POST") {
           reason === "owner"
             ? `お客様へ全額（${yen(plan.refund)}）を返金しました。運営手数料 ${yen(plan.owner_bill)} は返金できないため、運営より別途ご連絡します。`
             : `お受け取り額: ${yen(plan.owner_receives)}（キャンセル料から、運営手数料 ${yen(plan.platform_fee)} を差し引いた額）`,
-          "", "SHARE SALON",
+          "", "この予約の時間は、空き枠に戻りました。", "", "SHARE SALON",
         ].join("\n");
         try {
           if (bk.guest_email) await sendMail(env, bk.guest_email, "【SHARE SALON】ご予約をキャンセルしました", guestText);
           if (bk.owner_email) await sendMail(env, bk.owner_email, `【SHARE SALON】予約がキャンセルされました：${bk.salon_name}`, ownerText);
           if (env.NOTIFY_EMAIL && env.NOTIFY_EMAIL !== bk.owner_email) await sendMail(env, env.NOTIFY_EMAIL, `【SHARE SALON】（運営控え）予約キャンセル：${bk.salon_name}`, ownerText);
         } catch (_) {}
-        return json({ ok: true, plan });
+        return { status: 200, body: { ok: true, plan, refund_note: plan.refund > 0 ? REFUND_NOTE : "" } };
       } catch (e) {
         if (locked) {
           try { await env.DB.prepare("UPDATE salon_bookings SET status = 'paid' WHERE id = ? AND status = 'cancelling'").bind(bookingId).run(); } catch (_) {}
         }
         console.log("cancel error", String(e));
-        return json({ ok: false, error: "処理に失敗しました：" + String(e?.message || e) + "（Stripeの管理画面で、返金・送金の状態を確認してください）" }, 500);
+        return { status: 500, body: { ok: false, error: "処理に失敗しました。お手数ですが、運営（070-2395-9365）へご連絡ください。" , detail: String(e?.message || e) } };
       }
+    };
+
+    // 運営用
+    const opsCancelMatch = path.match(/^\/api\/ops\/bookings\/(\d+)\/cancel$/);
+    if (opsCancelMatch && method === "POST") {
+      const deny = await opsOnly();
+      if (deny) return deny;
+      await ensureCancelColumns();
+      const b = await request.json().catch(() => ({}));
+      const reason = b.reason === "owner" ? "owner" : "guest";
+      const bookingId = Number(opsCancelMatch[1]);
+      if (b.dry_run) {
+        const bk = await env.DB.prepare("SELECT * FROM salon_bookings WHERE id = ?").bind(bookingId).first();
+        if (!bk) return json({ ok: false, error: "予約が見つかりません" }, 404);
+        if (bk.status !== "paid") return json({ ok: false, error: "お支払い済みの予約だけ、キャンセルできます" }, 400);
+        return json({ ok: true, plan: cancelPlan(bk, reason) });
+      }
+      const r = await performCancel(bookingId, reason);
+      if (!r.body.ok && r.body.detail) r.body.error = "処理に失敗しました：" + r.body.detail + "（Stripeの管理画面で、返金・送金の状態を確認してください）";
+      return json(r.body, r.status);
+    }
+
+    // お客様用：予約番号とメールアドレスで、ご自身でキャンセル
+    const findGuestBooking = async (b) => {
+      await ensureCancelColumns();
+      const code = String(b.booking_code || "").trim().toUpperCase();
+      const email = String(b.email || "").trim().toLowerCase();
+      if (!code || !email) return { err: json({ ok: false, error: "予約番号とメールアドレスを入力してください" }, 400) };
+      const bk = await env.DB.prepare("SELECT * FROM salon_bookings WHERE booking_code = ?").bind(code).first();
+      if (!bk || String(bk.guest_email || "").toLowerCase() !== email) {
+        return { err: json({ ok: false, error: "予約が見つかりません。予約番号とメールアドレスを、ご確認ください" }, 404) };
+      }
+      if (bk.status === "cancelled") return { err: json({ ok: false, error: "この予約は、すでにキャンセル済みです" }, 400) };
+      if (bk.status !== "paid") return { err: json({ ok: false, error: "お支払いが完了した予約だけ、キャンセルできます" }, 400) };
+      const plan = cancelPlan(bk, "guest");
+      if (plan.days_before < 0) return { err: json({ ok: false, error: "ご利用日を過ぎた予約は、キャンセルできません" }, 400) };
+      return { bk, plan };
+    };
+    if (path === "/api/cancel/preview" && method === "POST") {
+      const b = await request.json().catch(() => ({}));
+      const f = await findGuestBooking(b);
+      if (f.err) return f.err;
+      return json({
+        ok: true,
+        booking: { booking_code: f.bk.booking_code, salon_name: f.bk.salon_name, date: f.bk.date, hours: safeJsonArray(f.bk.hours, []) },
+        plan: f.plan,
+        refund_note: "ご返金は、キャンセル後すぐに手続きします。カード会社の処理により、カード明細に反映されるまで、通常5〜10営業日（約1〜2週間）、長い場合は数週間かかることがあります。",
+      });
+    }
+    if (path === "/api/cancel" && method === "POST") {
+      const b = await request.json().catch(() => ({}));
+      const f = await findGuestBooking(b);
+      if (f.err) return f.err;
+      const r = await performCancel(f.bk.id, "guest");
+      delete r.body.detail;
+      return json(r.body, r.status);
     }
 
     // ---- Stripe からの支払い完了通知（Webhook） ----
@@ -1424,10 +1474,13 @@ if (path === "/api/owner/login" && method === "POST") {
               "・前日：利用料金の80％",
               "・当日・無断キャンセル：利用料金の100％",
               "※ キャンセル料が発生する場合、運営の手数料（利用料金の20％）は返金できません。",
-              "※ キャンセルのご連絡は、お電話（070-2395-9365）でお願いします。連絡を受けた時刻が、キャンセルの時刻です。",
+              "【キャンセルのお手続き】",
+              "https://share-salon-tokyo.com/cancel-booking.html で、予約番号とこのメールアドレスを入力すると、ご自身でキャンセルでき、返金（該当する場合）も自動で手続きされます。",
+              "※ ご返金は、カード会社の処理により、カード明細への反映まで、通常5〜10営業日（約1〜2週間）、長い場合は数週間かかります。",
+              "※ お電話（070-2395-9365）、またはメール（info@share-salon-tokyo.com）でも、お受けします。",
               "詳しくは、https://share-salon-tokyo.com/terms.html#cancel をご確認ください。", "",
               "ご利用後、サロンの詳細ページの「口コミを書く」から、この予約番号で口コミをご投稿いただけます。", "",
-              "※ このメールは送信専用です。ご返信いただいても、お答えできません。", "SHARE SALON",
+              "お問い合わせ：info@share-salon-tokyo.com", "SHARE SALON",
               "運営者：宮田絵美　TEL 070-2395-9365",
             ].join("\n");
             const ownRow = await env.DB.prepare("SELECT owner_code FROM owner_entries WHERE email = ? ORDER BY id ASC LIMIT 1").bind(bk.owner_email || "").first();
