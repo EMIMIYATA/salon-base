@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>予約のキャンセル | SHARE SALON</title>
+<style>
+  :root{--c:#3a3330;--m:#7a6f69;--t:#b8704f;--bg:#faf7f4;--b:#e8e0d9}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--c);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.8;font-size:15px}
+  header{background:#fff;border-bottom:1px solid var(--b);padding:14px 16px}
+  header a{color:var(--c);text-decoration:none;font-weight:700}
+  main{max-width:640px;margin:0 auto;padding:16px 16px 80px}
+  h1{font-size:21px;margin:8px 0}
+  .card{background:#fff;border:1px solid var(--b);border-radius:16px;padding:16px;margin:14px 0}
+  label{display:block;font-size:13px;font-weight:700;margin-top:10px}
+  input[type=text],input[type=email]{width:100%;padding:12px;border:1px solid var(--b);border-radius:12px;font-size:16px;margin-top:4px}
+  button{font-size:15px;font-weight:700;border-radius:999px;padding:13px 20px;border:1px solid var(--b);background:#fff;color:var(--c);cursor:pointer;width:100%;margin-top:14px}
+  button.p{background:var(--t);border-color:var(--t);color:#fff}
+  button.d{background:#b3261e;border-color:#b3261e;color:#fff}
+  button:disabled{opacity:.5}
+  table{width:100%;border-collapse:collapse;margin:8px 0;font-size:14px}
+  td{padding:6px 4px;border-bottom:1px solid var(--b)}
+  td:last-child{text-align:right;font-weight:700}
+  .m{color:var(--m);font-size:12.5px}
+  .err{color:#b3261e;font-size:14px;margin-top:10px}
+  .ok{background:#e4f1e6;border-radius:12px;padding:14px;color:#2f6b3a}
+  .hid{display:none}
+</style>
+</head>
+<body>
+<header><a href="/">← SHARE SALON（シェアサロン）</a></header>
+<main>
+  <h1>ご予約のキャンセル</h1>
+  <p class="m">予約番号とメールアドレスを入力すると、キャンセル料と返金額を確認して、そのままキャンセルできます。キャンセル料は、<a href="/terms.html#cancel">キャンセルポリシー</a>のとおり、利用日までの日数で決まります。</p>
+
+  <div id="step1" class="card">
+    <label for="code">予約番号</label>
+    <input id="code" type="text" placeholder="確認メールに書かれた番号" autocapitalize="characters" autocomplete="off">
+    <label for="email">ご予約時のメールアドレス</label>
+    <input id="email" type="email" placeholder="example@mail.com" autocomplete="email">
+    <button id="check" class="p">キャンセル料と返金額を確認する</button>
+    <p id="err1" class="err"></p>
+  </div>
+
+  <div id="step2" class="card hid">
+    <b id="salon"></b>
+    <div class="m" id="when"></div>
+    <table>
+      <tr><td>お支払い済み金額</td><td id="amount"></td></tr>
+      <tr><td id="feeLabel">キャンセル料</td><td id="fee"></td></tr>
+      <tr><td>ご返金額</td><td id="refund"></td></tr>
+    </table>
+    <p class="m" id="note"></p>
+    <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400">
+      <input id="agree" type="checkbox" style="margin-top:6px">
+      <span>上の内容を確認しました。キャンセルすると、取り消せないことに同意します。</span>
+    </label>
+    <button id="go" class="d" disabled>この内容でキャンセルする</button>
+    <button id="back">戻る</button>
+    <p id="err2" class="err"></p>
+  </div>
+
+  <div id="done" class="card hid">
+    <div class="ok" id="doneMsg"></div>
+    <p class="m">確認メールを、お送りしました。届かないときは、迷惑メールのフォルダをご確認ください。</p>
+  </div>
+
+  <p class="m">お問い合わせ：info@share-salon-tokyo.com ／ 電話 070-2395-9365（運営者：宮田絵美）</p>
+</main>
+<script>
+(function(){
+  function $(i){return document.getElementById(i)}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
+  function yen(n){return '¥'+Number(n||0).toLocaleString()}
+  var q=new URLSearchParams(location.search);
+  if(q.get('code')) $('code').value=q.get('code');
+  async function post(url,body){
+    var r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    var d=await r.json().catch(function(){return{}});
+    if(!r.ok||d.ok===false) throw new Error(d.error||'うまくいきませんでした。時間をおいて、もう一度お試しください');
+    return d;
+  }
+  function vals(){return{booking_code:$('code').value.trim(),email:$('email').value.trim()}}
+  $('check').onclick=async function(){
+    $('err1').textContent='';
+    $('check').disabled=true;
+    try{
+      var d=await post('/api/cancel/preview',vals());
+      var dd=String(d.booking.date).split('-');
+      $('salon').textContent=d.booking.salon_name;
+      $('when').textContent=dd[0]+'年'+Number(dd[1])+'月'+Number(dd[2])+'日 '+(d.booking.hours||[]).join(' / ')+'（利用日まで '+d.plan.days_before+' 日）';
+      $('amount').textContent=yen(d.plan.amount);
+      $('feeLabel').textContent='キャンセル料（'+d.plan.percent+'％）';
+      $('fee').textContent=yen(d.plan.cancel_fee);
+      $('refund').textContent=yen(d.plan.refund);
+      $('note').textContent=d.plan.refund>0?d.refund_note:'キャンセル料が、利用料金の全額のため、ご返金はありません。';
+      $('step1').classList.add('hid');$('step2').classList.remove('hid');
+    }catch(e){$('err1').textContent=e.message}
+    $('check').disabled=false;
+  };
+  $('agree').onchange=function(){$('go').disabled=!$('agree').checked};
+  $('back').onclick=function(){$('step2').classList.add('hid');$('step1').classList.remove('hid');$('agree').checked=false;$('go').disabled=true};
+  $('go').onclick=async function(){
+    $('err2').textContent='';
+    $('go').disabled=true;$('go').textContent='処理中です...';
+    try{
+      var d=await post('/api/cancel',vals());
+      $('doneMsg').innerHTML='キャンセルを受け付けました。<br>ご返金額：<b>'+yen(d.plan.refund)+'</b>'+(d.refund_note?'<br><span class="m">'+esc(d.refund_note)+'</span>':'');
+      $('step2').classList.add('hid');$('done').classList.remove('hid');
+    }catch(e){$('err2').textContent=e.message;$('go').disabled=false;$('go').textContent='この内容でキャンセルする'}
+  };
+})();
+</script>
+</body>
+</html>
