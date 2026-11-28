@@ -223,17 +223,87 @@ function generateOwnerCode() {
   return `SB-${year}-${rand}`;
 }
 
+// ---- アクセス回数の制限（総当たり・連続アクセス対策） ----
+async function rlCount(env, key, windowSec) {
+  try {
+    await env.DB.prepare("CREATE TABLE IF NOT EXISTS rate_limits (k TEXT PRIMARY KEY, n INTEGER NOT NULL, t INTEGER NOT NULL)").run();
+    const row = await env.DB.prepare("SELECT n, t FROM rate_limits WHERE k = ?").bind(key).first();
+    const now = Math.floor(Date.now() / 1000);
+    if (!row || now - Number(row.t) > windowSec) return 0;
+    return Number(row.n) || 0;
+  } catch (_) {
+    return 0;
+  }
+}
+async function rlHit(env, key, windowSec) {
+  try {
+    await env.DB.prepare("CREATE TABLE IF NOT EXISTS rate_limits (k TEXT PRIMARY KEY, n INTEGER NOT NULL, t INTEGER NOT NULL)").run();
+    const now = Math.floor(Date.now() / 1000);
+    await env.DB.prepare(
+      "INSERT INTO rate_limits (k, n, t) VALUES (?, 1, ?) ON CONFLICT(k) DO UPDATE SET n = CASE WHEN ? - t > ? THEN 1 ELSE n + 1 END, t = CASE WHEN ? - t > ? THEN ? ELSE t END"
+    ).bind(key, now, now, windowSec, now, windowSec, now).run();
+    if (Math.random() < 0.01) {
+      await env.DB.prepare("DELETE FROM rate_limits WHERE t < ?").bind(now - 86400).run();
+    }
+  } catch (_) {}
+}
+// 回数を数えて、上限を超えたら false
+async function rlAllow(env, key, max, windowSec) {
+  const n = await rlCount(env, key, windowSec);
+  if (n >= max) return false;
+  await rlHit(env, key, windowSec);
+  return true;
+}
+function tokenRole(request) {
+  try {
+    const raw = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").split(".")[0];
+    return JSON.parse(atob(raw)).role || "";
+  } catch (_) {
+    return "";
+  }
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const path = url.pathname;
     const method = request.method;
+    const ip = request.headers.get("cf-connecting-ip") || "unknown";
+    const tooMany = () => json({ ok: false, error: "アクセスが多すぎます。しばらくしてから、もう一度お試しください" }, 429);
+
+    // 古い機能（現在のサイトでは使っていない）は、運営のログインがある場合だけ
+    if (
+      /^\/api\/(bookings|receipts)(\/|$)/.test(path) ||
+      (path === "/api/booking" && method === "POST") ||
+      (path === "/api/tour-bookings" && method === "POST")
+    ) {
+      if (!(await verifyAdminToken(request, env)) || tokenRole(request) !== "admin") {
+        return json({ ok: false, error: "認証が必要です" }, 401);
+      }
+    }
+    // 公開の入り口：連続アクセスの制限
+    if (method === "POST") {
+      const limits = [
+        ["/api/entry", "entry", 10, 3600],
+        ["/api/tours", "tours", 10, 3600],
+        ["/api/reviews", "rv", 10, 3600],
+        ["/api/checkout", "co", 30, 600],
+        ["/api/cancel", "cn", 20, 600],
+        ["/api/cancel/preview", "cnp", 30, 600],
+        ["/api/owner/withdraw", "wd", 10, 3600],
+      ];
+      for (const [pth, name, max, win] of limits) {
+        if (path === pth && !(await rlAllow(env, name + ":" + ip, max, win))) return tooMany();
+      }
+    }
 
         // ---- ログイン ----
     if (path === "/api/auth/login" && method === "POST") {
       try {
         const body = await request.json().catch(() => ({}));
+        if ((await rlCount(env, "adm:" + ip, 900)) >= 5) return tooMany();
         if (!verifyAdminPassword(body.password, env)) {
+          await rlHit(env, "adm:" + ip, 900);
           return json({ ok: false, error: "パスワードが正しくありません" }, 401);
         }
         const token = await createAdminToken(env);
@@ -246,13 +316,15 @@ export default {
     // ---- 画像アップロード ----
     if (path === "/api/upload" && method === "POST") {
       try {
+        const loggedIn = await verifyAdminToken(request, env);
+        if (!(await rlAllow(env, "up:" + ip, loggedIn ? 60 : 10, 3600))) return tooMany();
         const form = await request.formData();
         const file = form.get("file");
         const salon = String(form.get("salon_id") || "");
         if (!file || typeof file === "string")
           return json({ ok: false, error: "ファイルがありません" }, 400);
-        if (!file.type.startsWith("image/"))
-          return json({ ok: false, error: "画像を選んでください" }, 400);
+        if (!["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif"].includes(file.type))
+          return json({ ok: false, error: "JPEG・PNG・WebP などの画像を選んでください" }, 400);
         if (file.size > 10 * 1024 * 1024)
           return json({ ok: false, error: "10MB以下の画像にしてください" }, 400);
         const ext = (file.type.split("/")[1] || "jpg").replace(/[^a-z0-9]/gi, "");
@@ -269,6 +341,10 @@ export default {
         // ---- AI文章生成 ----
     if (path === "/api/ai/generate-copy" && method === "POST") {
       try {
+        if (!(await verifyAdminToken(request, env))) {
+          return json({ ok: false, error: "認証が必要です。再ログインしてください" }, 401);
+        }
+        if (!(await rlAllow(env, "ai:" + ip, 30, 3600))) return tooMany();
         if (!env.AI) {
           return json({ ok: false, error: "Workers AI (env.AI) が設定されていません" }, 500);
         }
@@ -629,6 +705,9 @@ if (path === "/api/owner/login" && method === "POST") {
     if (!ownerCode || !rawPassword) {
       return json({ ok: false, error: "番号とパスワードを入力してください" }, 400);
     }
+    if ((await rlCount(env, "ow:" + ip + ":" + ownerCode, 900)) >= 5 || (await rlCount(env, "owip:" + ip, 900)) >= 20) {
+      return tooMany();
+    }
 
     const row = await env.DB.prepare(
       "SELECT id, owner_code, salon_name, person_name, password_hash, password_salt FROM owner_entries WHERE owner_code = ? LIMIT 1"
@@ -637,11 +716,15 @@ if (path === "/api/owner/login" && method === "POST") {
       .first();
 
     if (!row || !row.password_hash || !row.password_salt) {
+      await rlHit(env, "ow:" + ip + ":" + ownerCode, 900);
+      await rlHit(env, "owip:" + ip, 900);
       return json({ ok: false, error: "番号またはパスワードが正しくありません" }, 401);
     }
 
     const { hashHex } = await hashPassword(rawPassword, row.password_salt);
     if (hashHex !== row.password_hash) {
+      await rlHit(env, "ow:" + ip + ":" + ownerCode, 900);
+      await rlHit(env, "owip:" + ip, 900);
       return json({ ok: false, error: "番号またはパスワードが正しくありません" }, 401);
     }
         const token = await createAdminToken(env, "owner", { owner_id: row.id });
